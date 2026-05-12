@@ -29,7 +29,7 @@ type Model struct {
 	responseCursor  int
 
 	editing             bool
-	autoForward         bool
+	interceptEnabled    bool
 	pendingEdits         map[*intercept.PendingRequest]string
 	pendingResponseEdits map[*intercept.PendingResponse]string
 
@@ -59,8 +59,8 @@ func New(broker *intercept.Broker) Model {
 	broker.SetCaptureResponse(cfg.Intercept.DefaultCaptureResponse)
 
 	return Model{
-		broker:          broker,
-		autoForward:     cfg.Intercept.DefaultAutoForward,
+		broker:           broker,
+		interceptEnabled: cfg.Intercept.DefaultInterceptEnabled,
 		captureResponse: cfg.Intercept.DefaultCaptureResponse,
 		listViewport:    lv,
 		responseViewport: rv,

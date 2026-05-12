@@ -22,7 +22,7 @@ type InterceptKeys struct {
 	ForwardAll      string `mapstructure:"forward_all"`
 	Drop            string `mapstructure:"drop"`
 	DropAll         string `mapstructure:"drop_all"`
-	AutoForward     string `mapstructure:"auto_forward"`
+	ToggleIntercept string `mapstructure:"toggle_intercept"`
 	CaptureResponse string `mapstructure:"capture_response"`
 	UndoEdits       string `mapstructure:"undo_edits"`
 	Edit            string `mapstructure:"edit"`

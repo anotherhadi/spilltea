@@ -10,7 +10,7 @@ type InterceptKeyMap struct {
 	ForwardAll      key.Binding
 	Drop            key.Binding
 	DropAll         key.Binding
-	AutoForward     key.Binding
+	ToggleIntercept key.Binding
 	CaptureResponse key.Binding
 	UndoEdits       key.Binding
 	Edit            key.Binding
@@ -23,7 +23,7 @@ func newInterceptKeyMap(cfg config.InterceptKeys) InterceptKeyMap {
 		ForwardAll:      binding(cfg.ForwardAll, "forward all"),
 		Drop:            binding(cfg.Drop, "drop"),
 		DropAll:         binding(cfg.DropAll, "drop all"),
-		AutoForward:     binding(cfg.AutoForward, "auto forward"),
+		ToggleIntercept: binding(cfg.ToggleIntercept, "toggle intercept"),
 		CaptureResponse: binding(cfg.CaptureResponse, "capture response"),
 		UndoEdits:       binding(cfg.UndoEdits, "undo edits"),
 		Edit:            binding(cfg.Edit, "edit"),
@@ -36,6 +36,6 @@ func (ic InterceptKeyMap) Bindings() []key.Binding {
 		ic.Forward, ic.ForwardAll,
 		ic.Drop, ic.DropAll,
 		ic.Edit, ic.EditExternal, ic.UndoEdits,
-		ic.AutoForward, ic.CaptureResponse,
+		ic.ToggleIntercept, ic.CaptureResponse,
 	}
 }

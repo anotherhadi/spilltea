@@ -36,8 +36,8 @@ func RenderWithTitle(border lipgloss.Style, title, content string, width, height
 	if fillW < 0 {
 		fillW = 0
 	}
-	topLine := "╭" + label + strings.Repeat("─", fillW) + "╮"
-	topLine = lipgloss.NewStyle().Foreground(border.GetBorderTopForeground()).Render(topLine)
+	bc := lipgloss.NewStyle().Foreground(border.GetBorderTopForeground())
+	topLine := bc.Render("╭ ") + bc.Render(title) + bc.Render(" "+strings.Repeat("─", fillW)+"╮")
 
 	return lipgloss.JoinVertical(lipgloss.Left, topLine, box)
 }

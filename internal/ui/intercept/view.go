@@ -52,8 +52,8 @@ func (m *Model) renderListPanel(w, h int) string {
 	)
 
 	title := icons.I.Request + "Requests"
-	if m.autoForward {
-		title += " [auto forward]"
+	if !m.interceptEnabled {
+		title += " " + lipgloss.NewStyle().Foreground(style.S.Error).Render("[intercept off]")
 	}
 	return style.RenderWithTitle(border, title, inner, w, h)
 }

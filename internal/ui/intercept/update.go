@@ -15,7 +15,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case intercept.RequestArrivedMsg:
-		if m.autoForward {
+		if !m.interceptEnabled {
 			m.broker.Decide(msg.Req, intercept.Forward)
 			break
 		}
@@ -152,9 +152,9 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 			}
 		}
 
-	case key.Matches(msg, keys.Keys.Intercept.AutoForward):
-		m.autoForward = !m.autoForward
-		if m.autoForward {
+	case key.Matches(msg, keys.Keys.Intercept.ToggleIntercept):
+		m.interceptEnabled = !m.interceptEnabled
+		if !m.interceptEnabled {
 			for len(m.queue) > 0 {
 				m.applyAndDecide(intercept.Forward)
 			}

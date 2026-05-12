@@ -6,7 +6,7 @@ app:
   plugins_dir: ~/.config/spilltea/plugins
 
 intercept:
-  default_auto_forward: false
+  default_intercept_enabled: true
   default_capture_response: false
   auto_forward_regex:
     - '\.(js|css|png|gif|ico|woff2?|ttf|svg)(\?.*)?$'
@@ -61,7 +61,7 @@ keybindings:
     forward_all: "F"
     drop: "d"
     drop_all: "D"
-    auto_forward: "a"
+    toggle_intercept: "a"
     capture_response: "r"
     undo_edits: "ctrl+z"
     edit: "e,enter"
