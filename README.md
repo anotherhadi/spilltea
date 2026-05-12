@@ -51,6 +51,16 @@ For a full reference and examples, see the [plugin documentation](./.github/docs
 Spilltea is fully configured via a YAML file at `~/.config/spilltea/config.yaml`.
 Check the default configuration with all the options [here](./internal/config/default_config.yaml)
 
+## CLI Flags
+
+| Flag | Short | Description |
+| ---- | ----- | ----------- |
+| `--config` | `-c` | Path to config file (default: `~/.config/spilltea/config.yaml`) |
+| `--host` | | Proxy host, overrides config |
+| `--port` | `-p` | Proxy port, overrides config |
+| `--project` | `-P` | Project name to open directly, or `tmp` for a temporary session |
+| `--version` | `-v` | Print version and exit |
+
 ## Deployment
 
 spilltea runs **locally** on the machine used for pentesting or CTF. There is no separate server component.
