@@ -2,7 +2,6 @@ package plugins
 
 import (
 	"log"
-	"net/url"
 	"strings"
 	"time"
 
@@ -65,26 +64,7 @@ func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 		return 0
 	}))
 
-	L.SetGlobal("is_in_scope", L.NewFunction(func(L *lua.LState) int {
-		raw := L.CheckString(1)
-		if mgr.broker == nil {
-			L.Push(lua.LTrue)
-			return 1
-		}
-		u, err := url.Parse(raw)
-		if err != nil {
-			L.Push(lua.LFalse)
-			return 1
-		}
-		path := u.Path
-		if path == "" {
-			path = "/"
-		}
-		L.Push(lua.LBool(mgr.broker.IsInScope(u.Host + path)))
-		return 1
-	}))
-
-	L.SetGlobal("quit", L.NewFunction(func(L *lua.LState) int {
+L.SetGlobal("quit", L.NewFunction(func(L *lua.LState) int {
 		reason := L.OptString(1, "plugin requested quit")
 		select {
 		case mgr.Quit <- reason:

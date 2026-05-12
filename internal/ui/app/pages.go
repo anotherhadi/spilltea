@@ -10,7 +10,6 @@ import (
 	interceptUI "github.com/anotherhadi/spilltea/internal/ui/intercept"
 	pluginsUI "github.com/anotherhadi/spilltea/internal/ui/plugins"
 	replayUI "github.com/anotherhadi/spilltea/internal/ui/replay"
-	scopeUI "github.com/anotherhadi/spilltea/internal/ui/scope"
 )
 
 type page string
@@ -20,7 +19,6 @@ const (
 	pageHistory   page = "History"
 	pageReplay    page = "Replay"
 	pageDiff      page = "Diff"
-	pageScopes    page = "Scopes"
 	pagePlugins   page = "Plugins"
 	pageFindings  page = "Findings"
 	pageDocs      page = "Docs"
@@ -92,19 +90,6 @@ var pageRegistry = []pageEntry{
 			return cmd
 		},
 		resize: func(m *Model, w, h int) { m.diff.SetSize(w, h) },
-	},
-	{
-		id:   pageScopes,
-		icon: func() string { return icons.I.Scope },
-
-		render: func(m *Model) string { return m.scope.View().Content },
-		update: func(m *Model, msg tea.Msg) tea.Cmd {
-			updated, cmd := m.scope.Update(msg)
-			m.scope = updated.(scopeUI.Model)
-			return cmd
-		},
-		isEditing: func(m *Model) bool { return m.scope.IsEditing() },
-		resize:    func(m *Model, w, h int) { m.scope.SetSize(w, h) },
 	},
 	{
 		id:   pagePlugins,

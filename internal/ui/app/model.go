@@ -22,7 +22,6 @@ import (
 	interceptUI "github.com/anotherhadi/spilltea/internal/ui/intercept"
 	pluginsUI "github.com/anotherhadi/spilltea/internal/ui/plugins"
 	replayUI "github.com/anotherhadi/spilltea/internal/ui/replay"
-	scopeUI "github.com/anotherhadi/spilltea/internal/ui/scope"
 	"github.com/sirupsen/logrus"
 )
 
@@ -64,7 +63,6 @@ type Model struct {
 	replay        replayUI.Model
 	diff          diffUI.Model
 	docs          docsUI.Model
-	scope         scopeUI.Model
 	pluginsPage   pluginsUI.Model
 	findingsPage  findingsUI.Model
 	copyAs        copyasUI.Model
@@ -86,7 +84,6 @@ func New(broker *intercept.Broker, name, path string) Model {
 		replay:        replayUI.New(),
 		diff:          diffUI.New(),
 		docs:          docsUI.New(),
-		scope:         scopeUI.New(name, path),
 		pluginsPage:   pluginsUI.New(mgr),
 		findingsPage:  findingsUI.New(),
 		copyAs:        copyasUI.New(),
@@ -101,10 +98,6 @@ func New(broker *intercept.Broker, name, path string) Model {
 		m.replay.SetDB(d)
 		m.findingsPage.SetDB(d)
 		mgr.SetDB(d)
-		if wl, bl, err := d.LoadScope(); err == nil {
-			broker.SetScope(wl, bl)
-			m.scope.SetScope(wl, bl)
-		}
 	}
 
 	pluginsDir := config.ExpandPath(cfg.App.PluginsDir)

@@ -33,8 +33,9 @@ type Config struct {
 	} `mapstructure:"tui"`
 
 	Intercept struct {
-		DefaultAutoForward     bool `mapstructure:"default_auto_forward"`
-		DefaultCaptureResponse bool `mapstructure:"default_capture_response"`
+		DefaultAutoForward     bool     `mapstructure:"default_auto_forward"`
+		DefaultCaptureResponse bool     `mapstructure:"default_capture_response"`
+		AutoForwardRegex       []string `mapstructure:"auto_forward_regex"`
 	} `mapstructure:"intercept"`
 
 	Replay struct {

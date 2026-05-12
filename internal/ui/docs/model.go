@@ -19,7 +19,6 @@ var contentMarkdown = strings.Join([]string{
 	readDoc("proxy.md"),
 	readDoc("certificate.md"),
 	readDoc("history.md"),
-	readDoc("scopes.md"),
 }, "\n")
 
 type Model struct {

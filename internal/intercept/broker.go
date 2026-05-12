@@ -41,9 +41,8 @@ type Broker struct {
 	droppedFlows sync.Map // *proxy.Flow → struct{}
 	outOfScope   sync.Map // *proxy.Flow → struct{}
 
-	scopeMu   sync.RWMutex
-	whitelist []*regexp.Regexp
-	blacklist []*regexp.Regexp
+	autoFwdMu      sync.RWMutex
+	autoFwdRegexes []*regexp.Regexp
 
 	onNewEntry func(db.Entry)
 }
@@ -52,76 +51,44 @@ func (b *Broker) SetOnNewEntry(cb func(db.Entry)) {
 	b.onNewEntry = cb
 }
 
-// IsInScope reports whether the given target string (host+path) matches the
-// current scope rules. Used by the plugin API.
-func (b *Broker) IsInScope(target string) bool {
-	b.scopeMu.RLock()
-	wl := b.whitelist
-	bl := b.blacklist
-	b.scopeMu.RUnlock()
-	return scopeMatches(wl, bl, target)
-}
-
 func NewBroker() *Broker {
-	return &Broker{
+	b := &Broker{
 		Incoming:         make(chan *PendingRequest, 64),
 		IncomingResponse: make(chan *PendingResponse, 64),
 	}
+	b.SetAutoForwardRegex(config.Global.Intercept.AutoForwardRegex)
+	return b
 }
 
 func (b *Broker) SetCaptureResponse(v bool) {
 	b.captureResponse.Store(v)
 }
 
-// SetScope compiles and stores whitelist/blacklist regex patterns.
+// SetAutoForwardRegex compiles and stores patterns for requests that should
+// be forwarded automatically without interception or history logging.
 // Invalid patterns are silently skipped.
-func (b *Broker) SetScope(whitelist, blacklist []string) {
-	wl := compilePatterns(whitelist)
-	bl := compilePatterns(blacklist)
-	b.scopeMu.Lock()
-	b.whitelist = wl
-	b.blacklist = bl
-	b.scopeMu.Unlock()
-}
-
-func compilePatterns(patterns []string) []*regexp.Regexp {
-	out := make([]*regexp.Regexp, 0, len(patterns))
+func (b *Broker) SetAutoForwardRegex(patterns []string) {
+	compiled := make([]*regexp.Regexp, 0, len(patterns))
 	for _, p := range patterns {
 		if r, err := regexp.Compile(p); err == nil {
-			out = append(out, r)
+			compiled = append(compiled, r)
 		}
 	}
-	return out
+	b.autoFwdMu.Lock()
+	b.autoFwdRegexes = compiled
+	b.autoFwdMu.Unlock()
 }
 
-func (b *Broker) matchesScope(f *proxy.Flow) bool {
-	target := f.Request.URL.Host + f.Request.URL.Path
-	b.scopeMu.RLock()
-	wl := b.whitelist
-	bl := b.blacklist
-	b.scopeMu.RUnlock()
-	return scopeMatches(wl, bl, target)
-}
-
-func scopeMatches(wl, bl []*regexp.Regexp, target string) bool {
-	if len(wl) > 0 {
-		matched := false
-		for _, r := range wl {
-			if r.MatchString(target) {
-				matched = true
-				break
-			}
-		}
-		if !matched {
-			return false
-		}
-	}
-	for _, r := range bl {
+func (b *Broker) isAutoForwarded(target string) bool {
+	b.autoFwdMu.RLock()
+	regexes := b.autoFwdRegexes
+	b.autoFwdMu.RUnlock()
+	for _, r := range regexes {
 		if r.MatchString(target) {
-			return false
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 func (b *Broker) SetDB(d *db.DB) {
@@ -132,7 +99,8 @@ func (b *Broker) SetDB(d *db.DB) {
 
 // Hold is called from the proxy addon: it blocks until a decision is made in the TUI.
 func (b *Broker) Hold(f *proxy.Flow) Decision {
-	if !b.matchesScope(f) {
+	target := f.Request.URL.Host + f.Request.URL.Path
+	if b.isAutoForwarded(target) {
 		b.outOfScope.Store(f, struct{}{})
 		return Forward
 	}
@@ -168,7 +136,7 @@ func (b *Broker) HoldResponse(f *proxy.Flow) Decision {
 
 // SaveEntry persists the completed flow to the history DB.
 // It must be called after HoldResponse and before modifying f.Response.
-// Flows that were dropped at the request phase are silently skipped.
+// Flows that were dropped or auto-forwarded are silently skipped.
 func (b *Broker) SaveEntry(f *proxy.Flow) {
 	b.dbMu.RLock()
 	d := b.database

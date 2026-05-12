@@ -25,7 +25,6 @@ It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, key
 - **Intercept**: Pause requests and responses in-flight. Inspect and modify them (even with your favorite editor) before forwarding.
 - **HTTP History**: Every request that passes through the proxy is stored. Browse, search and filter your full session history.
 - **Replay**: Pick any request from the history, modify it if needed, and send it again. Useful for manual testing and quick iteration
-- **Scopes**: Keep your history clean by white/blacklisting domains or specific paths.
 - **HTTPS Support** (using go-mitmproxy under the hood)
 - Built-in Integrations:
   - **FFuf Export**: Generate a ffuf command or configuration directly from a request to start fuzzing instantly.

@@ -20,7 +20,6 @@ import (
 	historyUI "github.com/anotherhadi/spilltea/internal/ui/history"
 	interceptUI "github.com/anotherhadi/spilltea/internal/ui/intercept"
 	replayUI "github.com/anotherhadi/spilltea/internal/ui/replay"
-	scopeUI "github.com/anotherhadi/spilltea/internal/ui/scope"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -78,15 +77,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 		m.resizeChildren()
-
-	case scopeUI.ScopeChangedMsg:
-		m.broker.SetScope(msg.Whitelist, msg.Blacklist)
-		if m.database != nil {
-			if err := m.database.SaveScope(msg.Whitelist, msg.Blacklist); err != nil {
-				log.Printf("failed to persist scope: %v", err)
-			}
-		}
-		return m, nil
 
 	case proxyPkg.ErrMsg:
 		if msg.Err != nil {

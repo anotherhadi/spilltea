@@ -35,12 +35,7 @@ func (d *DB) migrate() error {
 			request_raw  TEXT NOT NULL,
 			response_raw TEXT NOT NULL
 		);
-		CREATE TABLE IF NOT EXISTS scope (
-			id      INTEGER PRIMARY KEY AUTOINCREMENT,
-			kind    TEXT NOT NULL CHECK(kind IN ('whitelist','blacklist')),
-			pattern TEXT NOT NULL
-		);
-		CREATE TABLE IF NOT EXISTS replay_entries (
+CREATE TABLE IF NOT EXISTS replay_entries (
 			id           INTEGER PRIMARY KEY AUTOINCREMENT,
 			timestamp    DATETIME NOT NULL,
 			scheme       TEXT NOT NULL,
@@ -69,9 +64,6 @@ func (d *DB) migrate() error {
 			created_at  DATETIME NOT NULL,
 			UNIQUE(plugin_name, dedup_key)
 		);
-		INSERT INTO scope (kind, pattern)
-			SELECT 'blacklist', '\.(js|css|png|gif|ico|woff2?|ttf|svg)(\?.*)?$'
-			WHERE NOT EXISTS (SELECT 1 FROM scope);
 	`)
 	return err
 }

@@ -8,6 +8,8 @@ app:
 intercept:
   default_auto_forward: false
   default_capture_response: false
+  auto_forward_regex:
+    - '\.(js|css|png|gif|ico|woff2?|ttf|svg)(\?.*)?$'
 
 replay:
   switch_to_page_on_send: false
