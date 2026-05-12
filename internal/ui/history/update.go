@@ -1,0 +1,303 @@
+package history
+
+import (
+	"fmt"
+	"net/http"
+
+	"charm.land/bubbles/v2/key"
+	tea "charm.land/bubbletea/v2"
+	"github.com/anotherhadi/spilltea/internal/db"
+	"github.com/anotherhadi/spilltea/internal/keys"
+	"github.com/anotherhadi/spilltea/internal/style"
+	diffUI "github.com/anotherhadi/spilltea/internal/ui/diff"
+	replayUI "github.com/anotherhadi/spilltea/internal/ui/replay"
+	"github.com/anotherhadi/spilltea/internal/util"
+)
+
+type EntriesLoadedMsg struct {
+	Entries []db.Entry
+}
+
+func LoadEntriesCmd(database *db.DB) tea.Cmd {
+	return func() tea.Msg {
+		if database == nil {
+			return EntriesLoadedMsg{}
+		}
+		entries, _ := database.ListEntries()
+		return EntriesLoadedMsg{Entries: entries}
+	}
+}
+
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case EntriesLoadedMsg:
+		// Ignore background reloads while a search is active (but not during a mode switch reset).
+		if m.searchKind != searchKindOff && (m.searchAccepted || m.searchInput.Value() != "") {
+			return m, nil
+		}
+		prevCursor := m.cursor
+		m.entries = msg.Entries
+		if m.cursor >= len(m.entries) {
+			m.cursor = len(m.entries) - 1
+		}
+		if m.cursor < 0 {
+			m.cursor = 0
+		}
+		m.pager.SetTotalPages(len(m.entries))
+		m.refreshListViewport()
+		m.refreshBody()
+		if m.cursor != prevCursor {
+			m.bodyViewport.SetYOffset(0)
+			m.bodyViewport.SetXOffset(0)
+		}
+
+	case SearchResultMsg:
+		m.entries = msg.Entries
+		m.cursor = 0
+		m.searchErr = ""
+		m.pager.SetTotalPages(len(m.entries))
+		m.refreshListViewport()
+		m.refreshBody()
+		m.bodyViewport.SetYOffset(0)
+		m.bodyViewport.SetXOffset(0)
+		if m.searchKind == searchKindSQL {
+			m.acceptSearch()
+		}
+
+	case SearchErrMsg:
+		m.searchErr = msg.Err.Error()
+		m.entries = nil
+		m.pager.SetTotalPages(0)
+		m.refreshListViewport()
+		m.refreshBody()
+		m.bodyViewport.SetYOffset(0)
+		m.bodyViewport.SetXOffset(0)
+
+	case tea.MouseWheelMsg:
+		switch msg.Button {
+		case tea.MouseWheelUp:
+			if msg.Mod.Contains(tea.ModShift) {
+				m.bodyViewport.ScrollLeft(6)
+			} else {
+				m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() - 1)
+			}
+		case tea.MouseWheelDown:
+			if msg.Mod.Contains(tea.ModShift) {
+				m.bodyViewport.ScrollRight(6)
+			} else {
+				m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + 1)
+			}
+		case tea.MouseWheelLeft:
+			m.bodyViewport.ScrollLeft(6)
+		case tea.MouseWheelRight:
+			m.bodyViewport.ScrollRight(6)
+		}
+
+	case tea.KeyPressMsg:
+		h := keys.Keys.History
+		g := keys.Keys.Global
+
+		if m.searchKind != searchKindOff && !m.searchAccepted {
+			// Actively typing: only search navigation + accept/cancel.
+			switch {
+			case key.Matches(msg, g.Escape):
+				return m, m.clearSearch()
+
+			case msg.String() == "enter":
+				if m.searchKind == searchKindSQL {
+					return m, SQLCmd(m.database, m.searchInput.Value())
+				}
+				m.acceptSearch()
+
+			case key.Matches(msg, g.Up):
+				if m.cursor > 0 {
+					m.cursor--
+					m.refreshListViewport()
+					m.refreshBody()
+					m.bodyViewport.SetYOffset(0)
+					m.bodyViewport.SetXOffset(0)
+				}
+
+			case key.Matches(msg, g.Down):
+				if m.cursor < len(m.entries)-1 {
+					m.cursor++
+					m.refreshListViewport()
+					m.refreshBody()
+					m.bodyViewport.SetYOffset(0)
+					m.bodyViewport.SetXOffset(0)
+				}
+
+			default:
+				var cmd tea.Cmd
+				m.searchInput, cmd = m.searchInput.Update(msg)
+				if m.searchKind == searchKindFulltext {
+					return m, tea.Batch(cmd, SearchCmd(m.database, m.searchInput.Value()))
+				}
+				return m, cmd
+			}
+			return m, nil
+		}
+
+		if m.searchKind != searchKindOff && m.searchAccepted {
+			// Filter accepted: Escape clears, all other shortcuts fall through.
+			if key.Matches(msg, g.Escape) {
+				return m, m.clearSearch()
+			}
+		}
+
+		switch {
+		case key.Matches(msg, keys.Keys.History.Filter):
+			prev := m.searchKind
+			m.searchKind = searchKindFulltext
+			m.searchAccepted = false
+			m.searchInput.Placeholder = "filter requests..."
+			m.searchErr = ""
+			m.searchInput.Focus()
+			m.recalcSizes()
+			if prev != searchKindFulltext {
+				m.searchInput.SetValue("")
+				return m, LoadEntriesCmd(m.database)
+			}
+
+		case key.Matches(msg, keys.Keys.History.SqlQuery):
+			prev := m.searchKind
+			m.searchKind = searchKindSQL
+			m.searchAccepted = false
+			m.searchInput.Placeholder = "status_code = 200 AND host LIKE '%.api.%'"
+			m.searchErr = ""
+			m.searchInput.Focus()
+			m.recalcSizes()
+			if prev != searchKindSQL {
+				m.searchInput.SetValue("")
+				return m, LoadEntriesCmd(m.database)
+			}
+
+		case key.Matches(msg, g.Up):
+			if m.cursor > 0 {
+				m.cursor--
+				m.refreshListViewport()
+				m.refreshBody()
+				m.bodyViewport.SetYOffset(0)
+				m.bodyViewport.SetXOffset(0)
+			}
+
+		case key.Matches(msg, g.Down):
+			if m.cursor < len(m.entries)-1 {
+				m.cursor++
+				m.refreshListViewport()
+				m.refreshBody()
+				m.bodyViewport.SetYOffset(0)
+				m.bodyViewport.SetXOffset(0)
+			}
+
+		case key.Matches(msg, g.CycleFocus):
+			if m.focusedPanel == panelRequest {
+				m.focusedPanel = panelResponse
+			} else {
+				m.focusedPanel = panelRequest
+			}
+			m.refreshBody()
+			m.bodyViewport.SetYOffset(0)
+			m.bodyViewport.SetXOffset(0)
+
+		case key.Matches(msg, g.SendToReplay):
+			if len(m.entries) > 0 {
+				e := m.entries[m.cursor]
+				scheme := util.InferScheme(e.Host)
+				return m, func() tea.Msg {
+					return replayUI.SendToReplayMsg{
+						Scheme:     scheme,
+						Host:       e.Host,
+						RequestRaw: e.RequestRaw,
+					}
+				}
+			}
+
+		case key.Matches(msg, g.SendToDiff):
+			if len(m.entries) > 0 {
+				e := m.entries[m.cursor]
+				var raw, label string
+				if m.focusedPanel == panelResponse {
+					raw = e.ResponseRaw
+					label = fmt.Sprintf("%d %s", e.StatusCode, http.StatusText(e.StatusCode))
+				} else {
+					raw = e.RequestRaw
+					label = e.Method + " " + e.Host + e.Path
+				}
+				return m, func() tea.Msg {
+					return diffUI.SendToDiffMsg{Label: label, Raw: raw}
+				}
+			}
+
+		case key.Matches(msg, h.DeleteEntry):
+			if len(m.entries) > 0 {
+				id := m.entries[m.cursor].ID
+				if m.database != nil {
+					m.database.DeleteEntry(id)
+				}
+				return m, LoadEntriesCmd(m.database)
+			}
+
+		case key.Matches(msg, h.DeleteAll):
+			if m.database != nil {
+				if m.searchKind != searchKindOff {
+					for _, e := range m.entries {
+						m.database.DeleteEntry(e.ID)
+					}
+				} else {
+					m.database.DeleteAllEntries()
+				}
+			}
+			return m, m.clearSearch()
+
+		case key.Matches(msg, g.ScrollUp):
+			step := m.bodyViewport.Height() / 2
+			if step < 1 {
+				step = 1
+			}
+			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() - step)
+
+		case key.Matches(msg, g.ScrollDown):
+			step := m.bodyViewport.Height() / 2
+			if step < 1 {
+				step = 1
+			}
+			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + step)
+
+		case key.Matches(msg, g.Left):
+			m.bodyViewport.ScrollLeft(6)
+
+		case key.Matches(msg, g.Right):
+			m.bodyViewport.ScrollRight(6)
+
+		case key.Matches(msg, keys.Keys.Global.Help):
+			m.help.ShowAll = !m.help.ShowAll
+			m.recalcSizes()
+		}
+	}
+
+	return m, nil
+}
+
+func (m *Model) refreshListViewport() {
+	if m.pager.PerPage > 0 {
+		m.pager.Page = m.cursor / m.pager.PerPage
+		m.pager.SetTotalPages(len(m.entries))
+	}
+	m.listViewport.SetContent(m.renderList())
+}
+
+func (m *Model) refreshBody() {
+	if len(m.entries) == 0 {
+		m.bodyViewport.SetContent("")
+		return
+	}
+	e := m.entries[m.cursor]
+	var raw string
+	if m.focusedPanel == panelResponse {
+		raw = e.ResponseRaw
+	} else {
+		raw = e.RequestRaw
+	}
+	m.bodyViewport.SetContent(style.HighlightHTTP(raw))
+}
