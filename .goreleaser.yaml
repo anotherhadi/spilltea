@@ -6,6 +6,9 @@ before:
 
 builds:
   - binary: spilltea
+    main: ./cmd/spilltea
+    env:
+      - CGO_ENABLED=0
     goos:
       - linux
     goarch:
