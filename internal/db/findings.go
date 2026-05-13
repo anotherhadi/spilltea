@@ -48,7 +48,7 @@ func (d *DB) LoadFindings() ([]Finding, error) {
 		}
 		for _, layout := range findingTimeFormats {
 			if t, err := time.Parse(layout, ts); err == nil {
-				f.CreatedAt = t
+				f.CreatedAt = t.Local()
 				break
 			}
 		}
