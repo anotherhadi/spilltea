@@ -221,16 +221,16 @@ func lcsAlignedDiff(a, b, aHL, bHL []string) (left, right []diffLine) {
 	for i > 0 || j > 0 {
 		switch {
 		case i > 0 && j > 0 && a[i-1] == b[j-1]:
-			left = append(left, diffLine{text: hlA(i-1), kind: lineUnchanged})
-			right = append(right, diffLine{text: hlB(j-1), kind: lineUnchanged})
+			left = append(left, diffLine{text: hlA(i - 1), kind: lineUnchanged})
+			right = append(right, diffLine{text: hlB(j - 1), kind: lineUnchanged})
 			i--
 			j--
 		case j > 0 && (i == 0 || dp[i][j-1] >= dp[i-1][j]):
 			left = append(left, diffLine{kind: lineAdded})
-			right = append(right, diffLine{text: hlB(j-1), kind: lineAdded})
+			right = append(right, diffLine{text: hlB(j - 1), kind: lineAdded})
 			j--
 		default:
-			left = append(left, diffLine{text: hlA(i-1), kind: lineRemoved})
+			left = append(left, diffLine{text: hlA(i - 1), kind: lineRemoved})
 			right = append(right, diffLine{kind: lineRemoved})
 			i--
 		}

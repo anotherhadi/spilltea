@@ -14,7 +14,7 @@ import (
 type panel int
 
 const (
-	panelRequests  panel = iota
+	panelRequests panel = iota
 	panelResponses
 )
 
@@ -28,8 +28,8 @@ type Model struct {
 	responseQueue   []*intercept.PendingResponse
 	responseCursor  int
 
-	editing             bool
-	interceptEnabled    bool
+	editing              bool
+	interceptEnabled     bool
 	pendingEdits         map[*intercept.PendingRequest]string
 	pendingResponseEdits map[*intercept.PendingResponse]string
 
@@ -37,9 +37,9 @@ type Model struct {
 	responseViewport viewport.Model
 	bodyViewport     viewport.Model
 	textarea         textarea.Model
-	pager                paginator.Model
-	responsePager        paginator.Model
-	help                 help.Model
+	pager            paginator.Model
+	responsePager    paginator.Model
+	help             help.Model
 
 	width  int
 	height int
@@ -59,13 +59,13 @@ func New(broker *intercept.Broker) Model {
 	broker.SetCaptureResponse(cfg.Intercept.DefaultCaptureResponse)
 
 	return Model{
-		broker:           broker,
-		interceptEnabled: cfg.Intercept.DefaultInterceptEnabled,
-		captureResponse: cfg.Intercept.DefaultCaptureResponse,
-		listViewport:    lv,
-		responseViewport: rv,
-		bodyViewport:    bv,
-		textarea:        ta,
+		broker:               broker,
+		interceptEnabled:     cfg.Intercept.DefaultInterceptEnabled,
+		captureResponse:      cfg.Intercept.DefaultCaptureResponse,
+		listViewport:         lv,
+		responseViewport:     rv,
+		bodyViewport:         bv,
+		textarea:             ta,
 		pager:                p,
 		responsePager:        rp,
 		help:                 newHelp(),
@@ -115,4 +115,3 @@ func (m *Model) SetSize(w, h int) {
 	m.height = h
 	m.recalcSizes()
 }
-

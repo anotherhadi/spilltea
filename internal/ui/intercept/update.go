@@ -5,9 +5,9 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/anotherhadi/spilltea/internal/intercept"
 	"github.com/anotherhadi/spilltea/internal/keys"
-	"github.com/anotherhadi/spilltea/internal/util"
 	diffUI "github.com/anotherhadi/spilltea/internal/ui/diff"
 	replayUI "github.com/anotherhadi/spilltea/internal/ui/replay"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

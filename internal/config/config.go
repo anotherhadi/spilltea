@@ -35,8 +35,8 @@ type Config struct {
 
 	Intercept struct {
 		DefaultInterceptEnabled bool     `mapstructure:"default_intercept_enabled"`
-		DefaultCaptureResponse bool     `mapstructure:"default_capture_response"`
-		AutoForwardRegex       []string `mapstructure:"auto_forward_regex"`
+		DefaultCaptureResponse  bool     `mapstructure:"default_capture_response"`
+		AutoForwardRegex        []string `mapstructure:"auto_forward_regex"`
 	} `mapstructure:"intercept"`
 
 	Replay struct {

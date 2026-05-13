@@ -14,9 +14,9 @@ import (
 type Decision int
 
 const (
-	Forward  Decision = iota // forward without showing in intercept
-	Drop                     // drop the flow
-	Intercept                // pass to the TUI for user decision
+	Forward   Decision = iota // forward without showing in intercept
+	Drop                      // drop the flow
+	Intercept                 // pass to the TUI for user decision
 )
 
 type PendingRequest struct {

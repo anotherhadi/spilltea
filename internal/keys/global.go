@@ -15,7 +15,7 @@ type GlobalKeyMap struct {
 	Left          key.Binding
 	Right         key.Binding
 	CycleFocus    key.Binding
-	CopyAs   key.Binding
+	CopyAs        key.Binding
 	Copy          key.Binding
 	Escape        key.Binding
 	SendToReplay  key.Binding
@@ -35,7 +35,7 @@ func newGlobalKeyMap(cfg config.GlobalKeys) GlobalKeyMap {
 		Left:          binding(cfg.Left, "scroll left"),
 		Right:         binding(cfg.Right, "scroll right"),
 		CycleFocus:    binding(cfg.CycleFocus, "cycle focus"),
-		CopyAs:   binding(cfg.CopyAs, "copy as..."),
+		CopyAs:        binding(cfg.CopyAs, "copy as..."),
 		Copy:          binding(cfg.Copy, "copy..."),
 		Escape:        key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")),
 		SendToReplay:  binding(cfg.SendToReplay, "send to replay"),

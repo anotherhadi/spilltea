@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"charm.land/glamour/v2"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/glamour/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/anotherhadi/spilltea/internal/config"
 	"github.com/anotherhadi/spilltea/internal/icons"
