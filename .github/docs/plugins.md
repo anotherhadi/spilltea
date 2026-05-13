@@ -19,7 +19,8 @@ Plugin = {
   description = "What this plugin does.",
   priority    = 0,  -- higher = runs before other plugins (default: 0)
 
-  -- Declare which hooks you use and whether they are synchronous.
+  -- Declare which hooks you use and whether they are synchronous (default: false).
+  -- on_config and on_quit are always sync and do not need to be declared here.
   on_start          = { sync = true  },
   on_request        = { sync = true  },
   on_response       = { sync = false },
@@ -94,8 +95,17 @@ create_finding({
   severity    = "high",              -- info | low | medium | high | critical
 })
 
--- Run a raw SQL query against the history DB
+-- Run a raw SQL query against the project DB (entries, findings, replay_entries, …)
+-- Returns a table of rows; each row is a table indexed by column name.
+-- Returns nil + error string on failure.
 local rows, err = db_query("SELECT id, host FROM entries WHERE host = ?", "example.com")
+if err then
+  log("query failed: " .. err)
+else
+  for i = 1, #rows do
+    log(rows[i].host)
+  end
+end
 
 -- Quit the app (useful for startup checks that fail)
 quit("reason message")
@@ -114,7 +124,9 @@ Each plugin gets a **config textarea** on the Plugins page. The raw text is pass
 ## Sync vs async
 
 - **`sync = true`**: spilltea waits for the hook to return before continuing. The hook can return a decision value (see below).
-- **`sync = false`** (default): the hook runs in a background goroutine. Return values are ignored.
+- **`sync = false`** (default for all configurable hooks): the hook runs in a background goroutine. Return values are ignored.
+
+`on_config` and `on_quit` are always synchronous regardless of the Plugin table declaration.
 
 ### Return values for sync hooks
 
