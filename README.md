@@ -31,6 +31,45 @@ It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, key
   - **cURL / HTTPie**: Copy any request as a curl or httpie command to your clipboard.
   - **Markdown Export**: Export any request and its response as a clean Markdown snippet, ready to drop into a report.
 
+## Installation
+
+<details>
+<summary>Go install</summary>
+
+```sh
+go install github.com/anotherhadi/spilltea/cmd/spilltea@latest
+```
+
+Requires Go 1.22+. The binary will be placed in `$GOPATH/bin` (or `~/go/bin`).
+
+</details>
+
+<details>
+<summary>Nix (temporary run, no install)</summary>
+
+```sh
+nix run github:anotherhadi/spilltea
+```
+
+</details>
+
+<details>
+<summary>NixOS (flake)</summary>
+
+Add spilltea to your flake inputs:
+
+```nix
+inputs.spilltea.url = "github:anotherhadi/spilltea";
+```
+
+Then add the package to your system or home-manager packages:
+
+```nix
+environment.systemPackages = [ inputs.spilltea.packages.${pkgs.system}.default ];
+```
+
+</details>
+
 ## Project Management
 
 Spilltea organizes work into **projects**. Each project maps to a SQLite database file that stores all intercepted traffic for that session & a log files.
