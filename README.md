@@ -20,6 +20,8 @@ Spilltea is a **terminal-native HTTP(S) interception proxy**. It sits between yo
 
 It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, keyboard-driven tool that gets out of your way.
 
+<img alt="demo" src="./.github/assets/demo.gif" width="700" />
+
 ## Features
 
 - **Intercept**: Pause requests and responses in-flight. Inspect and modify them (even with your favorite editor) before forwarding.
