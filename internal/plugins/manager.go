@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"sync"
 
@@ -27,12 +28,13 @@ type Manager struct {
 
 func NewManager(broker *intercept.Broker) *Manager {
 	mgr := &Manager{
-		broker:   broker,
+		broker: broker,
 		Notifs: make(chan PluginNotifMsg, 64),
 		Quit:   make(chan string, 4),
 	}
 	if broker != nil {
-		broker.SetOnNewEntry(mgr.RunOnHistoryEntry)
+		broker.SetOnBeforeNewEntry(mgr.RunSyncOnHistoryEntry)
+		broker.SetOnNewEntry(mgr.RunAsyncOnHistoryEntry)
 	}
 	return mgr
 }
@@ -107,25 +109,39 @@ func (m *Manager) loadPlugin(path string) (*Plugin, error) {
 		p.Name = strings.TrimSuffix(filepath.Base(path), ".lua")
 	}
 
-	// Defaults when not overridden by the Plugin table.
-	hookDefaults := map[string]bool{
-		"on_start":         true,  // always sync
-		"on_request":       false, // async
-		"on_response":      false, // async
-		"on_quit":          true,  // always sync
-		"on_history_entry": false, // always async
+	if s, ok := pluginTable.RawGetString("description").(lua.LString); ok {
+		p.Description = string(s)
 	}
-	for hookName, defaultSync := range hookDefaults {
-		// Plugin table entry overrides the default (except on_start/on_quit/on_history_entry which are fixed).
-		if hookName != "on_start" && hookName != "on_quit" && hookName != "on_history_entry" {
-			if tbl, ok := pluginTable.RawGetString(hookName).(*lua.LTable); ok {
-				p.hooks[hookName] = HookConfig{Sync: tbl.RawGetString("sync") == lua.LTrue}
-				continue
-			}
+
+	if n, ok := pluginTable.RawGetString("priority").(lua.LNumber); ok {
+		p.Priority = int(n)
+	}
+
+	// Hooks configurable via the Plugin table (sync field).
+	configurableHooks := map[string]bool{
+		"on_start":         false, // async by default
+		"on_request":       false,
+		"on_response":      false,
+		"on_history_entry": false,
+	}
+	// Fixed-sync hooks: always sync, not configurable.
+	fixedSyncHooks := map[string]struct{}{
+		"on_config": {},
+		"on_quit":   {},
+	}
+
+	for hookName, defaultSync := range configurableHooks {
+		if tbl, ok := pluginTable.RawGetString(hookName).(*lua.LTable); ok {
+			p.hooks[hookName] = HookConfig{Sync: tbl.RawGetString("sync") == lua.LTrue}
+			continue
 		}
-		// Auto-detect: register the hook if the function exists as a global.
 		if p.L.GetGlobal(hookName) != lua.LNil {
 			p.hooks[hookName] = HookConfig{Sync: defaultSync}
+		}
+	}
+	for hookName := range fixedSyncHooks {
+		if p.L.GetGlobal(hookName) != lua.LNil {
+			p.hooks[hookName] = HookConfig{Sync: true}
 		}
 	}
 
@@ -137,6 +153,7 @@ func (m *Manager) GetPlugins() []*Plugin {
 	defer m.mu.RUnlock()
 	out := make([]*Plugin, len(m.plugins))
 	copy(out, m.plugins)
+	sort.Slice(out, func(i, j int) bool { return out[i].Priority > out[j].Priority })
 	return out
 }
 
@@ -179,45 +196,61 @@ func (m *Manager) SaveConfig(name, configText string) {
 	found.mu.Lock()
 	found.ConfigText = configText
 	enabled := found.Enabled
-	hc, hasOnStart := found.hooks["on_start"]
+	_, hasOnConfig := found.hooks["on_config"]
 	found.mu.Unlock()
 	if m.db != nil {
 		_ = m.db.SavePluginState(name, enabled, configText)
 	}
-	if !hasOnStart {
+	if !hasOnConfig {
 		return
 	}
-	// Re-run on_start so the plugin can re-parse the new config.
-	if hc.Sync {
-		found.mu.Lock()
-		if _, err := callHook(found, "on_start", lua.LString(configText)); err != nil {
-			log.Printf("plugin %s on_start (config reload): %v", name, err)
-		}
-		found.mu.Unlock()
-	} else {
-		go func() {
-			found.mu.Lock()
-			if _, err := callHook(found, "on_start", lua.LString(configText)); err != nil {
-				log.Printf("plugin %s on_start (config reload): %v", name, err)
-			}
-			found.mu.Unlock()
-		}()
+	// on_config is always sync.
+	found.mu.Lock()
+	if _, err := callHook(found, "on_config", lua.LString(configText)); err != nil {
+		log.Printf("plugin %s on_config (config reload): %v", name, err)
 	}
+	found.mu.Unlock()
 }
 
 func (m *Manager) RunOnStart() {
+	// on_config runs first, always sync, for every enabled plugin that has it.
 	for _, p := range m.GetPlugins() {
 		if !p.Enabled {
 			continue
 		}
-		if _, ok := p.hooks["on_start"]; !ok {
+		if _, ok := p.hooks["on_config"]; !ok {
 			continue
 		}
 		p.mu.Lock()
-		if _, err := callHook(p, "on_start", lua.LString(p.ConfigText)); err != nil {
-			log.Printf("plugin %s on_start: %v", p.Name, err)
+		if _, err := callHook(p, "on_config", lua.LString(p.ConfigText)); err != nil {
+			log.Printf("plugin %s on_config: %v", p.Name, err)
 		}
 		p.mu.Unlock()
+	}
+	// on_start runs after, sync or async depending on plugin config.
+	for _, p := range m.GetPlugins() {
+		if !p.Enabled {
+			continue
+		}
+		hc, ok := p.hooks["on_start"]
+		if !ok {
+			continue
+		}
+		if hc.Sync {
+			p.mu.Lock()
+			if _, err := callHook(p, "on_start"); err != nil {
+				log.Printf("plugin %s on_start: %v", p.Name, err)
+			}
+			p.mu.Unlock()
+		} else {
+			go func(p *Plugin) {
+				p.mu.Lock()
+				if _, err := callHook(p, "on_start"); err != nil {
+					log.Printf("plugin %s on_start: %v", p.Name, err)
+				}
+				p.mu.Unlock()
+			}(p)
+		}
 	}
 }
 
@@ -327,12 +360,37 @@ func (m *Manager) RunAsyncOnResponse(f *goproxy.Flow) {
 	}
 }
 
-func (m *Manager) RunOnHistoryEntry(e db.Entry) {
+// RunSyncOnHistoryEntry is called before DB insert; returns false to skip saving.
+func (m *Manager) RunSyncOnHistoryEntry(e db.Entry) bool {
 	for _, p := range m.GetPlugins() {
 		if !p.Enabled {
 			continue
 		}
-		if _, ok := p.hooks["on_history_entry"]; !ok {
+		hc, ok := p.hooks["on_history_entry"]
+		if !ok || !hc.Sync {
+			continue
+		}
+		p.mu.Lock()
+		result, err := callHook(p, "on_history_entry", pushEntry(p.L, e))
+		p.mu.Unlock()
+		if err != nil {
+			log.Printf("plugin %s on_history_entry: %v", p.Name, err)
+			continue
+		}
+		if result == "skip" {
+			return false
+		}
+	}
+	return true
+}
+
+func (m *Manager) RunAsyncOnHistoryEntry(e db.Entry) {
+	for _, p := range m.GetPlugins() {
+		if !p.Enabled {
+			continue
+		}
+		hc, ok := p.hooks["on_history_entry"]
+		if !ok || hc.Sync {
 			continue
 		}
 		go func(p *Plugin) {

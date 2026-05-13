@@ -11,6 +11,7 @@ import (
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/intercept"
 	"github.com/anotherhadi/spilltea/internal/keys"
+	spilltea "github.com/anotherhadi/spilltea"
 	"github.com/anotherhadi/spilltea/internal/style"
 	appUI "github.com/anotherhadi/spilltea/internal/ui/app"
 	homeUI "github.com/anotherhadi/spilltea/internal/ui/home"
@@ -22,16 +23,40 @@ var version = "dev"
 
 func main() {
 	var (
-		flagConfig  = flag.StringP("config", "c", "", "path to config file")
-		flagHost    = flag.String("host", "", "proxy host (overrides config)")
-		flagPort    = flag.IntP("port", "p", 0, "proxy port (overrides config)")
-		flagVersion = flag.BoolP("version", "v", false, "print version")
-		flagProject = flag.StringP("project", "P", "", `project name to open directly, or "tmp" for a temporary session`)
+		flagConfig            = flag.StringP("config", "c", "", "path to config file")
+		flagPluginsDir        = flag.String("plugins-dir", "", "path to plugins dir (overrides config)")
+		flagHost              = flag.String("host", "", "proxy host (overrides config)")
+		flagPort              = flag.IntP("port", "p", 0, "proxy port (overrides config)")
+		flagVersion           = flag.BoolP("version", "v", false, "print version")
+		flagProject           = flag.StringP("project", "P", "", `project name to open directly, or "tmp" for a temporary session`)
+		flagAddDefaultPlugins = flag.Bool("add-default-plugins", false, "copy built-in example plugins into the plugins dir and exit")
 	)
 	flag.Parse()
 
 	if *flagVersion {
 		fmt.Println(version)
+		os.Exit(0)
+	}
+
+	if *flagAddDefaultPlugins {
+		cfgPath := filepath.Join(os.Getenv("HOME"), ".config", "spilltea", "config.yaml")
+		if *flagConfig != "" {
+			cfgPath = *flagConfig
+		}
+		if err := config.Load(cfgPath); err != nil {
+			fmt.Fprintf(os.Stderr, "config: %v\n", err)
+			os.Exit(1)
+		}
+		dir := config.ExpandPath(config.Global.App.PluginsDir)
+		if *flagPluginsDir != "" {
+			dir = *flagPluginsDir
+		}
+		n, err := spilltea.InstallDefaultPlugins(dir)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "add-default-plugins: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("added %d plugin(s) to %s\n", n, dir)
 		os.Exit(0)
 	}
 
@@ -51,6 +76,9 @@ func main() {
 	}
 	config.Global.Version = version
 
+	if *flagPluginsDir != "" {
+		config.Global.App.PluginsDir = *flagPluginsDir
+	}
 	if *flagHost != "" {
 		config.Global.App.Host = *flagHost
 	}

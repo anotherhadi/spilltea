@@ -33,12 +33,16 @@ func (m Model) View() tea.View {
 
 func (m *Model) renderListPanel(w, h int) string {
 	s := style.S
+	panelStyle := s.PanelFocused
+	if m.editing {
+		panelStyle = s.Panel
+	}
 	dots := s.Faint.Render(m.pager.View())
 	inner := lipgloss.JoinVertical(lipgloss.Left,
 		m.listViewport.View(),
 		lipgloss.PlaceHorizontal(m.listViewport.Width(), lipgloss.Center, dots),
 	)
-	return style.RenderWithTitle(s.PanelFocused, icons.I.Replay+"Replay", inner, w, h)
+	return style.RenderWithTitle(panelStyle, icons.I.Replay+"Replay", inner, w, h)
 }
 
 func (m *Model) renderRequestPanel(w, h int) string {

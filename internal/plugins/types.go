@@ -11,10 +11,12 @@ type HookConfig struct {
 }
 
 type Plugin struct {
-	Name       string
-	FilePath   string
-	Enabled    bool
-	ConfigText string
+	Name        string
+	Description string
+	FilePath    string
+	Enabled     bool
+	ConfigText  string
+	Priority    int
 
 	L     *lua.LState
 	mu    sync.Mutex
@@ -35,30 +37,40 @@ func (p *Plugin) HookConfig(name string) (HookConfig, bool) {
 }
 
 type Info struct {
-	Name       string
-	FilePath   string
-	Enabled    bool
-	ConfigText string
-	Hooks      map[string]HookConfig
+	Name        string
+	Description string
+	FilePath    string
+	Enabled     bool
+	ConfigText  string
+	Priority    int
+	Hooks       map[string]HookConfig
 }
 
 func (p *Plugin) Info() Info {
+	p.mu.Lock()
+	enabled := p.Enabled
+	configText := p.ConfigText
+	p.mu.Unlock()
+
 	hooks := make(map[string]HookConfig, len(p.hooks))
 	for k, v := range p.hooks {
 		hooks[k] = v
 	}
 	return Info{
-		Name:       p.Name,
-		FilePath:   p.FilePath,
-		Enabled:    p.Enabled,
-		ConfigText: p.ConfigText,
-		Hooks:      hooks,
+		Name:        p.Name,
+		Description: p.Description,
+		FilePath:    p.FilePath,
+		Enabled:     enabled,
+		ConfigText:  configText,
+		Priority:    p.Priority,
+		Hooks:       hooks,
 	}
 }
 
 type PluginNotifMsg struct {
 	Title string
 	Body  string
+	Kind  string // "info", "success", "warning", "error"
 }
 
 type PluginQuitMsg struct {

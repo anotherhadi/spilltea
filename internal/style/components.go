@@ -28,15 +28,20 @@ func NewTextarea(showLineNumbers bool) textarea.Model {
 	ta.Prompt = ""
 	ta.ShowLineNumbers = showLineNumbers
 	ta.CharLimit = 0
+	ta.EndOfBufferCharacter = '~'
 	ts := ta.Styles()
 	ts.Focused.Base = lipgloss.NewStyle()
 	ts.Blurred.Base = lipgloss.NewStyle()
+	ts.Focused.Text = lipgloss.NewStyle().Foreground(S.Text)
 	ts.Focused.CursorLine = lipgloss.NewStyle().Background(S.Selection).Foreground(S.Text)
+	ts.Focused.CursorLineNumber = lipgloss.NewStyle().Background(S.Selection).Foreground(S.Primary).Bold(true)
+	ts.Focused.LineNumber = lipgloss.NewStyle().Foreground(S.Subtle)
 	ts.Focused.Placeholder = lipgloss.NewStyle().Foreground(S.Subtle)
-	ts.Blurred.Placeholder = lipgloss.NewStyle().Foreground(S.Subtle)
 	ts.Focused.EndOfBuffer = lipgloss.NewStyle().Foreground(S.SubtleBg)
-	ts.Blurred.EndOfBuffer = lipgloss.NewStyle().Foreground(S.SubtleBg)
 	ts.Blurred.Text = lipgloss.NewStyle().Foreground(S.MutedFg)
+	ts.Blurred.LineNumber = lipgloss.NewStyle().Foreground(S.SubtleBg)
+	ts.Blurred.Placeholder = lipgloss.NewStyle().Foreground(S.Subtle)
+	ts.Blurred.EndOfBuffer = lipgloss.NewStyle().Foreground(S.SubtleBg)
 	ta.SetStyles(ts)
 	return ta
 }

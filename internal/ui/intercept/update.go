@@ -13,6 +13,16 @@ import (
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
+	// Route non-key messages to textarea when editing so internal
+	// textarea messages (e.g. clipboard paste) are handled correctly.
+	if m.editing {
+		if _, ok := msg.(tea.KeyPressMsg); !ok {
+			var taCmd tea.Cmd
+			m.textarea, taCmd = m.textarea.Update(msg)
+			cmds = append(cmds, taCmd)
+		}
+	}
+
 	switch msg := msg.(type) {
 	case intercept.RequestArrivedMsg:
 		if !m.interceptEnabled {

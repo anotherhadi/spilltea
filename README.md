@@ -44,7 +44,7 @@ On startup, you choose:
 ## Plugin System
 
 Spilltea supports plugins written in **Lua**. Plugins are loaded from `~/.config/spilltea/plugins/` by default and do not require recompilation or access to the source code.
-For a full reference and examples, see the [plugin documentation](./.github/docs/plugins.md).
+For a full reference and examples, see the [plugin documentation](./.github/docs/plugins.md) or [plugin examples](./plugins/).
 
 ## Configuration
 
@@ -53,13 +53,15 @@ Check the default configuration with all the options [here](./internal/config/de
 
 ## CLI Flags
 
-| Flag | Short | Description |
-| ---- | ----- | ----------- |
-| `--config` | `-c` | Path to config file (default: `~/.config/spilltea/config.yaml`) |
-| `--host` | | Proxy host, overrides config |
-| `--port` | `-p` | Proxy port, overrides config |
-| `--project` | `-P` | Project name to open directly, or `tmp` for a temporary session |
-| `--version` | `-v` | Print version and exit |
+| Flag                    | Short | Description                                                                    |
+| ----------------------- | ----- | ------------------------------------------------------------------------------ |
+| `--config`              | `-c`  | Path to config file (default: `~/.config/spilltea/config.yaml`)                |
+| `--plugin-dir`          |       | Path to plugins dir, overrides config (default: `~/.config/spilltea/plugins/`) |
+| `--host`                |       | Proxy host, overrides config                                                   |
+| `--port`                | `-p`  | Proxy port, overrides config                                                   |
+| `--project`             | `-P`  | Project name to open directly, or `tmp` for a temporary session                |
+| `--version`             | `-v`  | Print version and exit                                                         |
+| `--add-default-plugins` |       | Add the default plugins to your plugins dir and exit                           |
 
 ## Deployment
 

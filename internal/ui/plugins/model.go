@@ -1,7 +1,6 @@
 package plugins
 
 import (
-	"os"
 	"strings"
 
 	"charm.land/bubbles/v2/help"
@@ -24,19 +23,20 @@ type Model struct {
 	filter   string
 	filtered []plugins.Info
 
-	listViewport viewport.Model
-	textarea     textarea.Model
-	filterInput  textinput.Model
-	filtering    bool
-	pager        paginator.Model
-	help         help.Model
+	listViewport   viewport.Model
+	detailViewport viewport.Model
+	textarea       textarea.Model
+	filterInput    textinput.Model
+	filtering      bool
+	pager          paginator.Model
+	help           help.Model
 
 	width  int
 	height int
 }
 
 func New(mgr *plugins.Manager) Model {
-	ta := style.NewTextarea(false)
+	ta := style.NewTextarea(true)
 	ta.Placeholder = "plugin configuration..."
 	ta.Blur()
 
@@ -44,12 +44,13 @@ func New(mgr *plugins.Manager) Model {
 	fi.Prompt = ""
 
 	return Model{
-		manager:      mgr,
-		listViewport: style.NewViewport(),
-		textarea:     ta,
-		filterInput:  fi,
-		pager:        style.NewPaginator(),
-		help:         style.NewHelp(),
+		manager:        mgr,
+		listViewport:   style.NewViewport(),
+		detailViewport: style.NewViewport(),
+		textarea:       ta,
+		filterInput:    fi,
+		pager:          style.NewPaginator(),
+		help:           style.NewHelp(),
 	}
 }
 
@@ -88,10 +89,27 @@ func (m *Model) recalcSizes() {
 	}
 
 	m.filterInput.SetWidth(inner - 2)
+
+	detailContentH := style.PanelContentH(detailH)
+	const headerH = 2
+	const configFixedH = 2 // blank line + label line
+	textareaH := max(3, detailContentH/3)
+	if textareaH > 12 {
+		textareaH = 12
+	}
+	configTotalH := 0
+	if m.hasConfig() {
+		configTotalH = configFixedH + textareaH
+	}
+	descVH := max(1, detailContentH-headerH-configTotalH)
+
+	m.detailViewport.SetWidth(inner)
+	m.detailViewport.SetHeight(descVH)
 	m.textarea.SetWidth(max(1, inner-2))
-	m.textarea.SetHeight(max(3, detailH-6))
+	m.textarea.SetHeight(max(3, textareaH))
 
 	m.refreshListViewport()
+	m.syncDetailViewport()
 }
 
 // Refresh reloads the plugin list from the manager.
@@ -126,6 +144,7 @@ func (m *Model) applyFilter() {
 	}
 	m.refreshListViewport()
 	m.syncTextarea()
+	m.syncDetailViewport()
 }
 
 func (m *Model) selected() (plugins.Info, bool) {
@@ -133,6 +152,15 @@ func (m *Model) selected() (plugins.Info, bool) {
 		return plugins.Info{}, false
 	}
 	return m.filtered[m.cursor], true
+}
+
+func (m *Model) hasConfig() bool {
+	info, ok := m.selected()
+	if !ok {
+		return false
+	}
+	_, has := info.Hooks["on_config"]
+	return has
 }
 
 func (m *Model) syncTextarea() {
@@ -147,6 +175,16 @@ func (m *Model) syncTextarea() {
 	m.textarea.SetValue(info.ConfigText)
 }
 
+func (m *Model) syncDetailViewport() {
+	info, ok := m.selected()
+	if !ok || info.Description == "" {
+		m.detailViewport.SetContent("")
+		return
+	}
+	desc := renderPluginDescription(info.Description, m.width-6)
+	m.detailViewport.SetContent(desc)
+}
+
 func (m *Model) refreshListViewport() {
 	if m.pager.PerPage > 0 {
 		m.pager.Page = m.cursor / m.pager.PerPage
@@ -155,15 +193,10 @@ func (m *Model) refreshListViewport() {
 	m.listViewport.SetContent(m.renderList())
 }
 
-func shortenPath(p string) string {
-	home := os.Getenv("HOME")
-	if home != "" && strings.HasPrefix(p, home) {
-		return "~" + p[len(home):]
-	}
-	return p
+type pluginsKeyMap struct {
+	editing   bool
+	hasConfig bool
 }
-
-type pluginsKeyMap struct{ editing bool }
 
 func (k pluginsKeyMap) ShortHelp() []key.Binding {
 	pk := keys.Keys.Plugins
@@ -172,7 +205,14 @@ func (k pluginsKeyMap) ShortHelp() []key.Binding {
 		esc := key.NewBinding(key.WithKeys(g.Escape.Keys()...), key.WithHelp(g.Escape.Help().Key, "save & exit"))
 		return []key.Binding{esc}
 	}
-	return []key.Binding{pk.Toggle, pk.EditConfig, pk.Filter}
+	scrollHint := key.NewBinding(
+		key.WithKeys(g.ScrollUp.Keys()...),
+		key.WithHelp(g.ScrollUp.Help().Key+"/"+g.ScrollDown.Help().Key, "scroll detail"),
+	)
+	if k.hasConfig {
+		return []key.Binding{pk.Toggle, pk.EditConfig, pk.Filter, scrollHint}
+	}
+	return []key.Binding{pk.Toggle, pk.Filter, scrollHint}
 }
 
 func (k pluginsKeyMap) FullHelp() [][]key.Binding {

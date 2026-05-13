@@ -44,11 +44,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case plugins.PluginNotifMsg:
 		cmd := plugins.WaitForNotif(m.pluginManager)
+		kind := notificationsUI.KindInfo
+		switch msg.Kind {
+		case "success":
+			kind = notificationsUI.KindSuccess
+		case "warning":
+			kind = notificationsUI.KindWarning
+		case "error":
+			kind = notificationsUI.KindError
+		}
 		notifCmd := func() tea.Msg {
 			return notificationsUI.NotificationMsg{
 				Title: msg.Title,
 				Body:  msg.Body,
-				Kind:  notificationsUI.KindInfo,
+				Kind:  kind,
 			}
 		}
 		return m, tea.Batch(cmd, notifCmd)

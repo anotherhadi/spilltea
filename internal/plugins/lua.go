@@ -26,8 +26,9 @@ func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 	L.SetGlobal("notif", L.NewFunction(func(L *lua.LState) int {
 		title := L.CheckString(1)
 		body := L.CheckString(2)
+		kind := L.OptString(3, "info")
 		select {
-		case mgr.Notifs <- PluginNotifMsg{Title: title, Body: body}:
+		case mgr.Notifs <- PluginNotifMsg{Title: title, Body: body, Kind: kind}:
 		default:
 		}
 		return 0
@@ -64,7 +65,87 @@ func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 		return 0
 	}))
 
-L.SetGlobal("quit", L.NewFunction(func(L *lua.LState) int {
+	L.SetGlobal("db_query", L.NewFunction(func(L *lua.LState) int {
+		if mgr.db == nil {
+			L.Push(lua.LNil)
+			L.Push(lua.LString("db not available"))
+			return 2
+		}
+		query := L.CheckString(1)
+		var args []any
+		for i := 2; i <= L.GetTop(); i++ {
+			switch v := L.Get(i).(type) {
+			case lua.LString:
+				args = append(args, string(v))
+			case lua.LNumber:
+				args = append(args, float64(v))
+			case lua.LBool:
+				args = append(args, bool(v))
+			default:
+				args = append(args, nil)
+			}
+		}
+		rows, err := mgr.db.Query(query, args...)
+		if err != nil {
+			L.Push(lua.LNil)
+			L.Push(lua.LString(err.Error()))
+			return 2
+		}
+		defer rows.Close()
+		cols, err := rows.Columns()
+		if err != nil {
+			L.Push(lua.LNil)
+			L.Push(lua.LString(err.Error()))
+			return 2
+		}
+		result := L.NewTable()
+		rowIdx := 1
+		for rows.Next() {
+			vals := make([]any, len(cols))
+			ptrs := make([]any, len(cols))
+			for i := range vals {
+				ptrs[i] = &vals[i]
+			}
+			if err := rows.Scan(ptrs...); err != nil {
+				L.Push(lua.LNil)
+				L.Push(lua.LString(err.Error()))
+				return 2
+			}
+			row := L.NewTable()
+			for i, col := range cols {
+				switch v := vals[i].(type) {
+				case int64:
+					L.SetField(row, col, lua.LNumber(v))
+				case float64:
+					L.SetField(row, col, lua.LNumber(v))
+				case string:
+					L.SetField(row, col, lua.LString(v))
+				case []byte:
+					L.SetField(row, col, lua.LString(string(v)))
+				case bool:
+					if v {
+						L.SetField(row, col, lua.LTrue)
+					} else {
+						L.SetField(row, col, lua.LFalse)
+					}
+				case nil:
+					L.SetField(row, col, lua.LNil)
+				}
+			}
+			L.RawSetInt(result, rowIdx, row)
+			rowIdx++
+		}
+		if err := rows.Err(); err != nil {
+			L.Push(lua.LNil)
+			L.Push(lua.LString(err.Error()))
+			return 2
+		}
+		L.Push(result)
+		L.Push(lua.LNil)
+		return 2
+	}))
+
+	L.SetGlobal("quit", L.NewFunction(func(L *lua.LState) int {
 		reason := L.OptString(1, "plugin requested quit")
 		select {
 		case mgr.Quit <- reason:

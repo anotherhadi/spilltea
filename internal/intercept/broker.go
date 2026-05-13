@@ -44,7 +44,12 @@ type Broker struct {
 	autoFwdMu      sync.RWMutex
 	autoFwdRegexes []*regexp.Regexp
 
-	onNewEntry func(db.Entry)
+	onBeforeNewEntry func(db.Entry) bool
+	onNewEntry       func(db.Entry)
+}
+
+func (b *Broker) SetOnBeforeNewEntry(cb func(db.Entry) bool) {
+	b.onBeforeNewEntry = cb
 }
 
 func (b *Broker) SetOnNewEntry(cb func(db.Entry)) {
@@ -165,7 +170,7 @@ func (b *Broker) SaveEntry(f *proxy.Flow) {
 			return
 		}
 	}
-	entry, err := d.InsertEntry(db.Entry{
+	pending := db.Entry{
 		Timestamp:   time.Now(),
 		Method:      r.Method,
 		Host:        r.URL.Host,
@@ -173,7 +178,13 @@ func (b *Broker) SaveEntry(f *proxy.Flow) {
 		StatusCode:  status,
 		RequestRaw:  FormatRawRequest(f),
 		ResponseRaw: FormatRawResponse(f),
-	})
+	}
+	if cb := b.onBeforeNewEntry; cb != nil {
+		if !cb(pending) {
+			return
+		}
+	}
+	entry, err := d.InsertEntry(pending)
 	if err == nil {
 		if cb := b.onNewEntry; cb != nil {
 			go cb(entry)

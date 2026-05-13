@@ -1,6 +1,7 @@
 # Plugins
 
 Spilltea supports Lua plugins that can intercept, modify, and analyze HTTP traffic.
+You can found some pre-built plugins [here](../../plugins/).
 
 ## Where to place plugins
 
@@ -14,26 +15,28 @@ Every plugin must declare a `Plugin` table and implement the hooks it wants to u
 
 ```lua
 Plugin = {
-  name = "My Plugin",
+  name        = "My Plugin",
+  description = "What this plugin does.",
+  priority    = 0,  -- higher = runs before other plugins (default: 0)
 
   -- Declare which hooks you use and whether they are synchronous.
-  on_start         = { sync = true  },
-  on_request       = { sync = true  },
-  on_response      = { sync = false },
-  on_history_entry = {},
-  on_quit          = {},
+  on_start          = { sync = true  },
+  on_request        = { sync = true  },
+  on_response       = { sync = false },
+  on_history_entry  = { sync = true  },
 }
 ```
 
 ### Hook reference
 
-| Hook                      | When called                 | Sync/async   | Return value        |
-| ------------------------- | --------------------------- | ------------ | ------------------- |
-| `on_start(config_text)`   | Once at startup             | always sync  | ignored             |
-| `on_quit()`               | When the app exits          | always sync  | ignored             |
-| `on_request(req)`         | Every request               | declared     | `"drop"`, `"forward"`, or `nil` (sync only) |
-| `on_response(req, res)`   | Every response              | declared     | `"drop"`, `"forward"`, or `nil` (sync only) |
-| `on_history_entry(entry)` | After a flow is saved to DB | always async | ignored             |
+| Hook                      | When called                          | Sync/async    | Return value (sync only)                              |
+| ------------------------- | ------------------------------------ | ------------- | ----------------------------------------------------- |
+| `on_config(config_text)`  | At startup and on config save        | always sync   | ignored                                               |
+| `on_start()`              | Once at startup, after `on_config`   | configurable  | ignored                                               |
+| `on_quit()`               | When the app exits                   | always sync   | ignored                                               |
+| `on_request(req)`         | Every request, before auto-forward   | configurable  | `"drop"`, `"forward"`, or `nil`                       |
+| `on_response(req, res)`   | Every response                       | configurable  | `"drop"`, `"forward"`, or `nil`                       |
+| `on_history_entry(entry)` | Sync: before DB insert / Async: after | configurable | `"skip"` (don't save), `"keep"` or `nil` (save)      |
 
 ## Request and response objects
 
@@ -80,7 +83,8 @@ Plugin = {
 log("message")
 
 -- Send a notification bubble in the TUI
-notif("Title", "Body text")
+-- kind is optional: "info" (default), "success", "warning", "error"
+notif("Title", "Body text", "warning")
 
 -- Create a finding (shown on the Findings page, persisted in DB)
 create_finding({
@@ -90,8 +94,8 @@ create_finding({
   severity    = "high",              -- info | low | medium | high | critical
 })
 
--- Check if a URL matches the current scope (whitelist/blacklist)
-local ok = is_in_scope("https://example.com/api/v1")
+-- Run a raw SQL query against the history DB
+local rows, err = db_query("SELECT id, host FROM entries WHERE host = ?", "example.com")
 
 -- Quit the app (useful for startup checks that fail)
 quit("reason message")
@@ -103,25 +107,44 @@ A finding is identified by `(plugin_name, key)`. If a finding with that pair alr
 
 ## Configuration
 
-Each plugin gets a **config textarea** on the Plugins page. The raw text is passed as-is to `on_start(config_text)`. Parse it however you like (line by line, key=value, JSON, etc.).
+Each plugin gets a **config textarea** on the Plugins page. The raw text is passed as-is to `on_config(config_text)`. Parse it however you like (line by line, key=value, JSON, etc.).
+
+`on_config` is called once at startup (before `on_start`) and again every time the user saves the config in the UI.
 
 ## Sync vs async
 
-- **`sync = true`**: spilltea waits for the hook to return before continuing. For `on_request`/`on_response` this blocks the proxy goroutine; the hook can return one of the values below.
-- **`sync = false`** (or omitted for supported hooks): the hook runs in a background goroutine. Return values are ignored. Use this for analysis and findings.
+- **`sync = true`**: spilltea waits for the hook to return before continuing. The hook can return a decision value (see below).
+- **`sync = false`** (default): the hook runs in a background goroutine. Return values are ignored.
 
-### Return values for `on_request` and `on_response` (sync only)
+### Return values for sync hooks
 
-| Return value | Effect |
-| ------------ | ------ |
-| `"drop"`    | The flow is dropped immediately and never shown in the intercept panel. |
-| `"forward"` | The flow is forwarded immediately without going through the intercept panel. |
+**`on_request` and `on_response`:**
+
+| Return value | Effect                                                                            |
+| ------------ | --------------------------------------------------------------------------------- |
+| `"drop"`     | The flow is dropped immediately and never shown in the intercept panel.           |
+| `"forward"`  | The flow is forwarded immediately without going through the intercept panel.      |
 | `nil`        | Normal behaviour: the flow appears in the intercept panel for the user to decide. |
 
-The `sync` declaration is only meaningful for `on_request` and `on_response`. The other hooks have fixed behaviour:
+**`on_history_entry` (sync only):**
 
-- `on_start` is **always synchronous**: plugins are initialised one by one before the first request is accepted.
-- `on_quit` is **always synchronous**: the app waits for all `on_quit` hooks before exiting.
-- `on_history_entry` is **always asynchronous**.
+| Return value        | Effect                                 |
+| ------------------- | -------------------------------------- |
+| `"skip"`            | The entry is not saved to the DB.      |
+| `"keep"` or `nil`   | The entry is saved normally.           |
 
-> A sync `on_request` or `on_response` hook that hangs will block traffic for that flow. There is no automatic timeout.
+Sync `on_history_entry` runs **before** the DB insert, so it can prevent an entry from ever appearing in history. Async `on_history_entry` runs **after** the insert and cannot affect it.
+
+## Priority
+
+Plugins with a higher `priority` value run before plugins with a lower value (default `0`). This matters for sync hooks that return a decision: the first plugin to return a non-nil value short-circuits the remaining plugins.
+
+```lua
+Plugin = {
+  name     = "Scopes",
+  priority = 100,  -- runs before all default-priority plugins
+  ...
+}
+```
+
+> A sync hook that hangs will block traffic for that flow. There is no automatic timeout.

@@ -33,6 +33,18 @@ func sendCmd(entry Entry, index int) tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
+	// Route non-key messages to textarea when editing so internal
+	// textarea messages (e.g. clipboard paste) are handled correctly.
+	if m.editing {
+		if _, ok := msg.(tea.KeyPressMsg); !ok {
+			var taCmd tea.Cmd
+			m.textarea, taCmd = m.textarea.Update(msg)
+			cmds = append(cmds, taCmd)
+		}
+	}
+
 	switch msg := msg.(type) {
 	case SendToReplayMsg:
 		entry := entryFromMsg(msg)
@@ -104,7 +116,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.updateNormalMode(msg)
 	}
 
-	return m, nil
+	return m, tea.Batch(cmds...)
 }
 
 func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {

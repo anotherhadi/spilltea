@@ -21,7 +21,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// Route non-key messages to textarea when editing so internal
+	// textarea messages (e.g. clipboard paste) are handled correctly.
+	if m.editing {
+		if _, ok := msg.(tea.KeyPressMsg); !ok {
+			var cmd tea.Cmd
+			m.textarea, cmd = m.textarea.Update(msg)
+			return m, cmd
+		}
+	}
+
 	switch msg := msg.(type) {
+	case tea.MouseWheelMsg:
+		if !m.editing {
+			switch msg.Button {
+			case tea.MouseWheelUp:
+				m.detailViewport.SetYOffset(m.detailViewport.YOffset() - 1)
+			case tea.MouseWheelDown:
+				m.detailViewport.SetYOffset(m.detailViewport.YOffset() + 1)
+			}
+		}
+
 	case tea.KeyPressMsg:
 		pk := keys.Keys.Plugins
 		g := keys.Keys.Global
@@ -90,15 +110,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, g.Up):
 			if m.cursor > 0 {
 				m.cursor--
-				m.refreshListViewport()
+				m.recalcSizes()
 				m.syncTextarea()
+				m.detailViewport.GotoTop()
 			}
 
 		case key.Matches(msg, g.Down):
 			if m.cursor < len(m.filtered)-1 {
 				m.cursor++
-				m.refreshListViewport()
+				m.recalcSizes()
 				m.syncTextarea()
+				m.detailViewport.GotoTop()
 			}
 
 		case key.Matches(msg, pk.Toggle):
@@ -115,10 +137,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, pk.EditConfig):
-			if _, ok := m.selected(); ok {
+			if _, ok := m.selected(); ok && m.hasConfig() {
 				m.editing = true
 				m.textarea.Focus()
 			}
+
+		case key.Matches(msg, g.ScrollUp):
+			step := m.detailViewport.Height() / 2
+			if step < 1 {
+				step = 1
+			}
+			m.detailViewport.SetYOffset(m.detailViewport.YOffset() - step)
+
+		case key.Matches(msg, g.ScrollDown):
+			step := m.detailViewport.Height() / 2
+			if step < 1 {
+				step = 1
+			}
+			m.detailViewport.SetYOffset(m.detailViewport.YOffset() + step)
 
 		case key.Matches(msg, g.Help):
 			m.help.ShowAll = !m.help.ShowAll

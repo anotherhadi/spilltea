@@ -1,10 +1,13 @@
 package plugins
 
 import (
+	"path/filepath"
 	"strings"
 
+	"charm.land/glamour/v2"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/anotherhadi/spilltea/internal/config"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
@@ -27,22 +30,28 @@ func (m Model) View() tea.View {
 
 func (m *Model) renderListPanel(w, h int) string {
 	s := style.S
+	panelStyle := s.PanelFocused
+	if m.editing {
+		panelStyle = s.Panel
+	}
 	dots := s.Faint.Render(m.pager.View())
 	inner := lipgloss.JoinVertical(lipgloss.Left,
 		m.listViewport.View(),
 		lipgloss.PlaceHorizontal(m.listViewport.Width(), lipgloss.Center, dots),
 	)
-	return style.RenderWithTitle(s.PanelFocused, icons.I.Plugin+"Plugins", inner, w, h)
+	return style.RenderWithTitle(panelStyle, icons.I.Plugin+"Plugins", inner, w, h)
 }
 
 func (m *Model) renderDetailPanel(h int) string {
 	s := style.S
+	panelStyle := s.Panel
+	if m.editing {
+		panelStyle = s.PanelFocused
+	}
 	info, ok := m.selected()
 	if !ok {
-		return style.RenderWithTitle(s.Panel, "Config", "", m.width, h)
+		return style.RenderWithTitle(panelStyle, "Detail", "", m.width, h)
 	}
-
-	var sb strings.Builder
 
 	statusSt := lipgloss.NewStyle().Foreground(s.Error)
 	if info.Enabled {
@@ -52,22 +61,52 @@ func (m *Model) renderDetailPanel(h int) string {
 	if info.Enabled {
 		status = "enabled"
 	}
-	sb.WriteString(s.Bold.Render(info.Name) + "  " + statusSt.Render(status) + "\n")
-	sb.WriteString(s.Faint.Render(shortenPath(info.FilePath)) + "\n\n")
 
-	if m.editing {
-		escKey := keys.Keys.Global.Escape.Help().Key
-		sb.WriteString(s.Faint.Render("editing config (" + escKey + " to save):"))
-	} else {
-		editKey := keys.Keys.Plugins.EditConfig.Help().Key
-		sb.WriteString(s.Faint.Render("config (" + editKey + " to edit):"))
+	pad := lipgloss.NewStyle().Padding(0, 1)
+
+	header := pad.Render(
+		s.Bold.Render(info.Name) + "  " + statusSt.Render(status) + "\n" +
+			s.Faint.Render(filepath.Base(info.FilePath)),
+	)
+
+	parts := []string{header, m.detailViewport.View()}
+
+	if m.hasConfig() {
+		var configLabel string
+		if m.editing {
+			escKey := keys.Keys.Global.Escape.Help().Key
+			configLabel = pad.Render(s.Faint.Render("editing config (" + escKey + " to save):"))
+		} else {
+			editKey := keys.Keys.Plugins.EditConfig.Help().Key
+			configLabel = pad.Render(s.Faint.Render("config (" + editKey + " to edit):"))
+		}
+		parts = append(parts, "", configLabel, pad.Render(m.textarea.View()))
 	}
 
-	inner := lipgloss.JoinVertical(lipgloss.Left,
-		lipgloss.NewStyle().Padding(0, 1).Render(sb.String()),
-		lipgloss.NewStyle().Padding(0, 1).Render(m.textarea.View()),
+	inner := lipgloss.JoinVertical(lipgloss.Left, parts...)
+	return style.RenderWithTitle(panelStyle, "Detail", inner, m.width, h)
+}
+
+func renderPluginDescription(desc string, width int) string {
+	desc = strings.TrimSpace(desc)
+	lines := strings.Split(desc, "\n")
+	for i, l := range lines {
+		lines[i] = strings.TrimLeft(l, " \t")
+	}
+	desc = strings.Join(lines, "\n")
+
+	r, err := glamour.NewTermRenderer(
+		glamour.WithStyles(style.GlamourStyleConfig(config.Global)),
+		glamour.WithWordWrap(width),
 	)
-	return style.RenderWithTitle(s.Panel, "Detail", inner, m.width, h)
+	if err != nil {
+		return desc
+	}
+	out, err := r.Render(desc)
+	if err != nil {
+		return desc
+	}
+	return strings.Trim(out, "\n")
 }
 
 func (m *Model) renderStatusBar() string {
@@ -81,9 +120,9 @@ func (m *Model) renderStatusBar() string {
 		escKey := keys.Keys.Global.Escape.Help().Key
 		accent := lipgloss.NewStyle().Foreground(s.Primary)
 		filterLine := pad.Render(accent.Render(filterKey) + " " + s.Bold.Render(m.filter) + s.Faint.Render("  "+escKey+" to clear"))
-		return lipgloss.JoinVertical(lipgloss.Left, filterLine, pad.Render(m.help.View(pluginsKeyMap{editing: m.editing})))
+		return lipgloss.JoinVertical(lipgloss.Left, filterLine, pad.Render(m.help.View(pluginsKeyMap{editing: m.editing, hasConfig: m.hasConfig()})))
 	}
-	return pad.Render(m.help.View(pluginsKeyMap{editing: m.editing}))
+	return pad.Render(m.help.View(pluginsKeyMap{editing: m.editing, hasConfig: m.hasConfig()}))
 }
 
 func (m *Model) renderList() string {

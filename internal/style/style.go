@@ -24,6 +24,7 @@ type Styles struct {
 
 	Panel        lipgloss.Style
 	PanelFocused lipgloss.Style
+	PanelEditing lipgloss.Style
 
 	PagerDotActive   string
 	PagerDotInactive string
@@ -43,6 +44,7 @@ func Init(cfg *config.Config) {
 	warning := lipgloss.Color("#" + c.Base09)   // Orange: warnings
 	success := lipgloss.Color("#" + c.Base0B)   // Green: success
 	primary := lipgloss.Color("#" + c.Base0D)   // Accent: primary
+	purple := lipgloss.Color("#" + c.Base0E)    // Purple: editing
 
 	S = &Styles{
 		Primary:   primary,
@@ -65,6 +67,10 @@ func Init(cfg *config.Config) {
 		PanelFocused: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(primary),
+
+		PanelEditing: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(purple),
 
 		PagerDotActive:   lipgloss.NewStyle().Foreground(primary).SetString("•").String(),
 		PagerDotInactive: lipgloss.NewStyle().Foreground(subtle).SetString("•").String(),

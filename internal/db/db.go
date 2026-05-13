@@ -68,6 +68,12 @@ CREATE TABLE IF NOT EXISTS replay_entries (
 	return err
 }
 
+// Query executes a SQL query and returns the rows. The caller must close the
+// returned rows. Args are passed as positional parameters.
+func (d *DB) Query(query string, args ...any) (*sql.Rows, error) {
+	return d.conn.Query(query, args...)
+}
+
 func (d *DB) Close() error {
 	if d == nil {
 		return nil
