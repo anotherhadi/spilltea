@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 
 	tea "charm.land/bubbletea/v2"
+	spilltea "github.com/anotherhadi/spilltea"
 	"github.com/anotherhadi/spilltea/internal/config"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/intercept"
 	"github.com/anotherhadi/spilltea/internal/keys"
-	spilltea "github.com/anotherhadi/spilltea"
 	"github.com/anotherhadi/spilltea/internal/style"
 	appUI "github.com/anotherhadi/spilltea/internal/ui/app"
 	homeUI "github.com/anotherhadi/spilltea/internal/ui/home"
@@ -27,6 +27,7 @@ func main() {
 		flagPluginsDir        = flag.String("plugins-dir", "", "path to plugins dir (overrides config)")
 		flagHost              = flag.String("host", "", "proxy host (overrides config)")
 		flagPort              = flag.IntP("port", "p", 0, "proxy port (overrides config)")
+		flagUpstreamProxy     = flag.String("upstream-proxy", "", "upstream proxy URL, e.g. http://user:pass@host:8888 (overrides config)")
 		flagVersion           = flag.BoolP("version", "v", false, "print version")
 		flagProject           = flag.StringP("project", "P", "", `project name to open directly, or "tmp" for a temporary session`)
 		flagAddDefaultPlugins = flag.Bool("add-default-plugins", false, "copy built-in example plugins into the plugins dir and exit")
@@ -84,6 +85,9 @@ func main() {
 	}
 	if *flagPort != 0 {
 		config.Global.App.Port = *flagPort
+	}
+	if *flagUpstreamProxy != "" {
+		config.Global.App.UpstreamProxy = *flagUpstreamProxy
 	}
 
 	addr := fmt.Sprintf("%s:%d", config.Global.App.Host, config.Global.App.Port)

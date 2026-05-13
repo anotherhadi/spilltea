@@ -60,6 +60,7 @@ Check the default configuration with all the options [here](./internal/config/de
 | `--host`                |       | Proxy host, overrides config                                                   |
 | `--port`                | `-p`  | Proxy port, overrides config                                                   |
 | `--project`             | `-P`  | Project name to open directly, or `tmp` for a temporary session                |
+| `--upstream-proxy`      |       | Upstream proxy URL, overrides config (e.g. `http://user:pass@host:8888`)       |
 | `--version`             | `-v`  | Print version and exit                                                         |
 | `--add-default-plugins` |       | Add the default plugins to your plugins dir and exit                           |
 

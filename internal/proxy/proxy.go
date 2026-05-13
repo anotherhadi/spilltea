@@ -108,6 +108,7 @@ func Start(broker *intercept.Broker, mgr *plugins.Manager) error {
 		Addr:              addr,
 		StreamLargeBodies: 1024 * 1024 * 5,
 		CaRootPath:        caPath,
+		Upstream:          cfg.UpstreamProxy,
 	}
 
 	p, err := goproxy.NewProxy(opts)

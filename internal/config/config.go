@@ -18,11 +18,12 @@ type Config struct {
 	Version string `mapstructure:"-"`
 
 	App struct {
-		Host       string `mapstructure:"host"`
-		Port       int    `mapstructure:"port"`
-		CertDir    string `mapstructure:"cert_dir"`
-		ProjectDir string `mapstructure:"project_dir"`
-		PluginsDir string `mapstructure:"plugins_dir"`
+		Host          string `mapstructure:"host"`
+		Port          int    `mapstructure:"port"`
+		CertDir       string `mapstructure:"cert_dir"`
+		ProjectDir    string `mapstructure:"project_dir"`
+		PluginsDir    string `mapstructure:"plugins_dir"`
+		UpstreamProxy string `mapstructure:"upstream_proxy"`
 	} `mapstructure:"app"`
 
 	TUI struct {

@@ -4,6 +4,7 @@ app:
   cert_dir: ~/.local/share/spilltea
   project_dir: ~/.local/share/spilltea
   plugins_dir: ~/.config/spilltea/plugins
+  upstream_proxy: "" # e.g. http://corporate-proxy:8888 or http://user:pass@host:8888
 
 intercept:
   default_intercept_enabled: true
