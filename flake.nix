@@ -14,7 +14,7 @@
       (system: f system (import nixpkgs {inherit system;}));
 
     pname = "spilltea";
-    version = "0.0.1";
+    version = "0.0.3";
 
     ldflags = ["-s" "-w" "-X main.version=${version}"];
   in {
