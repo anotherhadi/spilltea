@@ -66,6 +66,8 @@ func (pr parsedRequest) fullURL() string {
 func formatAs(id, raw, scheme string) string {
 	pr := parseRaw(raw, scheme)
 	switch id {
+	case "raw":
+		return raw
 	case "curl":
 		return toCurl(pr)
 	case "python":

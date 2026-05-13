@@ -13,6 +13,7 @@ import (
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/plugins"
 	proxyPkg "github.com/anotherhadi/spilltea/internal/proxy"
+	copyUI "github.com/anotherhadi/spilltea/internal/ui/components/copy"
 	copyasUI "github.com/anotherhadi/spilltea/internal/ui/components/copyas"
 	notificationsUI "github.com/anotherhadi/spilltea/internal/ui/components/notifications"
 	diffUI "github.com/anotherhadi/spilltea/internal/ui/diff"
@@ -78,6 +79,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		var cmd tea.Cmd
 		m.copyAs, cmd = m.copyAs.Update(msg)
+		return m, cmd
+	}
+
+	if m.copy.IsOpen() {
+		if ws, ok := msg.(tea.WindowSizeMsg); ok {
+			m.width = ws.Width
+			m.height = ws.Height
+			m.copy.SetSize(ws.Width, ws.Height)
+			m.resizeChildren()
+			return m, nil
+		}
+		var cmd tea.Cmd
+		m.copy, cmd = m.copy.Update(msg)
 		return m, cmd
 	}
 
@@ -161,7 +175,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if !m.activeIsEditing() {
 			switch {
-			case key.Matches(msg, keys.Keys.Global.CopyRequest):
+			case key.Matches(msg, keys.Keys.Global.CopyAs):
 				if m.page == pageDiff {
 					if raw := m.diff.CurrentRaw(); raw != "" {
 						m.copyAs.SetSize(m.width, m.height)
@@ -178,6 +192,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							Scheme:     m.intercept.CurrentScheme(),
 						})
 					}
+				}
+				return m, nil
+
+			case key.Matches(msg, keys.Keys.Global.Copy):
+				var raw, scheme string
+				switch m.page {
+				case pageIntercept:
+					raw = m.intercept.CurrentRaw()
+					scheme = m.intercept.CurrentScheme()
+				case pageDiff:
+					raw = m.diff.CurrentRaw()
+					scheme = "https"
+				case pageHistory:
+					raw = m.history.CurrentRaw()
+					scheme = m.history.CurrentScheme()
+				case pageReplay:
+					raw = m.replay.CurrentRaw()
+					scheme = m.replay.CurrentScheme()
+				}
+				if raw != "" {
+					m.copy.SetSize(m.width, m.height)
+					m.copy.Open(copyUI.OpenMsg{RawRequest: raw, Scheme: scheme})
 				}
 				return m, nil
 

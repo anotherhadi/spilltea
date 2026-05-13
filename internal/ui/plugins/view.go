@@ -50,7 +50,7 @@ func (m *Model) renderDetailPanel(h int) string {
 	}
 	info, ok := m.selected()
 	if !ok {
-		return style.RenderWithTitle(panelStyle, "Detail", "", m.width, h)
+		return style.RenderWithTitle(panelStyle, icons.I.Detail+"Detail", "", m.width, h)
 	}
 
 	statusSt := lipgloss.NewStyle().Foreground(s.Error)
@@ -84,7 +84,7 @@ func (m *Model) renderDetailPanel(h int) string {
 	}
 
 	inner := lipgloss.JoinVertical(lipgloss.Left, parts...)
-	return style.RenderWithTitle(panelStyle, "Detail", inner, m.width, h)
+	return style.RenderWithTitle(panelStyle, icons.I.Detail+"Detail", inner, m.width, h)
 }
 
 func renderPluginDescription(desc string, width int) string {

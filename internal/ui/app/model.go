@@ -13,6 +13,7 @@ import (
 	"github.com/anotherhadi/spilltea/internal/intercept"
 	"github.com/anotherhadi/spilltea/internal/plugins"
 	proxyPkg "github.com/anotherhadi/spilltea/internal/proxy"
+	copyUI "github.com/anotherhadi/spilltea/internal/ui/components/copy"
 	copyasUI "github.com/anotherhadi/spilltea/internal/ui/components/copyas"
 	notificationsUI "github.com/anotherhadi/spilltea/internal/ui/components/notifications"
 	diffUI "github.com/anotherhadi/spilltea/internal/ui/diff"
@@ -66,6 +67,7 @@ type Model struct {
 	pluginsPage   pluginsUI.Model
 	findingsPage  findingsUI.Model
 	copyAs        copyasUI.Model
+	copy          copyUI.Model
 	notifications notificationsUI.Model
 }
 
@@ -87,6 +89,7 @@ func New(broker *intercept.Broker, name, path string) Model {
 		pluginsPage:   pluginsUI.New(mgr),
 		findingsPage:  findingsUI.New(),
 		copyAs:        copyasUI.New(),
+		copy:          copyUI.New(),
 		notifications: notificationsUI.New(),
 		sidebarState:  sidebarState(cfg.TUI.DefaultSidebarState),
 	}

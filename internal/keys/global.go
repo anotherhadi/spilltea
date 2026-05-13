@@ -15,7 +15,8 @@ type GlobalKeyMap struct {
 	Left          key.Binding
 	Right         key.Binding
 	CycleFocus    key.Binding
-	CopyRequest   key.Binding
+	CopyAs   key.Binding
+	Copy          key.Binding
 	Escape        key.Binding
 	SendToReplay  key.Binding
 	ScrollUp      key.Binding
@@ -34,7 +35,8 @@ func newGlobalKeyMap(cfg config.GlobalKeys) GlobalKeyMap {
 		Left:          binding(cfg.Left, "scroll left"),
 		Right:         binding(cfg.Right, "scroll right"),
 		CycleFocus:    binding(cfg.CycleFocus, "cycle focus"),
-		CopyRequest:   binding(cfg.CopyRequest, "copy as..."),
+		CopyAs:   binding(cfg.CopyAs, "copy as..."),
+		Copy:          binding(cfg.Copy, "copy..."),
 		Escape:        key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")),
 		SendToReplay:  binding(cfg.SendToReplay, "send to replay"),
 		ScrollUp:      binding(cfg.ScrollUp, "scroll up"),
@@ -47,7 +49,7 @@ func (g GlobalKeyMap) Bindings() []key.Binding {
 	return []key.Binding{
 		g.Up, g.Down, g.Left, g.Right, g.CycleFocus,
 		g.Quit, g.Escape, g.Help,
-		g.OpenLogs, g.ToggleSidebar, g.CopyRequest,
+		g.OpenLogs, g.ToggleSidebar, g.CopyAs, g.Copy,
 		g.SendToReplay, g.SendToDiff,
 		g.ScrollUp, g.ScrollDown,
 	}

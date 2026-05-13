@@ -68,6 +68,23 @@ func (m Model) Init() tea.Cmd { return nil }
 
 func (m Model) IsEditing() bool { return m.editing }
 
+func (m Model) CurrentRaw() string {
+	if len(m.entries) == 0 || m.cursor >= len(m.entries) {
+		return ""
+	}
+	return m.entries[m.cursor].RequestRaw
+}
+
+func (m Model) CurrentScheme() string {
+	if len(m.entries) == 0 || m.cursor >= len(m.entries) {
+		return "https"
+	}
+	if s := m.entries[m.cursor].Scheme; s != "" {
+		return s
+	}
+	return "https"
+}
+
 func (m *Model) SetDB(d *db.DB) {
 	m.database = d
 	if d == nil {

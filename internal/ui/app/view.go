@@ -22,6 +22,13 @@ func (m Model) View() tea.View {
 		return v
 	}
 
+	if m.copy.IsOpen() {
+		v := tea.NewView(m.copy.View(normal))
+		v.AltScreen = true
+		v.MouseMode = tea.MouseModeCellMotion
+		return v
+	}
+
 	rendered := normal
 	if m.notifications.HasNotifications() {
 		rendered = m.notifications.View(normal)

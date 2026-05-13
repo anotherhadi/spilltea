@@ -10,7 +10,8 @@ type GlobalKeys struct {
 	Left          string `mapstructure:"left"`
 	Right         string `mapstructure:"right"`
 	CycleFocus    string `mapstructure:"cycle_focus"`
-	CopyRequest   string `mapstructure:"copy_request"`
+	CopyAs string `mapstructure:"copy_as"`
+	Copy   string `mapstructure:"copy"`
 	SendToReplay  string `mapstructure:"send_to_replay"`
 	ScrollUp      string `mapstructure:"scroll_up"`
 	ScrollDown    string `mapstructure:"scroll_down"`

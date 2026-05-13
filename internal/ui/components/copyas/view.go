@@ -26,10 +26,10 @@ func (m *Model) View(background string) string {
 	popupH := m.popupHeight()
 	popup := style.RenderWithTitle(border, "Copy as", inner, popupInnerW+2, popupH)
 
-	return overlayCenter(background, popup, m.width, m.height)
+	return OverlayCenter(background, popup, m.width, m.height)
 }
 
-func overlayCenter(bg, popup string, w, h int) string {
+func OverlayCenter(bg, popup string, w, h int) string {
 	s := style.S
 
 	stripped := ansi.Strip(bg)

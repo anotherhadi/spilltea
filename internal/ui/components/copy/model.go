@@ -1,9 +1,10 @@
-package copyas
+package copy
 
 import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strings"
 
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
@@ -11,10 +12,8 @@ import (
 	"github.com/anotherhadi/spilltea/internal/style"
 )
 
-const popupInnerW = 46
+const popupInnerW = 40
 
-// writeClipboard uses the OSC 52 terminal escape sequence to set the clipboard.
-// Supported by most modern terminals (foot, kitty, wezterm, alacritty, xterm…).
 func writeClipboard(text string) {
 	encoded := base64.StdEncoding.EncodeToString([]byte(text))
 	fmt.Fprintf(os.Stderr, "\033]52;c;%s\a", encoded)
@@ -25,23 +24,21 @@ type OpenMsg struct {
 	Scheme     string
 }
 
-type formatItem struct {
+type copyItem struct {
 	id    string
 	title string
 	desc  string
 }
 
-func (f formatItem) Title() string       { return f.title }
-func (f formatItem) Description() string { return f.desc }
-func (f formatItem) FilterValue() string { return f.title }
+func (c copyItem) Title() string       { return c.title }
+func (c copyItem) Description() string { return c.desc }
+func (c copyItem) FilterValue() string { return c.title }
 
-var allFormats = []list.Item{
-	formatItem{"raw", "Raw", "raw HTTP request"},
-	formatItem{"curl", "cURL", "command line HTTP request"},
-	formatItem{"python", "Python", "requests library"},
-	formatItem{"go", "Go", "net/http package"},
-	formatItem{"ffuf", "FFUF", "web fuzzer: FUZZ in query string"},
-	formatItem{"markdown", "Markdown", "formatted for documentation"},
+var allItems = []list.Item{
+	copyItem{"raw", "Raw", "full HTTP request"},
+	copyItem{"headers", "Headers", "request headers only"},
+	copyItem{"body", "Body", "request body only"},
+	copyItem{"url", "URL", "request URL"},
 }
 
 type Model struct {
@@ -69,7 +66,7 @@ func New() Model {
 		BorderForeground(s.Primary).
 		Foreground(s.MutedFg).PaddingLeft(1)
 
-	l := list.New(allFormats, delegate, popupInnerW, 8)
+	l := list.New(allItems, delegate, popupInnerW, 8)
 	l.SetShowTitle(false)
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
@@ -102,7 +99,7 @@ func (m *Model) SetSize(w, h int) {
 }
 
 func (m Model) popupHeight() int {
-	h := 14
+	h := 12
 	if m.height > 0 && m.height-4 < h {
 		h = m.height - 4
 	}
@@ -112,7 +109,57 @@ func (m Model) popupHeight() int {
 	return h
 }
 
-// listHeight = panel content area - hint line (1)
 func (m Model) listHeight() int {
 	return style.PanelContentH(m.popupHeight()) - 1
+}
+
+func (m Model) extract(id string) string {
+	raw := m.rawRequest
+	lines := strings.Split(strings.ReplaceAll(raw, "\r\n", "\n"), "\n")
+
+	switch id {
+	case "raw":
+		return raw
+
+	case "headers":
+		var sb strings.Builder
+		for _, l := range lines[1:] {
+			if l == "" {
+				break
+			}
+			sb.WriteString(l + "\n")
+		}
+		return strings.TrimRight(sb.String(), "\n")
+
+	case "body":
+		for i, l := range lines {
+			if l == "" && i > 0 {
+				return strings.TrimRight(strings.Join(lines[i+1:], "\n"), "\n")
+			}
+		}
+		return ""
+
+	case "url":
+		scheme := m.scheme
+		if scheme == "" {
+			scheme = "https"
+		}
+		var host, path string
+		if len(lines) > 0 {
+			parts := strings.SplitN(lines[0], " ", 3)
+			if len(parts) >= 2 {
+				path = parts[1]
+			}
+		}
+		for _, l := range lines[1:] {
+			if l == "" {
+				break
+			}
+			if kv := strings.SplitN(l, ": ", 2); len(kv) == 2 && strings.EqualFold(kv[0], "host") {
+				host = strings.TrimSpace(kv[1])
+			}
+		}
+		return scheme + "://" + host + path
+	}
+	return raw
 }

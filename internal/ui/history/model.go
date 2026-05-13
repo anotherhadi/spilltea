@@ -55,6 +55,15 @@ func (m Model) IsEditing() bool {
 	return m.searchKind != searchKindOff && !m.searchAccepted
 }
 
+func (m Model) CurrentRaw() string {
+	if len(m.entries) == 0 || m.cursor >= len(m.entries) {
+		return ""
+	}
+	return m.entries[m.cursor].RequestRaw
+}
+
+func (m Model) CurrentScheme() string { return "https" }
+
 // RefreshCmd returns the appropriate load command given the current search state.
 // The app model should call this instead of LoadEntriesCmd directly so that
 // background refreshes re-run the active search rather than resetting it.
