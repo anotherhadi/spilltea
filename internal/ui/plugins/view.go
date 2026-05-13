@@ -15,7 +15,7 @@ import (
 
 func (m Model) View() tea.View {
 	if m.width == 0 || m.manager == nil {
-		return tea.NewView(style.S.Faint.Render("\nno plugins loaded"))
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, style.S.Faint.Render("    (._.)~*.'\n no plugins loaded")))
 	}
 
 	listH, detailH := style.SplitH(m.height, m.renderStatusBar(), 0.4)

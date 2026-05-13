@@ -12,6 +12,7 @@ import (
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
@@ -259,11 +260,11 @@ func (m *Model) refreshBody() {
 	m.requestViewport.SetXOffset(0)
 
 	if e.Sending {
-		m.responseViewport.SetContent(style.HighlightHTTP("Sending..."))
+		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render("  (ﾉ◕ヮ◕)ﾉ*:･ﾟ\n   sending...")))
 	} else if e.ResponseRaw != "" {
 		m.responseViewport.SetContent(style.HighlightHTTP(e.ResponseRaw))
 	} else {
-		m.responseViewport.SetContent("")
+		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render("    ( •_•)>⌐■\npress send to fire")))
 	}
 	m.responseViewport.SetYOffset(0)
 	m.responseViewport.SetXOffset(0)
