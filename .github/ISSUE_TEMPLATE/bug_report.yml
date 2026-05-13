@@ -1,0 +1,57 @@
+name: "🐞 Bug Report"
+description: Report a reproducible error
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of the issue.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Step-by-step instructions to trigger the bug.
+      placeholder: |
+        1. ...
+        2. ...
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened instead.
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "e.g. Ubuntu 24.04, macOS 15"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: spilltea version
+      description: Output of `spilltea -v`
+      placeholder: "e.g. v0.3.1"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Logs, screenshots, or anything else relevant.
+    validations:
+      required: false

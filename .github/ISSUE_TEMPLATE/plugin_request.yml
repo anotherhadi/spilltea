@@ -1,0 +1,52 @@
+name: "🧩 Plugin Request"
+description: Suggest a plugin idea or propose an existing plugin
+title: "[PLUGIN] "
+labels: ["plugin"]
+body:
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request type
+      description: Are you proposing an idea or an already-built plugin?
+      options:
+        - "Plugin idea — I have an idea but haven't built it"
+        - "Plugin proposal — I have already built a plugin"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: >
+        **If this is an idea:** describe what the plugin would do and the problem it solves.
+        **If this is a proposal:** describe what your plugin does and link to its repository.
+      placeholder: "This plugin would..."
+    validations:
+      required: true
+
+  - type: input
+    id: repo
+    attributes:
+      label: Repository (proposals only)
+      description: Link to the plugin repository, if it exists.
+      placeholder: "https://github.com/..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use case
+      description: Who would benefit from this plugin and in what scenario?
+      placeholder: "Useful when testing APIs that..."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Screenshots, mockups, related issues, or anything else relevant.
+    validations:
+      required: false
