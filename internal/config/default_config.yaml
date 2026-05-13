@@ -13,13 +13,13 @@ intercept:
     - '\.(js|css|png|gif|ico|woff2?|ttf|svg)(\?.*)?$'
 
 replay:
-  switch_to_page_on_send: false
+  switch_to_page_on_send: true
 
 history:
-  skip_duplicates: false # if true, skip saving entries with the same method, host, path and body
+  skip_duplicates: true # if true, skip saving entries with the same method, host, path and body
 
 tui:
-  use_nerdfont_icons: true
+  use_nerdfont_icons: false
   default_sidebar_state: "expanded" # hidden, collapsed, expanded
   pretty_print_body: true # auto-indent JSON and HTML response bodies
   colors:
@@ -62,7 +62,7 @@ keybindings:
     forward_all: "F"
     drop: "d"
     drop_all: "D"
-    toggle_intercept: "a"
+    toggle_intercept: "i"
     capture_response: "r"
     undo_edits: "ctrl+z"
     edit: "e,enter"
