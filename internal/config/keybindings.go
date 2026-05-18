@@ -66,6 +66,13 @@ type PluginsKeys struct {
 	Filter     string `mapstructure:"filter"`
 }
 
+type DocsKeys struct {
+	Search      string `mapstructure:"search"`
+	SearchReset string `mapstructure:"search_reset"`
+	SearchNext  string `mapstructure:"search_next"`
+	SearchPrev  string `mapstructure:"search_prev"`
+}
+
 type Keybindings struct {
 	Global    GlobalKeys    `mapstructure:"global"`
 	Intercept InterceptKeys `mapstructure:"intercept"`
@@ -75,4 +82,5 @@ type Keybindings struct {
 	Diff      DiffKeys      `mapstructure:"diff"`
 	Findings  FindingsKeys  `mapstructure:"findings"`
 	Plugins   PluginsKeys   `mapstructure:"plugins"`
+	Docs      DocsKeys      `mapstructure:"docs"`
 }

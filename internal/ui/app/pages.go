@@ -126,6 +126,7 @@ var pageRegistry = []pageEntry{
 			m.docs = updated.(docsUI.Model)
 			return cmd
 		},
-		resize: func(m *Model, w, h int) { m.docs.SetSize(w, h) },
+		isEditing: func(m *Model) bool { return m.docs.IsEditing() },
+		resize:    func(m *Model, w, h int) { m.docs.SetSize(w, h) },
 	},
 }

@@ -16,6 +16,7 @@ type KeyMap struct {
 	Diff      DiffKeyMap
 	Findings  FindingsKeyMap
 	Plugins   PluginsKeyMap
+	Docs      DocsKeyMap
 }
 
 var Keys *KeyMap
@@ -31,6 +32,7 @@ func Init(cfg *config.Config) {
 		Diff:      newDiffKeyMap(kb.Diff),
 		Findings:  newFindingsKeyMap(kb.Findings),
 		Plugins:   newPluginsKeyMap(kb.Plugins),
+		Docs:      newDocsKeyMap(kb.Docs),
 	}
 }
 

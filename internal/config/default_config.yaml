@@ -98,3 +98,9 @@ keybindings:
     toggle: "space"
     edit_config: "e,enter"
     filter: "/"
+
+  docs:
+    search: "/"
+    search_reset: "r"
+    search_next: "n"
+    search_prev: "N"

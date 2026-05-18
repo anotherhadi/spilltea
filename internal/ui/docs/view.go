@@ -2,6 +2,8 @@ package docs
 
 import (
 	"bytes"
+	"fmt"
+	"strings"
 	"text/template"
 
 	tea "charm.land/bubbletea/v2"
@@ -9,6 +11,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/anotherhadi/spilltea/internal/config"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/charmbracelet/x/ansi"
 )
 
 func windowStyle() lipgloss.Style {
@@ -19,9 +22,22 @@ func windowStyle() lipgloss.Style {
 }
 
 func (e Model) View() tea.View {
+	statusBar := e.renderStatusBar()
+	if len(e.matches) > 0 {
+		var countText string
+		if e.searching {
+			countText = fmt.Sprintf("%d matches", len(e.matches))
+		} else {
+			countText = fmt.Sprintf("%d/%d", e.matchIndex+1, len(e.matches))
+		}
+		count := lipgloss.NewStyle().Padding(0, 1).
+			Foreground(style.S.MutedFg).
+			Render(countText)
+		statusBar = lipgloss.JoinHorizontal(lipgloss.Top, statusBar, count)
+	}
 	return tea.NewView(lipgloss.JoinVertical(lipgloss.Left,
 		windowStyle().Render(e.viewport.View()),
-		e.renderStatusBar(),
+		statusBar,
 	))
 }
 
@@ -50,5 +66,10 @@ func (m *Model) renderMarkdown() {
 	)
 
 	str, _ := renderer.Render(processed.String())
-	m.viewport.SetContent(str)
+	m.renderedLines = strings.Split(str, "\n")
+	m.strippedLines = make([]string, len(m.renderedLines))
+	for i, l := range m.renderedLines {
+		m.strippedLines[i] = ansi.Strip(l)
+	}
+	m.applySearch()
 }

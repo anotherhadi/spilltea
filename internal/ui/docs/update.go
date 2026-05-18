@@ -8,6 +8,8 @@ import (
 
 func (e Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	g := keys.Keys.Global
+	d := keys.Keys.Docs
+
 	switch msg := msg.(type) {
 	case tea.MouseWheelMsg:
 		switch msg.Button {
@@ -18,7 +20,42 @@ func (e Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case tea.KeyPressMsg:
+		if e.searching {
+			switch {
+			case key.Matches(msg, d.SearchReset):
+				e.searching = false
+				e.searchInput.Blur()
+				e.searchInput.SetValue("")
+				e.matches = nil
+				e.matchIndex = 0
+				e.SetSize(e.width, e.height)
+			case msg.String() == "enter":
+				e.searching = false
+				e.searchInput.Blur()
+				e.SetSize(e.width, e.height)
+			default:
+				var cmd tea.Cmd
+				e.searchInput, cmd = e.searchInput.Update(msg)
+				e.applySearch()
+				return e, cmd
+			}
+			return e, nil
+		}
+
 		switch {
+		case key.Matches(msg, d.Search):
+			e.searching = true
+			e.searchInput.SetValue("")
+			e.searchInput.Focus()
+			e.SetSize(e.width, e.height)
+		case key.Matches(msg, d.SearchReset):
+			e.matches = nil
+			e.matchIndex = 0
+			e.rebuildViewportContent()
+		case key.Matches(msg, d.SearchNext):
+			e.searchNext()
+		case key.Matches(msg, d.SearchPrev):
+			e.searchPrev()
 		case key.Matches(msg, g.Up):
 			e.viewport.SetYOffset(e.viewport.YOffset() - 1)
 		case key.Matches(msg, g.Down):
