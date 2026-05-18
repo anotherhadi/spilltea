@@ -25,7 +25,7 @@
         src = ./.;
         outputs = ["out"];
 
-        vendorHash = "sha256-v37RFS/T6KGZTO1tHmtUqBrRcCqNS3+ACBcsd7tl50c=";
+        vendorHash = "sha256-1iPwFsyzdonak9EWMRnudwcCQZfI+Uvre38+puG4s0s=";
 
         meta = with pkgs.lib; {
           description = "A minimal, terminal-based HTTP(S) proxy for pentesters and CTF players.";
