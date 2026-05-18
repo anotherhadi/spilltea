@@ -120,6 +120,7 @@ Check the default configuration with all the options [here](./internal/config/de
 ```
 Usage: spilltea [flags]
 
+      --add-default-config      copy the default config file to the config path and exit
       --add-default-plugins     copy built-in example plugins into the plugins dir and exit
   -c, --config string           path to config file
       --host string             proxy host (overrides config)
