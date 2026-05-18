@@ -17,8 +17,8 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-- [Legal Disclaimer](#legal-disclaimer)
 - [What is Spilltea?](#what-is-spilltea)
+- [Legal Disclaimer](#legal-disclaimer)
 - [Features](#features)
 - [Installation](#installation)
 - [Project Management](#project-management)
@@ -30,6 +30,14 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
+## What is Spilltea?
+
+Spilltea is a **terminal-native HTTP(S) interception proxy**. It sits between your browser and the internet, letting you inspect, modify, and replay traffic without ever leaving your terminal.
+
+It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, keyboard-driven tool that gets out of your way.
+
+<img alt="demo" src="./.github/assets/demo.gif" width="700" />
+
  <!-- exec: cat ./docs/legal-disclaimer.md -->
 ## Legal Disclaimer
 
@@ -39,14 +47,6 @@ Use Spilltea only on systems and networks you own or have explicit written permi
 
 The author(s) and contributors are not responsible for any misuse, damage, or legal consequences resulting from the use of this software. By using Spilltea, you agree that you are solely responsible for ensuring your usage is lawful and authorized.
 <!-- endexec -->
-
-## What is Spilltea?
-
-Spilltea is a **terminal-native HTTP(S) interception proxy**. It sits between your browser and the internet, letting you inspect, modify, and replay traffic without ever leaving your terminal.
-
-It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, keyboard-driven tool that gets out of your way.
-
-<img alt="demo" src="./.github/assets/demo.gif" width="700" />
 
 ## Features
 
