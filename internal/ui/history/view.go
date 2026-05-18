@@ -28,7 +28,10 @@ func (m Model) View() tea.View {
 
 func (m *Model) renderListPanel(w, h int) string {
 	s := style.S
-	dots := s.Faint.Render(m.pager.View())
+	var dots string
+	if len(m.entries) > 0 {
+		dots = s.Faint.Render(m.pager.View())
+	}
 	inner := lipgloss.JoinVertical(lipgloss.Left,
 		m.listViewport.View(),
 		lipgloss.PlaceHorizontal(m.listViewport.Width(), lipgloss.Center, dots),

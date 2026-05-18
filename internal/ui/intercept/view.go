@@ -45,7 +45,10 @@ func (m *Model) renderListPanel(w, h int) string {
 		border = s.PanelFocused
 	}
 
-	dots := s.Faint.Render(m.pager.View())
+	var dots string
+	if len(m.queue) > 0 {
+		dots = s.Faint.Render(m.pager.View())
+	}
 	inner := lipgloss.JoinVertical(lipgloss.Left,
 		m.listViewport.View(),
 		lipgloss.PlaceHorizontal(m.listViewport.Width(), lipgloss.Center, dots),

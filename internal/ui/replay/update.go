@@ -242,8 +242,13 @@ func (m Model) updateEditMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 func (m *Model) refreshListViewport() {
 	if m.pager.PerPage > 0 {
-		m.pager.Page = m.cursor / m.pager.PerPage
-		m.pager.SetTotalPages(len(m.entries))
+		if len(m.entries) == 0 {
+			m.pager.Page = 0
+			m.pager.TotalPages = 0
+		} else {
+			m.pager.Page = m.cursor / m.pager.PerPage
+			m.pager.SetTotalPages(len(m.entries))
+		}
 	}
 	m.listViewport.SetContent(m.renderList())
 }

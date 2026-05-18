@@ -187,8 +187,13 @@ func (m *Model) syncDetailViewport() {
 
 func (m *Model) refreshListViewport() {
 	if m.pager.PerPage > 0 {
-		m.pager.Page = m.cursor / m.pager.PerPage
-		m.pager.SetTotalPages(len(m.filtered))
+		if len(m.filtered) == 0 {
+			m.pager.Page = 0
+			m.pager.TotalPages = 0
+		} else {
+			m.pager.Page = m.cursor / m.pager.PerPage
+			m.pager.SetTotalPages(len(m.filtered))
+		}
 	}
 	m.listViewport.SetContent(m.renderList())
 }

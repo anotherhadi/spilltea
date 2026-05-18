@@ -295,16 +295,26 @@ func (m *Model) recalcSizes() {
 
 func (m *Model) refreshListViewport() {
 	if m.pager.PerPage > 0 {
-		m.pager.Page = m.cursor / m.pager.PerPage
-		m.pager.SetTotalPages(len(m.queue))
+		if len(m.queue) == 0 {
+			m.pager.Page = 0
+			m.pager.TotalPages = 0
+		} else {
+			m.pager.Page = m.cursor / m.pager.PerPage
+			m.pager.SetTotalPages(len(m.queue))
+		}
 	}
 	m.listViewport.SetContent(m.renderList())
 }
 
 func (m *Model) refreshResponseListViewport() {
 	if m.responsePager.PerPage > 0 {
-		m.responsePager.Page = m.responseCursor / m.responsePager.PerPage
-		m.responsePager.SetTotalPages(len(m.responseQueue))
+		if len(m.responseQueue) == 0 {
+			m.responsePager.Page = 0
+			m.responsePager.TotalPages = 0
+		} else {
+			m.responsePager.Page = m.responseCursor / m.responsePager.PerPage
+			m.responsePager.SetTotalPages(len(m.responseQueue))
+		}
 	}
 	m.responseViewport.SetContent(m.renderResponseList())
 }

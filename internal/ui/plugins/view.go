@@ -34,7 +34,10 @@ func (m *Model) renderListPanel(w, h int) string {
 	if m.editing {
 		panelStyle = s.Panel
 	}
-	dots := s.Faint.Render(m.pager.View())
+	var dots string
+	if len(m.filtered) > 0 {
+		dots = s.Faint.Render(m.pager.View())
+	}
 	inner := lipgloss.JoinVertical(lipgloss.Left,
 		m.listViewport.View(),
 		lipgloss.PlaceHorizontal(m.listViewport.Width(), lipgloss.Center, dots),

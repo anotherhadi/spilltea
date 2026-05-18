@@ -19,7 +19,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.cursor >= len(m.findings) {
 			m.cursor = max(0, len(m.findings)-1)
 		}
-		m.pager.SetTotalPages(len(m.findings))
+		if len(m.findings) == 0 {
+			m.pager.Page = 0
+			m.pager.TotalPages = 0
+		} else {
+			m.pager.SetTotalPages(len(m.findings))
+		}
 		m.refreshListViewport()
 		m.refreshBody()
 		return m, nil
