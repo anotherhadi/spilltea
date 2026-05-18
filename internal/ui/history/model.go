@@ -145,7 +145,6 @@ func (historyKeyMap) ShortHelp() []key.Binding {
 	return []key.Binding{
 		g.Up, g.Down, g.CycleFocus,
 		h.DeleteEntry, h.DeleteAll,
-		h.Filter, h.SqlQuery,
 		g.Help,
 	}
 }

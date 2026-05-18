@@ -216,9 +216,9 @@ func (k pluginsKeyMap) ShortHelp() []key.Binding {
 		key.WithHelp(g.ScrollUp.Help().Key+"/"+g.ScrollDown.Help().Key, "scroll detail"),
 	)
 	if k.hasConfig {
-		return []key.Binding{pk.Toggle, pk.EditConfig, pk.Filter, scrollHint, g.Help}
+		return []key.Binding{pk.Toggle, pk.EditConfig, scrollHint, g.Help}
 	}
-	return []key.Binding{pk.Toggle, pk.Filter, scrollHint, g.Help}
+	return []key.Binding{pk.Toggle, scrollHint, g.Help}
 }
 
 func (k pluginsKeyMap) FullHelp() [][]key.Binding {
