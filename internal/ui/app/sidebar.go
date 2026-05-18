@@ -51,6 +51,7 @@ func (m *Model) renderSidebar() string {
 		titleText = "SPLT"
 	}
 	title := lipgloss.NewStyle().Width(inner).Bold(true).Foreground(s.Primary).Padding(0, 1).Render(titleText)
+
 	divider := strings.Repeat("─", inner)
 
 	badgeSelected := lipgloss.NewStyle().Foreground(s.Primary).Bold(true)
@@ -81,11 +82,22 @@ func (m *Model) renderSidebar() string {
 		items.WriteString(line + "\n")
 	}
 
-	body := lipgloss.JoinVertical(lipgloss.Left,
+	maxLen := inner - 2
+	name := m.projectName
+	if m.sidebarState == sidebarCollapsed && name == "temporary" {
+		name = "tmp"
+	} else if len(name) > maxLen {
+		name = name[:maxLen-1] + "…"
+	}
+	parts := []string{
 		title,
+		lipgloss.NewStyle().Width(inner).Foreground(s.Subtle).Padding(0, 1).Render(name),
+	}
+	parts = append(parts,
 		lipgloss.NewStyle().Foreground(s.Subtle).Render(divider),
 		items.String(),
 	)
+	body := lipgloss.JoinVertical(lipgloss.Left, parts...)
 
 	return s.Panel.Width(m.getSidebarWidth()).Height(m.height).Render(body)
 }
