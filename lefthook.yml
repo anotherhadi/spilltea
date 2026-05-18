@@ -2,8 +2,8 @@ pre-commit:
   piped: true
   commands:
     inject-exec-basics:
-      glob: "docs/basics.md"
-      run: python3 .github/scripts/inject-exec.py {staged_files}
+      glob: "{docs/basics.md,cmd/**}"
+      run: python3 .github/scripts/inject-exec.py docs/basics.md
       stage_fixed: true
     inject-exec:
       glob: "README.md"

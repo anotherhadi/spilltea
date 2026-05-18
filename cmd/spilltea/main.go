@@ -31,6 +31,7 @@ func main() {
 		flagVersion           = flag.BoolP("version", "v", false, "print version")
 		flagProject           = flag.StringP("project", "P", "", `project name to open directly, or "tmp" for a temporary session`)
 		flagAddDefaultPlugins = flag.Bool("add-default-plugins", false, "copy built-in example plugins into the plugins dir and exit")
+		flagAddDefaultConfig  = flag.Bool("add-default-config", false, "copy the default config file to the config path and exit")
 	)
 	flag.CommandLine.SetOutput(os.Stdout)
 	flag.Usage = func() {
@@ -63,6 +64,19 @@ func main() {
 			os.Exit(1)
 		}
 		fmt.Printf("added %d plugin(s) to %s\n", n, dir)
+		os.Exit(0)
+	}
+
+	if *flagAddDefaultConfig {
+		cfgPath := filepath.Join(os.Getenv("HOME"), ".config", "spilltea", "config.yaml")
+		if *flagConfig != "" {
+			cfgPath = *flagConfig
+		}
+		if err := config.WriteDefaultConfig(cfgPath); err != nil {
+			fmt.Fprintf(os.Stderr, "add-default-config: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("default config written to %s\n", cfgPath)
 		os.Exit(0)
 	}
 
