@@ -75,6 +75,9 @@ func (m *Model) renderSidebar() string {
 			label += string(entry.id)
 		}
 		line := lineStyle.Render(badgeStyle.Render(strconv.Itoa(i+1)) + textStyle.Render(label))
+		if m.sidebarState == sidebarCollapsed && icon == "" {
+			line = " " + line
+		}
 		items.WriteString(line + "\n")
 	}
 
