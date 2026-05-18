@@ -1,6 +1,10 @@
 pre-commit:
   piped: true
   commands:
+    check-vendor-hash:
+      glob: "{go.mod,go.sum}"
+      run: .github/scripts/check-vendor-hash.sh
+      stage_fixed: true
     inject-exec-basics:
       glob: "{docs/basics.md,cmd/**}"
       run: python3 .github/scripts/inject-exec.py docs/basics.md
