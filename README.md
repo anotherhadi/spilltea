@@ -14,6 +14,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/anotherhadi/spilltea)](https://goreportcard.com/report/github.com/anotherhadi/spilltea)
 
+## Legal Disclaimer
+
+**This tool is provided for educational purposes and authorized security testing only.**
+
+Use Spilltea only on systems and networks you own or have explicit written permission to test. Intercepting network traffic without authorization may violate local laws (such as the Computer Fraud and Abuse Act, GDPR, or equivalent legislation in your jurisdiction).
+
+The author(s) and contributors are not responsible for any misuse, damage, or legal consequences resulting from the use of this software. By using Spilltea, you agree that you are solely responsible for ensuring your usage is lawful and authorized.
+
 ## What is Spilltea?
 
 Spilltea is a **terminal-native HTTP(S) interception proxy**. It sits between your browser and the internet, letting you inspect, modify, and replay traffic without ever leaving your terminal.
@@ -28,6 +36,7 @@ It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, key
 - **HTTP History**: Every request that passes through the proxy is stored. Browse, search and filter your full session history.
 - **Replay**: Pick any request from the history, modify it if needed, and send it again. Useful for manual testing and quick iteration
 - **HTTPS Support** (using go-mitmproxy under the hood)
+- **Vim-like Navigation**: The entire interface is keyboard-driven with Vim-inspired shortcuts. Use `h/j/k/l` to move, `gg`/`G` to jump to the top/bottom, `/` to search, `q` to close panels, and more. All keybindings are fully customizable via the config file.
 - Built-in Integrations:
   - **FFuf Export**: Generate a ffuf command or configuration directly from a request to start fuzzing instantly.
   - **cURL / HTTPie**: Copy any request as a curl or httpie command to your clipboard.
