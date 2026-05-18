@@ -32,6 +32,11 @@ func main() {
 		flagProject           = flag.StringP("project", "P", "", `project name to open directly, or "tmp" for a temporary session`)
 		flagAddDefaultPlugins = flag.Bool("add-default-plugins", false, "copy built-in example plugins into the plugins dir and exit")
 	)
+	flag.CommandLine.SetOutput(os.Stdout)
+	flag.Usage = func() {
+		fmt.Println("Usage: spilltea [flags]\n")
+		flag.PrintDefaults()
+	}
 	flag.Parse()
 
 	if *flagVersion {
