@@ -177,7 +177,12 @@ func (b *Broker) SaveEntry(f *proxy.Flow) {
 		Path:        path,
 		StatusCode:  status,
 		RequestRaw:  FormatRawRequest(f),
-		ResponseRaw: FormatRawResponse(f),
+		ResponseRaw: func() string {
+			if config.Global.History.KeepResponses {
+				return FormatRawResponse(f)
+			}
+			return ""
+		}(),
 	}
 	if cb := b.onBeforeNewEntry; cb != nil {
 		if !cb(pending) {

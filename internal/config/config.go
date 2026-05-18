@@ -45,6 +45,7 @@ type Config struct {
 
 	History struct {
 		SkipDuplicates bool `mapstructure:"skip_duplicates"`
+		KeepResponses  bool `mapstructure:"keep_responses"`
 	} `mapstructure:"history"`
 
 	Keybindings Keybindings `mapstructure:"keybindings"`

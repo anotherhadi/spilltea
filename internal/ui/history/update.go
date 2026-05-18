@@ -6,6 +6,7 @@ import (
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
@@ -298,6 +299,11 @@ func (m *Model) refreshBody() {
 		raw = e.ResponseRaw
 	} else {
 		raw = e.RequestRaw
+	}
+	if raw == "" {
+		w, h := m.bodyViewport.Width(), m.bodyViewport.Height()
+		m.bodyViewport.SetContent(lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, style.S.Faint.Render("      (˘･_･˘)\nno response stored")))
+		return
 	}
 	m.bodyViewport.SetContent(style.HighlightHTTP(raw))
 }

@@ -17,6 +17,7 @@ replay:
 
 history:
   skip_duplicates: true # if true, skip saving entries with the same method, host, path and body
+  keep_responses: false # if true, response body and headers are stored in history
 
 tui:
   use_nerdfont_icons: false
