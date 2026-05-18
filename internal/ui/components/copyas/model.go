@@ -11,7 +11,10 @@ import (
 	"github.com/anotherhadi/spilltea/internal/style"
 )
 
-const popupInnerW = 46
+const (
+	popupW = 61
+	popupH = 20
+)
 
 // writeClipboard uses the OSC 52 terminal escape sequence to set the clipboard.
 // Supported by most modern terminals (foot, kitty, wezterm, alacritty, xterm…).
@@ -69,7 +72,7 @@ func New() Model {
 		BorderForeground(s.Primary).
 		Foreground(s.MutedFg).PaddingLeft(1)
 
-	l := list.New(allFormats, delegate, popupInnerW, 8)
+	l := list.New(allFormats, delegate, popupW, 8)
 	l.SetShowTitle(false)
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
@@ -92,17 +95,25 @@ func (m *Model) Open(msg OpenMsg) {
 	m.open = true
 	m.list.ResetFilter()
 	m.list.Select(0)
-	m.list.SetSize(popupInnerW, m.listHeight())
+	m.list.SetSize(m.popupInnerWidth(), m.listHeight())
 }
 
 func (m *Model) SetSize(w, h int) {
 	m.width = w
 	m.height = h
-	m.list.SetSize(popupInnerW, m.listHeight())
+	m.list.SetSize(m.popupInnerWidth(), m.listHeight())
+}
+
+func (m Model) popupInnerWidth() int {
+	w := popupW
+	if m.width > 0 && m.width-4 < w {
+		w = m.width - 4
+	}
+	return w
 }
 
 func (m Model) popupHeight() int {
-	h := 14
+	h := popupH
 	if m.height > 0 && m.height-4 < h {
 		h = m.height - 4
 	}

@@ -24,7 +24,7 @@ func (m *Model) View(background string) string {
 		BorderForeground(s.Primary)
 
 	popupH := m.popupHeight()
-	popup := style.RenderWithTitle(border, "Copy as", inner, popupInnerW+2, popupH)
+	popup := style.RenderWithTitle(border, "Copy as", inner, m.popupInnerWidth()+2, popupH)
 
 	return OverlayCenter(background, popup, m.width, m.height)
 }

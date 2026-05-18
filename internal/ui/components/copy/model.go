@@ -12,7 +12,10 @@ import (
 	"github.com/anotherhadi/spilltea/internal/style"
 )
 
-const popupInnerW = 40
+const (
+	popupW = 55
+	popupH = 20
+)
 
 func writeClipboard(text string) {
 	encoded := base64.StdEncoding.EncodeToString([]byte(text))
@@ -66,7 +69,7 @@ func New() Model {
 		BorderForeground(s.Primary).
 		Foreground(s.MutedFg).PaddingLeft(1)
 
-	l := list.New(allItems, delegate, popupInnerW, 8)
+	l := list.New(allItems, delegate, popupW, 8)
 	l.SetShowTitle(false)
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
@@ -89,17 +92,25 @@ func (m *Model) Open(msg OpenMsg) {
 	m.open = true
 	m.list.ResetFilter()
 	m.list.Select(0)
-	m.list.SetSize(popupInnerW, m.listHeight())
+	m.list.SetSize(m.popupInnerWidth(), m.listHeight())
 }
 
 func (m *Model) SetSize(w, h int) {
 	m.width = w
 	m.height = h
-	m.list.SetSize(popupInnerW, m.listHeight())
+	m.list.SetSize(m.popupInnerWidth(), m.listHeight())
+}
+
+func (m Model) popupInnerWidth() int {
+	w := popupW
+	if m.width > 0 && m.width-4 < w {
+		w = m.width - 4
+	}
+	return w
 }
 
 func (m Model) popupHeight() int {
-	h := 12
+	h := popupH
 	if m.height > 0 && m.height-4 < h {
 		h = m.height - 4
 	}
