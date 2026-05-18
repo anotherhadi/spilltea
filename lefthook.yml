@@ -6,10 +6,10 @@ pre-commit:
       run: python3 .github/scripts/inject-exec.py docs/basics.md
       stage_fixed: true
     inject-exec:
-      glob: "README.md"
-      run: python3 .github/scripts/inject-exec.py {staged_files}
+      glob: "{README.md,docs/basics.md,cmd/**}"
+      run: python3 .github/scripts/inject-exec.py README.md
       stage_fixed: true
     toc:
-      glob: "README.md"
-      run: doctoc --notitle {staged_files}
+      glob: "{README.md,docs/basics.md,cmd/**}"
+      run: doctoc --notitle README.md
       stage_fixed: true
