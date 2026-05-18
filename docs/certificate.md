@@ -12,3 +12,6 @@
      - Select the "Authorities" tab and click on "Import".
      - Select the `mitmproxy-ca-cert.pem` file in `{{.Cfg.App.CertDir}}`.
      - When prompted, click the "Trust this CA to identify websites" checkbox, then click on "OK".
+
+> [!WARNING]
+> Never install this certificate in a permanent system trust store: it grants decryption of all HTTPS traffic. Remove it from your browser after use.
