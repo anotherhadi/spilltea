@@ -19,12 +19,14 @@ import (
 )
 
 func readDoc(name string) string {
-	b, _ := spilltea.DocsFS.ReadFile("./docs/" + name)
+	b, _ := spilltea.DocsFS.ReadFile("docs/" + name)
 	return string(b)
 }
 
 var contentMarkdown = strings.Join([]string{
 	readDoc("main.md"),
+	readDoc("legal-disclaimer.md"),
+	readDoc("basics.md"),
 	readDoc("proxy.md"),
 	readDoc("certificate.md"),
 	readDoc("history.md"),

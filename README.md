@@ -14,6 +14,23 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Go Report Card](https://goreportcard.com/badge/github.com/anotherhadi/spilltea)](https://goreportcard.com/report/github.com/anotherhadi/spilltea)
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+- [Legal Disclaimer](#legal-disclaimer)
+- [What is Spilltea?](#what-is-spilltea)
+- [Features](#features)
+- [Installation](#installation)
+- [Project Management](#project-management)
+- [Configuration](#configuration)
+- [CLI Flags](#cli-flags)
+- [Plugin System](#plugin-system)
+- [Deployment](#deployment)
+- [Tech Stack](#tech-stack)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+ <!-- exec: cat ./docs/legal-disclaimer.md -->
 ## Legal Disclaimer
 
 **This tool is provided for educational purposes and authorized security testing only.**
@@ -21,6 +38,7 @@
 Use Spilltea only on systems and networks you own or have explicit written permission to test. Intercepting network traffic without authorization may violate local laws (such as the Computer Fraud and Abuse Act, GDPR, or equivalent legislation in your jurisdiction).
 
 The author(s) and contributors are not responsible for any misuse, damage, or legal consequences resulting from the use of this software. By using Spilltea, you agree that you are solely responsible for ensuring your usage is lawful and authorized.
+<!-- endexec -->
 
 ## What is Spilltea?
 
@@ -81,6 +99,7 @@ environment.systemPackages = [ inputs.spilltea.packages.${pkgs.system}.default ]
 
 </details>
 
+ <!-- exec: cat ./docs/basics.md -->
 ## Project Management
 
 Spilltea organizes work into **projects**. Each project maps to a SQLite database file that stores all intercepted traffic for that session & a log files.
@@ -91,11 +110,6 @@ On startup, you choose:
 - **Existing project**: pick from a list of previous projects
 - **Temporary**: no name needed, stored in `/tmp/spilltea/projects/` and will be deleted on your next reboot!
 
-## Plugin System
-
-Spilltea supports plugins written in **Lua**. Plugins are loaded from `~/.config/spilltea/plugins/` by default and do not require recompilation or access to the source code.
-For a full reference and examples, see the [plugin documentation](./docs/plugins.md) or [plugin examples](./plugins/).
-
 ## Configuration
 
 Spilltea is fully configured via a YAML file at `~/.config/spilltea/config.yaml`.
@@ -103,16 +117,24 @@ Check the default configuration with all the options [here](./internal/config/de
 
 ## CLI Flags
 
-| Flag                    | Short | Description                                                                    |
-| ----------------------- | ----- | ------------------------------------------------------------------------------ |
-| `--config`              | `-c`  | Path to config file (default: `~/.config/spilltea/config.yaml`)                |
-| `--plugin-dir`          |       | Path to plugins dir, overrides config (default: `~/.config/spilltea/plugins/`) |
-| `--host`                |       | Proxy host, overrides config                                                   |
-| `--port`                | `-p`  | Proxy port, overrides config                                                   |
-| `--project`             | `-P`  | Project name to open directly, or `tmp` for a temporary session                |
-| `--upstream-proxy`      |       | Upstream proxy URL, overrides config (e.g. `http://user:pass@host:8888`)       |
-| `--version`             | `-v`  | Print version and exit                                                         |
-| `--add-default-plugins` |       | Add the default plugins to your plugins dir and exit                           |
+```
+Usage: spilltea [flags]
+
+      --add-default-plugins     copy built-in example plugins into the plugins dir and exit
+  -c, --config string           path to config file
+      --host string             proxy host (overrides config)
+      --plugins-dir string      path to plugins dir (overrides config)
+  -p, --port int                proxy port (overrides config)
+  -P, --project string          project name to open directly, or "tmp" for a temporary session
+      --upstream-proxy string   upstream proxy URL, e.g. http://user:pass@host:8888 (overrides config)
+  -v, --version                 print version
+```
+<!-- endexec -->
+
+## Plugin System
+
+Spilltea supports plugins written in **Lua**. Plugins are loaded from `~/.config/spilltea/plugins/` by default and do not require recompilation or access to the source code.
+For a full reference and examples, see the [plugin documentation](./docs/plugins.md) or [plugin examples](./plugins/).
 
 ## Deployment
 

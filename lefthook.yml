@@ -1,0 +1,15 @@
+pre-commit:
+  piped: true
+  commands:
+    inject-exec-basics:
+      glob: "docs/basics.md"
+      run: python3 .github/scripts/inject-exec.py {staged_files}
+      stage_fixed: true
+    inject-exec:
+      glob: "README.md"
+      run: python3 .github/scripts/inject-exec.py {staged_files}
+      stage_fixed: true
+    toc:
+      glob: "README.md"
+      run: doctoc --notitle {staged_files}
+      stage_fixed: true

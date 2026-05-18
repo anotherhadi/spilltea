@@ -37,5 +37,20 @@
       "${pname}" = pkg;
       default = pkg;
     });
+
+    devShells = forAllSystems (system: pkgs: {
+      default = pkgs.mkShell {
+        packages = with pkgs; [
+          go
+          python3
+          lefthook
+          doctoc
+        ];
+
+        shellHook = ''
+          lefthook install
+        '';
+      };
+    });
   };
 }
