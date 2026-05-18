@@ -94,7 +94,7 @@ On startup, you choose:
 ## Plugin System
 
 Spilltea supports plugins written in **Lua**. Plugins are loaded from `~/.config/spilltea/plugins/` by default and do not require recompilation or access to the source code.
-For a full reference and examples, see the [plugin documentation](./.github/docs/plugins.md) or [plugin examples](./plugins/).
+For a full reference and examples, see the [plugin documentation](./docs/plugins.md) or [plugin examples](./plugins/).
 
 ## Configuration
 

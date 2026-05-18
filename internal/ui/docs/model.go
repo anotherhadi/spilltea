@@ -19,7 +19,7 @@ import (
 )
 
 func readDoc(name string) string {
-	b, _ := spilltea.DocsFS.ReadFile(".github/docs/" + name)
+	b, _ := spilltea.DocsFS.ReadFile("./docs/" + name)
 	return string(b)
 }
 

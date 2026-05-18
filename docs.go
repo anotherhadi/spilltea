@@ -2,5 +2,5 @@ package spilltea
 
 import "embed"
 
-//go:embed .github/docs
+//go:embed docs
 var DocsFS embed.FS
