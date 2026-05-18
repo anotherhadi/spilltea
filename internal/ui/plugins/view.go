@@ -120,9 +120,9 @@ func (m *Model) renderStatusBar() string {
 		escKey := keys.Keys.Global.Escape.Help().Key
 		accent := lipgloss.NewStyle().Foreground(s.Primary)
 		filterLine := pad.Render(accent.Render(filterKey) + " " + s.Bold.Render(m.filter) + s.Faint.Render("  "+escKey+" to clear"))
-		return lipgloss.JoinVertical(lipgloss.Left, filterLine, pad.Render(m.help.View(pluginsKeyMap{editing: m.editing, hasConfig: m.hasConfig()})))
+		return lipgloss.JoinVertical(lipgloss.Left, filterLine, pad.Render(m.help.View(pluginsKeyMap{editing: m.editing, hasConfig: m.hasConfig(), width: m.width})))
 	}
-	return pad.Render(m.help.View(pluginsKeyMap{editing: m.editing, hasConfig: m.hasConfig()}))
+	return pad.Render(m.help.View(pluginsKeyMap{editing: m.editing, hasConfig: m.hasConfig(), width: m.width}))
 }
 
 func (m *Model) renderList() string {

@@ -35,16 +35,10 @@ func (e Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				step = 1
 			}
 			e.viewport.SetYOffset(e.viewport.YOffset() + step)
+		case key.Matches(msg, g.Help):
+			e.help.ShowAll = !e.help.ShowAll
+			e.SetSize(e.width, e.height)
 		}
 	}
 	return e, nil
-}
-
-func (m *Model) SetSize(w, h int) {
-	frameW := windowStyle().GetHorizontalFrameSize()
-	frameH := windowStyle().GetVerticalFrameSize()
-
-	m.viewport.SetWidth(w - frameW)
-	m.viewport.SetHeight(h - frameH)
-	m.renderMarkdown()
 }

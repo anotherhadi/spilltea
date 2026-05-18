@@ -54,3 +54,8 @@ func (g GlobalKeyMap) Bindings() []key.Binding {
 		g.ScrollUp, g.ScrollDown,
 	}
 }
+
+// CommonBindings returns keys available on every page.
+func (g GlobalKeyMap) CommonBindings() []key.Binding {
+	return []key.Binding{g.Quit, g.Help, g.OpenLogs, g.ToggleSidebar}
+}

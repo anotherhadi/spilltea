@@ -187,6 +187,9 @@ func (replayKeyMap) ShortHelp() []key.Binding {
 }
 
 func (m replayKeyMap) FullHelp() [][]key.Binding {
-	all := append(keys.Keys.Replay.Bindings(), keys.Keys.Global.Bindings()...)
+	g := keys.Keys.Global
+	pageGlobals := []key.Binding{g.Up, g.Down, g.ScrollUp, g.ScrollDown, g.Left, g.Right, g.Escape, g.Copy, g.CopyAs}
+	all := append(keys.Keys.Replay.Bindings(), pageGlobals...)
+	all = append(all, g.CommonBindings()...)
 	return keys.ChunkByWidth(all, m.width)
 }

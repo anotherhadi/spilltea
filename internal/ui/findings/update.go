@@ -76,6 +76,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				step = 1
 			}
 			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + step)
+		case key.Matches(msg, g.Help):
+			m.help.ShowAll = !m.help.ShowAll
+			m.recalcSizes()
 		}
 	}
 	return m, nil

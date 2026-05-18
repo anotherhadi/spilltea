@@ -196,6 +196,7 @@ func (m *Model) refreshListViewport() {
 type pluginsKeyMap struct {
 	editing   bool
 	hasConfig bool
+	width     int
 }
 
 func (k pluginsKeyMap) ShortHelp() []key.Binding {
@@ -210,11 +211,20 @@ func (k pluginsKeyMap) ShortHelp() []key.Binding {
 		key.WithHelp(g.ScrollUp.Help().Key+"/"+g.ScrollDown.Help().Key, "scroll detail"),
 	)
 	if k.hasConfig {
-		return []key.Binding{pk.Toggle, pk.EditConfig, pk.Filter, scrollHint}
+		return []key.Binding{pk.Toggle, pk.EditConfig, pk.Filter, scrollHint, g.Help}
 	}
-	return []key.Binding{pk.Toggle, pk.Filter, scrollHint}
+	return []key.Binding{pk.Toggle, pk.Filter, scrollHint, g.Help}
 }
 
 func (k pluginsKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{k.ShortHelp()}
+	g := keys.Keys.Global
+	if k.editing {
+		return [][]key.Binding{k.ShortHelp()}
+	}
+	pk := keys.Keys.Plugins
+	pageGlobals := []key.Binding{g.Up, g.Down, g.ScrollUp, g.ScrollDown, g.Escape}
+	all := []key.Binding{pk.Toggle, pk.EditConfig, pk.Filter}
+	all = append(all, pageGlobals...)
+	all = append(all, g.CommonBindings()...)
+	return keys.ChunkByWidth(all, k.width)
 }

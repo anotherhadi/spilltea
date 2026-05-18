@@ -2,7 +2,6 @@ package docs
 
 import (
 	"bytes"
-	_ "embed"
 	"text/template"
 
 	tea "charm.land/bubbletea/v2"
@@ -20,7 +19,10 @@ func windowStyle() lipgloss.Style {
 }
 
 func (e Model) View() tea.View {
-	return tea.NewView(windowStyle().Render(e.viewport.View()))
+	return tea.NewView(lipgloss.JoinVertical(lipgloss.Left,
+		windowStyle().Render(e.viewport.View()),
+		e.renderStatusBar(),
+	))
 }
 
 func (m *Model) renderMarkdown() {

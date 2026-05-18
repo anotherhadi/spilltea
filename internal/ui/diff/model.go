@@ -243,14 +243,6 @@ func lcsAlignedDiff(a, b, aHL, bHL []string) (left, right []diffLine) {
 	return left, right
 }
 
-func diffBindings() []key.Binding {
-	g := keys.Keys.Global
-	return []key.Binding{
-		g.Up, g.Down, g.ScrollUp, g.ScrollDown,
-		g.CycleFocus, keys.Keys.Diff.Clear,
-	}
-}
-
 type diffKeyMap struct{ width int }
 
 func (diffKeyMap) ShortHelp() []key.Binding {
@@ -259,6 +251,9 @@ func (diffKeyMap) ShortHelp() []key.Binding {
 }
 
 func (m diffKeyMap) FullHelp() [][]key.Binding {
-	all := append(diffBindings(), keys.Keys.Global.Bindings()...)
+	g := keys.Keys.Global
+	pageGlobals := []key.Binding{g.Up, g.Down, g.CycleFocus, g.ScrollUp, g.ScrollDown, g.Left, g.Right, g.Copy, g.CopyAs}
+	all := append(keys.Keys.Diff.Bindings(), pageGlobals...)
+	all = append(all, g.CommonBindings()...)
 	return keys.ChunkByWidth(all, m.width)
 }

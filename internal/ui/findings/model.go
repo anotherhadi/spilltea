@@ -81,7 +81,7 @@ func (m *Model) recalcSizes() {
 }
 
 func (m *Model) renderStatusBar() string {
-	return lipgloss.NewStyle().Padding(0, 1).Render(m.help.View(findingsKeyMap{}))
+	return lipgloss.NewStyle().Padding(0, 1).Render(m.help.View(findingsKeyMap{width: m.width}))
 }
 
 // RefreshCmd loads findings from the database.
@@ -143,14 +143,18 @@ func renderMarkdown(src string, width int) string {
 	return out
 }
 
-type findingsKeyMap struct{}
+type findingsKeyMap struct{ width int }
 
 func (findingsKeyMap) ShortHelp() []key.Binding {
 	g := keys.Keys.Global
 	f := keys.Keys.Findings
-	return []key.Binding{g.Up, g.Down, f.Dismiss}
+	return []key.Binding{g.Up, g.Down, f.Dismiss, g.Help}
 }
 
-func (findingsKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{findingsKeyMap{}.ShortHelp()}
+func (m findingsKeyMap) FullHelp() [][]key.Binding {
+	g := keys.Keys.Global
+	pageGlobals := []key.Binding{g.Up, g.Down, g.ScrollUp, g.ScrollDown}
+	all := append(keys.Keys.Findings.Bindings(), pageGlobals...)
+	all = append(all, g.CommonBindings()...)
+	return keys.ChunkByWidth(all, m.width)
 }

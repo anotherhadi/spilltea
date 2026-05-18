@@ -29,6 +29,9 @@ func (interceptKeyMap) ShortHelp() []key.Binding {
 }
 
 func (m interceptKeyMap) FullHelp() [][]key.Binding {
-	all := append(keys.Keys.Intercept.Bindings(), keys.Keys.Global.Bindings()...)
+	g := keys.Keys.Global
+	pageGlobals := []key.Binding{g.Up, g.Down, g.CycleFocus, g.ScrollUp, g.ScrollDown, g.Left, g.Right, g.Escape, g.SendToReplay, g.SendToDiff, g.Copy, g.CopyAs}
+	all := append(keys.Keys.Intercept.Bindings(), pageGlobals...)
+	all = append(all, g.CommonBindings()...)
 	return keys.ChunkByWidth(all, m.width)
 }

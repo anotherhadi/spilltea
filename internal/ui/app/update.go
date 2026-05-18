@@ -176,22 +176,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if !m.activeIsEditing() {
 			switch {
 			case key.Matches(msg, keys.Keys.Global.CopyAs):
-				if m.page == pageDiff {
-					if raw := m.diff.CurrentRaw(); raw != "" {
-						m.copyAs.SetSize(m.width, m.height)
-						m.copyAs.Open(copyasUI.OpenMsg{
-							RawRequest: raw,
-							Scheme:     "https",
-						})
-					}
-				} else if m.page == pageIntercept {
-					if raw := m.intercept.CurrentRaw(); raw != "" {
-						m.copyAs.SetSize(m.width, m.height)
-						m.copyAs.Open(copyasUI.OpenMsg{
-							RawRequest: raw,
-							Scheme:     m.intercept.CurrentScheme(),
-						})
-					}
+				var raw, scheme string
+				switch m.page {
+				case pageDiff:
+					raw = m.diff.CurrentRaw()
+					scheme = "https"
+				case pageIntercept:
+					raw = m.intercept.CurrentRaw()
+					scheme = m.intercept.CurrentScheme()
+				case pageHistory:
+					raw = m.history.CurrentRaw()
+					scheme = m.history.CurrentScheme()
+				case pageReplay:
+					raw = m.replay.CurrentRaw()
+					scheme = m.replay.CurrentScheme()
+				}
+				if raw != "" {
+					m.copyAs.SetSize(m.width, m.height)
+					m.copyAs.Open(copyasUI.OpenMsg{RawRequest: raw, Scheme: scheme})
 				}
 				return m, nil
 
