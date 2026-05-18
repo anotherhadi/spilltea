@@ -4,8 +4,12 @@ Plugin = {
 Auto-forward requests and exclude them from history based on patterns.
 
 **Config**:
-- `pattern`  - whitelist: only intercept matching requests
-- `!pattern` - blacklist: don't intercept matching requests and exclude from history
+- `pattern`    - whitelist: only intercept matching requests/responses and history entries
+- `!pattern`   - blacklist: skip matching requests/responses and history entries
+- `r:pattern`  - whitelist for requests/responses only (history unaffected)
+- `r:!pattern` - blacklist for requests/responses only
+- `h:pattern`  - whitelist for history entries only (requests unaffected)
+- `h:!pattern` - blacklist for history entries only
 - lines starting with `#` are comments
 
 Example (ignore static assets):
@@ -27,6 +31,11 @@ mytarget%.com/
 !%.js$
 !%.png$
 ```
+
+Example (disable history — h: whitelist never matches any real URL):
+```
+h:^$
+```
   ]],
   priority         = 100,
   on_request       = { sync = true },
@@ -34,31 +43,48 @@ mytarget%.com/
   on_history_entry = { sync = true },
 }
 
-local whitelist = {}
-local blacklist = {}
+local blacklist      = {}
+local whitelist      = {}
+local blacklist_req  = {}
+local whitelist_req  = {}
+local blacklist_hist = {}
+local whitelist_hist = {}
 
 function on_config(config_text)
-  whitelist = {}
-  blacklist = {}
+  blacklist, whitelist = {}, {}
+  blacklist_req, whitelist_req = {}, {}
+  blacklist_hist, whitelist_hist = {}, {}
   for line in config_text:gmatch("[^\n]+") do
     local trimmed = line:match("^%s*(.-)%s*$")
     if trimmed ~= "" and trimmed:sub(1, 1) ~= "#" then
-      if trimmed:sub(1, 1) == "!" then
-        table.insert(blacklist, trimmed:sub(2))
+      local scope = trimmed:match("^([rh]):")
+      local rest  = scope and trimmed:sub(3) or trimmed
+      local is_bl = rest:sub(1, 1) == "!"
+      local pattern = is_bl and rest:sub(2) or rest
+      if scope == "r" then
+        table.insert(is_bl and blacklist_req or whitelist_req, pattern)
+      elseif scope == "h" then
+        table.insert(is_bl and blacklist_hist or whitelist_hist, pattern)
       else
-        table.insert(whitelist, trimmed)
+        table.insert(is_bl and blacklist or whitelist, pattern)
       end
     end
   end
 end
 
-local function should_skip(url)
-  for _, pattern in ipairs(blacklist) do
-    if url:match(pattern) then return true end
+local function check_skip(url, bl_extra, wl_extra)
+  for _, p in ipairs(blacklist) do
+    if url:match(p) then return true end
   end
-  if #whitelist > 0 then
-    for _, pattern in ipairs(whitelist) do
-      if url:match(pattern) then return false end
+  for _, p in ipairs(bl_extra) do
+    if url:match(p) then return true end
+  end
+  local wl = {}
+  for _, p in ipairs(whitelist)  do wl[#wl + 1] = p end
+  for _, p in ipairs(wl_extra)   do wl[#wl + 1] = p end
+  if #wl > 0 then
+    for _, p in ipairs(wl) do
+      if url:match(p) then return false end
     end
     return true
   end
@@ -66,13 +92,13 @@ local function should_skip(url)
 end
 
 function on_request(req)
-  if should_skip(req.url) then return "forward" end
+  if check_skip(req.url, blacklist_req, whitelist_req) then return "forward" end
 end
 
 function on_response(req)
-  if should_skip(req.url) then return "forward" end
+  if check_skip(req.url, blacklist_req, whitelist_req) then return "forward" end
 end
 
 function on_history_entry(entry)
-  if should_skip(entry.host .. entry.path) then return "skip" end
+  if check_skip(entry.host .. entry.path, blacklist_hist, whitelist_hist) then return "skip" end
 end
