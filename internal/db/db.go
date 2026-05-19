@@ -18,6 +18,10 @@ func Open(path string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	// SQLite only supports one concurrent writer; a pool of connections would
+	// cause SQLITE_BUSY errors when multiple proxy goroutines try to insert
+	// history entries at the same time.
+	conn.SetMaxOpenConns(1)
 	d := &DB{conn: conn, path: path}
 	if err := d.migrate(); err != nil {
 		conn.Close()

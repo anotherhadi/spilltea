@@ -195,16 +195,18 @@ func (b *Broker) SaveEntry(f *proxy.Flow) {
 	if config.Global.History.SkipDuplicates {
 		var dup bool
 		entry, dup, err = d.InsertIfNotDuplicate(pending, body)
-		if dup || err != nil {
+		if dup {
 			return
 		}
 	} else {
 		entry, err = d.InsertEntry(pending, body)
 	}
-	if err == nil {
-		if cb := b.onNewEntry; cb != nil {
-			go cb(entry)
-		}
+	if err != nil {
+		log.Printf("intercept: failed to save history entry: %v", err)
+		return
+	}
+	if cb := b.onNewEntry; cb != nil {
+		go cb(entry)
 	}
 }
 
