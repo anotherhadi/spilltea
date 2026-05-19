@@ -289,6 +289,60 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 		m.refreshListViewport()
 		m.refreshResponseListViewport()
 		m.refreshBody()
+
+	case key.Matches(msg, keys.Keys.Global.PrevPage):
+		if onResponses {
+			step := m.responsePager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.responseCursor -= step
+			if m.responseCursor < 0 {
+				m.responseCursor = 0
+			}
+		} else {
+			step := m.pager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.cursor -= step
+			if m.cursor < 0 {
+				m.cursor = 0
+			}
+		}
+		m.refreshListViewport()
+		m.refreshResponseListViewport()
+		m.refreshBody()
+
+	case key.Matches(msg, keys.Keys.Global.NextPage):
+		if onResponses {
+			step := m.responsePager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.responseCursor += step
+			if m.responseCursor >= len(m.responseQueue) {
+				m.responseCursor = len(m.responseQueue) - 1
+				if m.responseCursor < 0 {
+					m.responseCursor = 0
+				}
+			}
+		} else {
+			step := m.pager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.cursor += step
+			if m.cursor >= len(m.queue) {
+				m.cursor = len(m.queue) - 1
+				if m.cursor < 0 {
+					m.cursor = 0
+				}
+			}
+		}
+		m.refreshListViewport()
+		m.refreshResponseListViewport()
+		m.refreshBody()
 	}
 
 	return m, tea.Batch(*cmds...)

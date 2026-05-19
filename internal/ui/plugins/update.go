@@ -128,6 +128,35 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textarea.Focus()
 			}
 
+		case key.Matches(msg, g.PrevPage):
+			step := m.pager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.cursor -= step
+			if m.cursor < 0 {
+				m.cursor = 0
+			}
+			m.recalcSizes()
+			m.syncTextarea()
+			m.detailViewport.GotoTop()
+
+		case key.Matches(msg, g.NextPage):
+			step := m.pager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.cursor += step
+			if m.cursor >= len(m.filtered) {
+				m.cursor = len(m.filtered) - 1
+				if m.cursor < 0 {
+					m.cursor = 0
+				}
+			}
+			m.recalcSizes()
+			m.syncTextarea()
+			m.detailViewport.GotoTop()
+
 		case key.Matches(msg, g.ScrollUp):
 			step := m.detailViewport.Height() / 2
 			if step < 1 {
