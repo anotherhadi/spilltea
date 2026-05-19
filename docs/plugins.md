@@ -30,14 +30,14 @@ Plugin = {
 
 ### Hook reference
 
-| Hook                      | When called                          | Sync/async    | Return value (sync only)                              |
-| ------------------------- | ------------------------------------ | ------------- | ----------------------------------------------------- |
-| `on_config(config_text)`  | At startup and on config save        | always sync   | ignored                                               |
-| `on_start()`              | Once at startup, after `on_config`   | configurable  | ignored                                               |
-| `on_quit()`               | When the app exits                   | always sync   | ignored                                               |
-| `on_request(req)`         | Every request, before auto-forward   | configurable  | `"drop"`, `"forward"`, or `nil`                       |
-| `on_response(req, res)`   | Every response                       | configurable  | `"drop"`, `"forward"`, or `nil`                       |
-| `on_history_entry(entry)` | Sync: before DB insert / Async: after | configurable | `"skip"` (don't save), `"keep"` or `nil` (save)      |
+| Hook                      | When called                           | Sync/async   | Return value (sync only)                        |
+| ------------------------- | ------------------------------------- | ------------ | ----------------------------------------------- |
+| `on_config(config_text)`  | At startup and on config save         | always sync  | ignored                                         |
+| `on_start()`              | Once at startup, after `on_config`    | configurable | ignored                                         |
+| `on_quit()`               | When the app exits                    | always sync  | ignored                                         |
+| `on_request(req)`         | Every request, before auto-forward    | configurable | `"drop"`, `"forward"`, or `nil`                 |
+| `on_response(req, res)`   | Every response                        | configurable | `"drop"`, `"forward"`, or `nil`                 |
+| `on_history_entry(entry)` | Sync: before DB insert / Async: after | configurable | `"skip"` (don't save), `"keep"` or `nil` (save) |
 
 ## Request and response objects
 
@@ -140,10 +140,10 @@ Each plugin gets a **config textarea** on the Plugins page. The raw text is pass
 
 **`on_history_entry` (sync only):**
 
-| Return value        | Effect                                 |
-| ------------------- | -------------------------------------- |
-| `"skip"`            | The entry is not saved to the DB.      |
-| `"keep"` or `nil`   | The entry is saved normally.           |
+| Return value      | Effect                            |
+| ----------------- | --------------------------------- |
+| `"skip"`          | The entry is not saved to the DB. |
+| `"keep"` or `nil` | The entry is saved normally.      |
 
 Sync `on_history_entry` runs **before** the DB insert, so it can prevent an entry from ever appearing in history. Async `on_history_entry` runs **after** the insert and cannot affect it.
 

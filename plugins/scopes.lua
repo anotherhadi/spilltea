@@ -32,7 +32,7 @@ mytarget%.com/
 !%.png$
 ```
 
-Example (disable history — h: whitelist never matches any real URL):
+Example (disable history: whitelist never matches any real URL):
 ```
 h:^$
 ```

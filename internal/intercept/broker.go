@@ -1,6 +1,7 @@
 package intercept
 
 import (
+	"log"
 	"regexp"
 	"sync"
 	"sync/atomic"
@@ -75,9 +76,12 @@ func (b *Broker) SetCaptureResponse(v bool) {
 func (b *Broker) SetAutoForwardRegex(patterns []string) {
 	compiled := make([]*regexp.Regexp, 0, len(patterns))
 	for _, p := range patterns {
-		if r, err := regexp.Compile(p); err == nil {
-			compiled = append(compiled, r)
+		r, err := regexp.Compile(p)
+		if err != nil {
+			log.Printf("intercept: invalid auto_forward_regex %q: %v", p, err)
+			continue
 		}
+		compiled = append(compiled, r)
 	}
 	b.autoFwdMu.Lock()
 	b.autoFwdRegexes = compiled
@@ -164,19 +168,14 @@ func (b *Broker) SaveEntry(f *proxy.Flow) {
 	if path == "" {
 		path = "/"
 	}
-	if config.Global.History.SkipDuplicates {
-		body := string(r.Body)
-		if dup, _ := d.HasDuplicate(r.Method, r.URL.Host, path, body); dup {
-			return
-		}
-	}
+	body := string(r.Body)
 	pending := db.Entry{
-		Timestamp:   time.Now(),
-		Method:      r.Method,
-		Host:        r.URL.Host,
-		Path:        path,
-		StatusCode:  status,
-		RequestRaw:  FormatRawRequest(f),
+		Timestamp:  time.Now(),
+		Method:     r.Method,
+		Host:       r.URL.Host,
+		Path:       path,
+		StatusCode: status,
+		RequestRaw: FormatRawRequest(f),
 		ResponseRaw: func() string {
 			if config.Global.History.KeepResponses {
 				return FormatRawResponse(f)
@@ -189,7 +188,19 @@ func (b *Broker) SaveEntry(f *proxy.Flow) {
 			return
 		}
 	}
-	entry, err := d.InsertEntry(pending)
+	var (
+		entry db.Entry
+		err   error
+	)
+	if config.Global.History.SkipDuplicates {
+		var dup bool
+		entry, dup, err = d.InsertIfNotDuplicate(pending, body)
+		if dup || err != nil {
+			return
+		}
+	} else {
+		entry, err = d.InsertEntry(pending, body)
+	}
 	if err == nil {
 		if cb := b.onNewEntry; cb != nil {
 			go cb(entry)

@@ -2,12 +2,14 @@ package db
 
 import (
 	"database/sql"
+	"sync"
 
 	_ "modernc.org/sqlite"
 )
 
 type DB struct {
-	conn *sql.DB
+	conn    *sql.DB
+	dedupMu sync.Mutex
 }
 
 func Open(path string) (*DB, error) {
@@ -33,7 +35,8 @@ func (d *DB) migrate() error {
 			path         TEXT NOT NULL,
 			status_code  INTEGER NOT NULL,
 			request_raw  TEXT NOT NULL,
-			response_raw TEXT NOT NULL
+			response_raw TEXT NOT NULL,
+			body_hash    TEXT NOT NULL DEFAULT ''
 		);
 CREATE TABLE IF NOT EXISTS replay_entries (
 			id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -65,6 +68,10 @@ CREATE TABLE IF NOT EXISTS replay_entries (
 			UNIQUE(plugin_name, dedup_key)
 		);
 	`)
+	if err != nil {
+		return err
+	}
+	_, err = d.conn.Exec(`CREATE INDEX IF NOT EXISTS idx_entries_dedup ON entries(method, host, path, body_hash)`)
 	return err
 }
 

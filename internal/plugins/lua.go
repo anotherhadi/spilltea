@@ -11,7 +11,22 @@ import (
 )
 
 func newLuaState(mgr *Manager, p *Plugin) *lua.LState {
-	L := lua.NewState()
+	L := lua.NewState(lua.Options{SkipOpenLibs: true})
+	for _, lib := range []struct {
+		name string
+		fn   lua.LGFunction
+	}{
+		{lua.LoadLibName, lua.OpenPackage},
+		{lua.BaseLibName, lua.OpenBase},
+		{lua.TabLibName, lua.OpenTable},
+		{lua.StringLibName, lua.OpenString},
+		{lua.MathLibName, lua.OpenMath},
+		{lua.CoroutineLibName, lua.OpenCoroutine},
+	} {
+		L.Push(L.NewFunction(lib.fn))
+		L.Push(lua.LString(lib.name))
+		L.Call(1, 0)
+	}
 	registerUtilities(L, mgr, p)
 	return L
 }

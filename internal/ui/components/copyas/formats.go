@@ -237,7 +237,7 @@ func toHAR(pr parsedRequest) string {
 		} `json:"timings"`
 	}
 	type harLog struct {
-		Version string     `json:"version"`
+		Version string `json:"version"`
 		Creator struct {
 			Name    string `json:"name"`
 			Version string `json:"version"`

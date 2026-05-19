@@ -3,6 +3,7 @@ package proxy
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 
@@ -63,7 +64,11 @@ func (a *interceptAddon) Request(f *goproxy.Flow) {
 func (a *interceptAddon) Response(f *goproxy.Flow) {
 	if f.Response != nil {
 		if len(f.Response.Body) == 0 && f.Response.BodyReader != nil {
-			body, _ := io.ReadAll(f.Response.BodyReader)
+			limit := int64(config.Global.App.MaxBodySizeMB) * 1024 * 1024
+			body, err := io.ReadAll(io.LimitReader(f.Response.BodyReader, limit))
+			if err != nil {
+				log.Printf("proxy: reading response body: %v", err)
+			}
 			f.Response.Body = body
 			f.Response.BodyReader = nil
 		}

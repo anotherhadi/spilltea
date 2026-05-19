@@ -270,20 +270,22 @@ func (m *Manager) RunOnQuit() {
 	}
 }
 
-func (m *Manager) RunSyncOnRequest(f *goproxy.Flow) intercept.Decision {
+// runSyncDecisionForPlugins runs hookName synchronously for all enabled plugins
+// that registered it as sync, and returns the first non-Intercept decision.
+func (m *Manager) runSyncDecisionForPlugins(hookName string, argsFor func(*Plugin) []lua.LValue) intercept.Decision {
 	for _, p := range m.GetPlugins() {
 		if !p.Enabled {
 			continue
 		}
-		hc, ok := p.hooks["on_request"]
+		hc, ok := p.hooks[hookName]
 		if !ok || !hc.Sync {
 			continue
 		}
 		p.mu.Lock()
-		result, err := callHook(p, "on_request", pushRequest(p.L, f))
+		result, err := callHook(p, hookName, argsFor(p)...)
 		p.mu.Unlock()
 		if err != nil {
-			log.Printf("plugin %s on_request: %v", p.Name, err)
+			log.Printf("plugin %s %s: %v", p.Name, hookName, err)
 			continue
 		}
 		switch result {
@@ -294,70 +296,51 @@ func (m *Manager) RunSyncOnRequest(f *goproxy.Flow) intercept.Decision {
 		}
 	}
 	return intercept.Intercept
+}
+
+// runAsyncForPlugins fires hookName asynchronously for all enabled plugins
+// that registered it as async.
+func (m *Manager) runAsyncForPlugins(hookName string, argsFor func(*Plugin) []lua.LValue) {
+	for _, p := range m.GetPlugins() {
+		if !p.Enabled {
+			continue
+		}
+		hc, ok := p.hooks[hookName]
+		if !ok || hc.Sync {
+			continue
+		}
+		go func(p *Plugin) {
+			p.mu.Lock()
+			if _, err := callHook(p, hookName, argsFor(p)...); err != nil {
+				log.Printf("plugin %s %s: %v", p.Name, hookName, err)
+			}
+			p.mu.Unlock()
+		}(p)
+	}
+}
+
+func (m *Manager) RunSyncOnRequest(f *goproxy.Flow) intercept.Decision {
+	return m.runSyncDecisionForPlugins("on_request", func(p *Plugin) []lua.LValue {
+		return []lua.LValue{pushRequest(p.L, f)}
+	})
 }
 
 func (m *Manager) RunAsyncOnRequest(f *goproxy.Flow) {
-	for _, p := range m.GetPlugins() {
-		if !p.Enabled {
-			continue
-		}
-		hc, ok := p.hooks["on_request"]
-		if !ok || hc.Sync {
-			continue
-		}
-		go func(p *Plugin) {
-			p.mu.Lock()
-			if _, err := callHook(p, "on_request", pushRequest(p.L, f)); err != nil {
-				log.Printf("plugin %s on_request: %v", p.Name, err)
-			}
-			p.mu.Unlock()
-		}(p)
-	}
+	m.runAsyncForPlugins("on_request", func(p *Plugin) []lua.LValue {
+		return []lua.LValue{pushRequest(p.L, f)}
+	})
 }
 
 func (m *Manager) RunSyncOnResponse(f *goproxy.Flow) intercept.Decision {
-	for _, p := range m.GetPlugins() {
-		if !p.Enabled {
-			continue
-		}
-		hc, ok := p.hooks["on_response"]
-		if !ok || !hc.Sync {
-			continue
-		}
-		p.mu.Lock()
-		result, err := callHook(p, "on_response", pushRequest(p.L, f), pushResponse(p.L, f))
-		p.mu.Unlock()
-		if err != nil {
-			log.Printf("plugin %s on_response: %v", p.Name, err)
-			continue
-		}
-		switch result {
-		case "drop":
-			return intercept.Drop
-		case "forward":
-			return intercept.Forward
-		}
-	}
-	return intercept.Intercept
+	return m.runSyncDecisionForPlugins("on_response", func(p *Plugin) []lua.LValue {
+		return []lua.LValue{pushRequest(p.L, f), pushResponse(p.L, f)}
+	})
 }
 
 func (m *Manager) RunAsyncOnResponse(f *goproxy.Flow) {
-	for _, p := range m.GetPlugins() {
-		if !p.Enabled {
-			continue
-		}
-		hc, ok := p.hooks["on_response"]
-		if !ok || hc.Sync {
-			continue
-		}
-		go func(p *Plugin) {
-			p.mu.Lock()
-			if _, err := callHook(p, "on_response", pushRequest(p.L, f), pushResponse(p.L, f)); err != nil {
-				log.Printf("plugin %s on_response: %v", p.Name, err)
-			}
-			p.mu.Unlock()
-		}(p)
-	}
+	m.runAsyncForPlugins("on_response", func(p *Plugin) []lua.LValue {
+		return []lua.LValue{pushRequest(p.L, f), pushResponse(p.L, f)}
+	})
 }
 
 // RunSyncOnHistoryEntry is called before DB insert; returns false to skip saving.
@@ -385,20 +368,7 @@ func (m *Manager) RunSyncOnHistoryEntry(e db.Entry) bool {
 }
 
 func (m *Manager) RunAsyncOnHistoryEntry(e db.Entry) {
-	for _, p := range m.GetPlugins() {
-		if !p.Enabled {
-			continue
-		}
-		hc, ok := p.hooks["on_history_entry"]
-		if !ok || hc.Sync {
-			continue
-		}
-		go func(p *Plugin) {
-			p.mu.Lock()
-			if _, err := callHook(p, "on_history_entry", pushEntry(p.L, e)); err != nil {
-				log.Printf("plugin %s on_history_entry: %v", p.Name, err)
-			}
-			p.mu.Unlock()
-		}(p)
-	}
+	m.runAsyncForPlugins("on_history_entry", func(p *Plugin) []lua.LValue {
+		return []lua.LValue{pushEntry(p.L, e)}
+	})
 }
