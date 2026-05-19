@@ -209,6 +209,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 
 			case key.Matches(msg, keys.Keys.Global.Copy):
+				if m.page == pageFindings {
+					if md := m.findingsPage.CurrentMarkdown(); md != "" {
+						copyUI.WriteClipboard(md)
+					}
+					return m, nil
+				}
 				var raw, scheme string
 				var responseFocused bool
 				switch m.page {

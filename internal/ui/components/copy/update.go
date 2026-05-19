@@ -11,7 +11,7 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 		switch {
 		case kp.String() == "enter":
 			if item, ok := m.list.SelectedItem().(copyItem); ok {
-				writeClipboard(m.extract(item.id))
+				WriteClipboard(m.extract(item.id))
 			}
 			m.open = false
 			return m, nil

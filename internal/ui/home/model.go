@@ -171,7 +171,6 @@ type Model struct {
 	teapotFrame int
 }
 
-
 func New(projectDir string) Model {
 	projects := loadProjects(projectDir)
 

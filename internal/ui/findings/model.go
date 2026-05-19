@@ -46,6 +46,14 @@ func New() Model {
 
 func (m Model) Init() tea.Cmd { return nil }
 
+func (m *Model) CurrentMarkdown() string {
+	if len(m.findings) == 0 {
+		return ""
+	}
+	f := m.findings[m.cursor]
+	return "# " + f.Title + "\n\n" + f.Description
+}
+
 func (m *Model) SetDB(d *db.DB) {
 	m.database = d
 }
@@ -174,12 +182,12 @@ type findingsKeyMap struct{ width int }
 func (findingsKeyMap) ShortHelp() []key.Binding {
 	g := keys.Keys.Global
 	f := keys.Keys.Findings
-	return []key.Binding{g.Up, g.Down, f.Dismiss, g.Help}
+	return []key.Binding{g.Up, g.Down, f.Dismiss, g.Copy, g.Help}
 }
 
 func (m findingsKeyMap) FullHelp() [][]key.Binding {
 	g := keys.Keys.Global
-	pageGlobals := []key.Binding{g.Up, g.Down, g.ScrollUp, g.ScrollDown}
+	pageGlobals := []key.Binding{g.Up, g.Down, g.ScrollUp, g.ScrollDown, g.Copy}
 	all := append(keys.Keys.Findings.Bindings(), pageGlobals...)
 	all = append(all, g.CommonBindings()...)
 	return keys.ChunkByWidth(all, m.width)

@@ -37,7 +37,7 @@ type Entry struct {
 type panel int
 
 const (
-	panelList     panel = iota
+	panelList panel = iota
 	panelRequest
 	panelResponse
 )

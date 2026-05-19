@@ -17,7 +17,7 @@ const (
 	popupH = 20
 )
 
-func writeClipboard(text string) {
+func WriteClipboard(text string) {
 	encoded := base64.StdEncoding.EncodeToString([]byte(text))
 	fmt.Fprintf(os.Stderr, "\033]52;c;%s\a", encoded)
 }
