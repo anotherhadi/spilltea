@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 
 	tea "charm.land/bubbletea/v2"
 	spilltea "github.com/anotherhadi/spilltea"
@@ -20,6 +21,15 @@ import (
 
 // Version is overwritten at build time by goreleaser/ldflag with the current version tag, or "dev" if not set.
 var version = "dev"
+
+func init() {
+	if version != "dev" {
+		return
+	}
+	if info, ok := debug.ReadBuildInfo(); ok && info.Main.Version != "" && info.Main.Version != "(devel)" {
+		version = info.Main.Version
+	}
+}
 
 func main() {
 	var (
