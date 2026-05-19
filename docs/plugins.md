@@ -110,6 +110,16 @@ end
 
 -- Quit the app (useful for startup checks that fail)
 quit("reason message")
+
+-- Run a shell command, optionally piping a string to its stdin.
+-- Returns: output string, error string (nil on success).
+-- The command runs via "sh -c" with a 30-second timeout.
+local out, err = shell_pipe("trufflehog filesystem --no-update --json /dev/stdin", body)
+if err then
+  log("command failed: " .. err)
+else
+  log("output: " .. out)
+end
 ```
 
 ### Finding deduplication

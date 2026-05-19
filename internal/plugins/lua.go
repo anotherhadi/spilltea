@@ -1,7 +1,10 @@
 package plugins
 
 import (
+	"bytes"
+	"context"
 	"log"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -170,6 +173,31 @@ func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 		default:
 		}
 		return 0
+	}))
+
+	L.SetGlobal("shell_pipe", L.NewFunction(func(L *lua.LState) int {
+		cmd := L.CheckString(1)
+		input := L.OptString(2, "")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		c := exec.CommandContext(ctx, "sh", "-c", cmd)
+		c.Stdin = strings.NewReader(input)
+
+		var stdout, stderr bytes.Buffer
+		c.Stdout = &stdout
+		c.Stderr = &stderr
+
+		err := c.Run()
+		if err != nil {
+			L.Push(lua.LString(stdout.String()))
+			L.Push(lua.LString(err.Error() + ": " + stderr.String()))
+			return 2
+		}
+		L.Push(lua.LString(stdout.String()))
+		L.Push(lua.LNil)
+		return 2
 	}))
 }
 
