@@ -18,13 +18,14 @@ type Config struct {
 	Version string `mapstructure:"-"`
 
 	App struct {
-		Host          string `mapstructure:"host"`
-		Port          int    `mapstructure:"port"`
-		CertDir       string `mapstructure:"cert_dir"`
-		ProjectDir    string `mapstructure:"project_dir"`
-		PluginsDir    string `mapstructure:"plugins_dir"`
-		UpstreamProxy string `mapstructure:"upstream_proxy"`
-		MaxBodySizeMB int    `mapstructure:"max_body_size_mb"`
+		Host           string `mapstructure:"host"`
+		Port           int    `mapstructure:"port"`
+		CertDir        string `mapstructure:"cert_dir"`
+		ProjectDir     string `mapstructure:"project_dir"`
+		PluginsDir     string `mapstructure:"plugins_dir"`
+		UpstreamProxy  string `mapstructure:"upstream_proxy"`
+		MaxBodySizeMB  int    `mapstructure:"max_body_size_mb"`
+		ExternalEditor string `mapstructure:"external_editor"`
 	} `mapstructure:"app"`
 
 	TUI struct {

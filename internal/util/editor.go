@@ -5,6 +5,8 @@ import (
 	"os/exec"
 
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/anotherhadi/spilltea/internal/config"
 )
 
 type EditorFinishedMsg struct {
@@ -13,7 +15,10 @@ type EditorFinishedMsg struct {
 }
 
 func OpenExternalEditor(content string) tea.Cmd {
-	editor := os.Getenv("EDITOR")
+	editor := config.Global.App.ExternalEditor
+	if editor == "" {
+		editor = os.Getenv("EDITOR")
+	}
 	if editor == "" {
 		editor = "vi"
 	}

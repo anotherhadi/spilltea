@@ -6,6 +6,7 @@ app:
   plugins_dir: ~/.config/spilltea/plugins
   upstream_proxy: "" # e.g. http://corporate-proxy:8888 or http://user:pass@host:8888
   max_body_size_mb: 50 # max response body size read into memory for large streamed responses (MB)
+  external_editor: "" # override $EDITOR for external editing (e.g. nvim, code --wait)
 
 intercept:
   default_intercept_enabled: true
