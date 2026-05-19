@@ -7,6 +7,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/charmbracelet/x/ansi"
 )
 
 func (m Model) View() tea.View {
@@ -37,6 +38,12 @@ func (m *Model) renderPanels(panelH int) string {
 	rightTitle := icons.I.Diff + "Second"
 	if m.right.label != "" {
 		rightTitle = icons.I.Diff + "Second: " + m.right.label
+	}
+	if maxW := leftW - 4; maxW > 0 {
+		leftTitle = ansi.Truncate(leftTitle, maxW, "…")
+	}
+	if maxW := rightW - 4; maxW > 0 {
+		rightTitle = ansi.Truncate(rightTitle, maxW, "…")
 	}
 
 	leftBorder := s.Panel
