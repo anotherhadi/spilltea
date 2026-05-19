@@ -332,7 +332,7 @@ func (m Model) renderHelpLine() string {
 		}
 		parts = append(parts, binding(k.Open))
 		parts = append(parts, binding(k.Delete))
-		parts = append(parts, item("q", "quit"))
+		parts = append(parts, item(keys.Keys.Global.Quit.Help().Key, "quit"))
 	}
 
 	return strings.Join(parts, sep)

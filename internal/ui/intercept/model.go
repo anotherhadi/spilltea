@@ -98,7 +98,7 @@ func (m Model) CurrentRaw() string {
 		if edited, ok := m.pendingResponseEdits[resp]; ok {
 			return edited
 		}
-		return formatRawResponse(resp)
+		return intercept.FormatRawResponse(resp.Flow)
 	}
 	if len(m.queue) == 0 {
 		return ""
@@ -107,7 +107,7 @@ func (m Model) CurrentRaw() string {
 	if edited, ok := m.pendingEdits[req]; ok {
 		return edited
 	}
-	return formatRawRequest(req)
+	return intercept.FormatRawRequest(req.Flow)
 }
 
 func (m *Model) SetSize(w, h int) {

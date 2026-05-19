@@ -6,21 +6,7 @@ import (
 	"github.com/anotherhadi/spilltea/internal/keys"
 )
 
-// PluginsChangedMsg is sent when the plugin list should be refreshed.
-type PluginsChangedMsg struct{}
-
-// RefreshCmd returns a command that triggers a list refresh.
-func RefreshCmd() tea.Cmd {
-	return func() tea.Msg { return PluginsChangedMsg{} }
-}
-
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg.(type) {
-	case PluginsChangedMsg:
-		m.Refresh()
-		return m, nil
-	}
-
 	// Route non-key messages to textarea when editing so internal
 	// textarea messages (e.g. clipboard paste) are handled correctly.
 	if m.editing {

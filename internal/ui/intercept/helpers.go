@@ -4,68 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/anotherhadi/spilltea/internal/intercept"
 	"github.com/anotherhadi/spilltea/internal/style"
 )
-
-func formatRawRequest(req *intercept.PendingRequest) string {
-	r := req.Flow.Request
-	var sb strings.Builder
-
-	fmt.Fprintf(&sb, "%s %s %s\n", r.Method, r.URL.RequestURI(), r.Proto)
-
-	keys := make([]string, 0, len(r.Header))
-	for k := range r.Header {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		for _, v := range r.Header[k] {
-			fmt.Fprintf(&sb, "%s: %s\n", k, v)
-		}
-	}
-
-	sb.WriteString("\n")
-	if len(r.Body) > 0 {
-		sb.Write(r.Body)
-	}
-	return sb.String()
-}
-
-func formatRawResponse(resp *intercept.PendingResponse) string {
-	r := resp.Flow.Response
-	if r == nil {
-		return "(no response)"
-	}
-	var sb strings.Builder
-
-	proto := resp.Flow.Request.Proto
-	if proto == "" {
-		proto = "HTTP/1.1"
-	}
-	fmt.Fprintf(&sb, "%s %d %s\n", proto, r.StatusCode, http.StatusText(r.StatusCode))
-
-	keys := make([]string, 0, len(r.Header))
-	for k := range r.Header {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		for _, v := range r.Header[k] {
-			fmt.Fprintf(&sb, "%s: %s\n", k, v)
-		}
-	}
-
-	sb.WriteString("\n")
-	if len(r.Body) > 0 {
-		sb.Write(r.Body)
-	}
-	return sb.String()
-}
 
 func parseRawRequest(content string, req *intercept.PendingRequest) {
 	r := req.Flow.Request
@@ -343,7 +287,7 @@ func (m *Model) loadIntoTextarea() {
 		if edited, ok := m.pendingResponseEdits[resp]; ok {
 			m.textarea.SetValue(edited)
 		} else {
-			m.textarea.SetValue(formatRawResponse(resp))
+			m.textarea.SetValue(intercept.FormatRawResponse(resp.Flow))
 		}
 	} else {
 		if len(m.queue) == 0 {
@@ -353,7 +297,7 @@ func (m *Model) loadIntoTextarea() {
 		if edited, ok := m.pendingEdits[req]; ok {
 			m.textarea.SetValue(edited)
 		} else {
-			m.textarea.SetValue(formatRawRequest(req))
+			m.textarea.SetValue(intercept.FormatRawRequest(req.Flow))
 		}
 	}
 }
@@ -370,7 +314,7 @@ func (m *Model) refreshBody() {
 		if edited, ok := m.pendingResponseEdits[resp]; ok {
 			raw = edited
 		} else {
-			raw = formatRawResponse(resp)
+			raw = intercept.FormatRawResponse(resp.Flow)
 		}
 	} else {
 		if len(m.queue) == 0 {
@@ -381,7 +325,7 @@ func (m *Model) refreshBody() {
 		if edited, ok := m.pendingEdits[req]; ok {
 			raw = edited
 		} else {
-			raw = formatRawRequest(req)
+			raw = intercept.FormatRawRequest(req.Flow)
 		}
 	}
 	m.bodyViewport.SetContent(style.HighlightHTTP(raw))

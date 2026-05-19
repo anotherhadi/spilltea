@@ -112,7 +112,6 @@ func (m *Model) recalcSizes() {
 	m.syncDetailViewport()
 }
 
-// Refresh reloads the plugin list from the manager.
 func (m *Model) Refresh() {
 	if m.manager == nil {
 		return

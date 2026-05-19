@@ -46,7 +46,6 @@ func NewTextarea(showLineNumbers bool) textarea.Model {
 	return ta
 }
 
-// SeverityStyle returns a bold lipgloss style coloured by finding severity level.
 func SeverityStyle(sev string) lipgloss.Style {
 	base := lipgloss.NewStyle().Bold(true)
 	switch sev {
@@ -63,7 +62,6 @@ func SeverityStyle(sev string) lipgloss.Style {
 	}
 }
 
-// StatusStyle returns a bold lipgloss style coloured by HTTP status code.
 func StatusStyle(code, width int) lipgloss.Style {
 	base := lipgloss.NewStyle().Bold(true).Width(width)
 	switch {

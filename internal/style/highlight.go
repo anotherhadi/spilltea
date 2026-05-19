@@ -15,7 +15,6 @@ func Paint(c color.Color, s string) string {
 	return lipgloss.NewStyle().Foreground(c).Render(s)
 }
 
-// HighlightHTTP highlights a full raw HTTP message (headers + body).
 func HighlightHTTP(raw string) string {
 	raw = strings.ReplaceAll(raw, "\r\n", "\n")
 	raw = strings.ReplaceAll(raw, "\r", "\n")

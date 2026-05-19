@@ -237,10 +237,10 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 
 	case key.Matches(msg, keys.Keys.Intercept.EditExternal):
 		if !onResponses && len(m.queue) > 0 {
-			return m, util.OpenExternalEditor(formatRawRequest(m.queue[m.cursor]))
+			return m, util.OpenExternalEditor(intercept.FormatRawRequest(m.queue[m.cursor].Flow))
 		}
 		if onResponses && len(m.responseQueue) > 0 {
-			return m, util.OpenExternalEditor(formatRawResponse(m.responseQueue[m.responseCursor]))
+			return m, util.OpenExternalEditor(intercept.FormatRawResponse(m.responseQueue[m.responseCursor].Flow))
 		}
 
 	case key.Matches(msg, keys.Keys.Global.SendToReplay):
@@ -287,12 +287,12 @@ func (m Model) updateEditMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model, 
 		if onResponses {
 			if len(m.responseQueue) > 0 {
 				delete(m.pendingResponseEdits, m.responseQueue[m.responseCursor])
-				m.textarea.SetValue(formatRawResponse(m.responseQueue[m.responseCursor]))
+				m.textarea.SetValue(intercept.FormatRawResponse(m.responseQueue[m.responseCursor].Flow))
 			}
 		} else {
 			if len(m.queue) > 0 {
 				delete(m.pendingEdits, m.queue[m.cursor])
-				m.textarea.SetValue(formatRawRequest(m.queue[m.cursor]))
+				m.textarea.SetValue(intercept.FormatRawRequest(m.queue[m.cursor].Flow))
 			}
 		}
 
