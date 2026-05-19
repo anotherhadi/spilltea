@@ -52,24 +52,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.MouseWheelMsg:
 		if !m.editing {
-			switch msg.Button {
-			case tea.MouseWheelUp:
-				if msg.Mod.Contains(tea.ModShift) {
-					m.bodyViewport.ScrollLeft(6)
-				} else {
-					m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() - 1)
-				}
-			case tea.MouseWheelDown:
-				if msg.Mod.Contains(tea.ModShift) {
-					m.bodyViewport.ScrollRight(6)
-				} else {
-					m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + 1)
-				}
-			case tea.MouseWheelLeft:
-				m.bodyViewport.ScrollLeft(6)
-			case tea.MouseWheelRight:
-				m.bodyViewport.ScrollRight(6)
-			}
+			util.HandleMouseWheel(msg, &m.bodyViewport)
 		}
 
 	case tea.KeyPressMsg:
@@ -127,18 +110,10 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 		}
 
 	case key.Matches(msg, keys.Keys.Global.ScrollUp):
-		step := m.bodyViewport.Height() / 2
-		if step < 1 {
-			step = 1
-		}
-		m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() - step)
+		util.ScrollViewport(&m.bodyViewport, -1)
 
 	case key.Matches(msg, keys.Keys.Global.ScrollDown):
-		step := m.bodyViewport.Height() / 2
-		if step < 1 {
-			step = 1
-		}
-		m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + step)
+		util.ScrollViewport(&m.bodyViewport, 1)
 
 	case key.Matches(msg, keys.Keys.Global.Left):
 		m.bodyViewport.ScrollLeft(6)
@@ -278,13 +253,9 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 
 	case key.Matches(msg, keys.Keys.Global.GotoBottom):
 		if onResponses {
-			if len(m.responseQueue) > 0 {
-				m.responseCursor = len(m.responseQueue) - 1
-			}
+			m.responseCursor = util.CursorGotoBottom(len(m.responseQueue))
 		} else {
-			if len(m.queue) > 0 {
-				m.cursor = len(m.queue) - 1
-			}
+			m.cursor = util.CursorGotoBottom(len(m.queue))
 		}
 		m.refreshListViewport()
 		m.refreshResponseListViewport()
@@ -292,23 +263,9 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 
 	case key.Matches(msg, keys.Keys.Global.PrevPage):
 		if onResponses {
-			step := m.responsePager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.responseCursor -= step
-			if m.responseCursor < 0 {
-				m.responseCursor = 0
-			}
+			m.responseCursor = util.CursorMovePage(m.responseCursor, len(m.responseQueue), m.responsePager.PerPage, false)
 		} else {
-			step := m.pager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.cursor -= step
-			if m.cursor < 0 {
-				m.cursor = 0
-			}
+			m.cursor = util.CursorMovePage(m.cursor, len(m.queue), m.pager.PerPage, false)
 		}
 		m.refreshListViewport()
 		m.refreshResponseListViewport()
@@ -316,29 +273,9 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 
 	case key.Matches(msg, keys.Keys.Global.NextPage):
 		if onResponses {
-			step := m.responsePager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.responseCursor += step
-			if m.responseCursor >= len(m.responseQueue) {
-				m.responseCursor = len(m.responseQueue) - 1
-				if m.responseCursor < 0 {
-					m.responseCursor = 0
-				}
-			}
+			m.responseCursor = util.CursorMovePage(m.responseCursor, len(m.responseQueue), m.responsePager.PerPage, true)
 		} else {
-			step := m.pager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.cursor += step
-			if m.cursor >= len(m.queue) {
-				m.cursor = len(m.queue) - 1
-				if m.cursor < 0 {
-					m.cursor = 0
-				}
-			}
+			m.cursor = util.CursorMovePage(m.cursor, len(m.queue), m.pager.PerPage, true)
 		}
 		m.refreshListViewport()
 		m.refreshResponseListViewport()

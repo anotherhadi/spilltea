@@ -4,6 +4,7 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"github.com/anotherhadi/spilltea/internal/keys"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -20,12 +21,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.MouseWheelMsg:
 		if !m.editing {
-			switch msg.Button {
-			case tea.MouseWheelUp:
-				m.detailViewport.SetYOffset(m.detailViewport.YOffset() - 1)
-			case tea.MouseWheelDown:
-				m.detailViewport.SetYOffset(m.detailViewport.YOffset() + 1)
-			}
+			util.HandleMouseWheel(msg, &m.detailViewport)
 		}
 
 	case tea.KeyPressMsg:
@@ -129,47 +125,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, g.PrevPage):
-			step := m.pager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.cursor -= step
-			if m.cursor < 0 {
-				m.cursor = 0
-			}
+			m.cursor = util.CursorMovePage(m.cursor, len(m.filtered), m.pager.PerPage, false)
 			m.recalcSizes()
 			m.syncTextarea()
 			m.detailViewport.GotoTop()
 
 		case key.Matches(msg, g.NextPage):
-			step := m.pager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.cursor += step
-			if m.cursor >= len(m.filtered) {
-				m.cursor = len(m.filtered) - 1
-				if m.cursor < 0 {
-					m.cursor = 0
-				}
-			}
+			m.cursor = util.CursorMovePage(m.cursor, len(m.filtered), m.pager.PerPage, true)
 			m.recalcSizes()
 			m.syncTextarea()
 			m.detailViewport.GotoTop()
 
 		case key.Matches(msg, g.ScrollUp):
-			step := m.detailViewport.Height() / 2
-			if step < 1 {
-				step = 1
-			}
-			m.detailViewport.SetYOffset(m.detailViewport.YOffset() - step)
+			util.ScrollViewport(&m.detailViewport, -1)
 
 		case key.Matches(msg, g.ScrollDown):
-			step := m.detailViewport.Height() / 2
-			if step < 1 {
-				step = 1
-			}
-			m.detailViewport.SetYOffset(m.detailViewport.YOffset() + step)
+			util.ScrollViewport(&m.detailViewport, 1)
 
 		case key.Matches(msg, g.Help):
 			m.help.ShowAll = !m.help.ShowAll

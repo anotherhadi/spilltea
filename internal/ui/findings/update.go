@@ -6,6 +6,7 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"github.com/anotherhadi/spilltea/internal/keys"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -42,12 +43,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.MouseWheelMsg:
-		switch msg.Button {
-		case tea.MouseWheelUp:
-			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() - 1)
-		case tea.MouseWheelDown:
-			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + 1)
-		}
+		util.HandleMouseWheel(msg, &m.bodyViewport)
 		return m, nil
 
 	case tea.KeyPressMsg:
@@ -82,17 +78,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, RefreshCmd(m.database)
 			}
 		case key.Matches(msg, g.ScrollUp):
-			step := m.bodyViewport.Height() / 2
-			if step < 1 {
-				step = 1
-			}
-			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() - step)
+			util.ScrollViewport(&m.bodyViewport, -1)
 		case key.Matches(msg, g.ScrollDown):
-			step := m.bodyViewport.Height() / 2
-			if step < 1 {
-				step = 1
-			}
-			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + step)
+			util.ScrollViewport(&m.bodyViewport, 1)
 		case key.Matches(msg, g.GotoTop):
 			m.cursor = 0
 			m.pager.Page = 0
@@ -100,38 +88,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.refreshBody()
 
 		case key.Matches(msg, g.GotoBottom):
-			if len(m.findings) > 0 {
-				m.cursor = len(m.findings) - 1
-				m.pager.Page = m.pager.TotalPages - 1
-				m.refreshListViewport()
-				m.refreshBody()
-			}
+			m.cursor = util.CursorGotoBottom(len(m.findings))
+			m.pager.Page = util.CursorGotoBottom(m.pager.TotalPages)
+			m.refreshListViewport()
+			m.refreshBody()
 
 		case key.Matches(msg, g.PrevPage):
-			step := m.pager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.cursor -= step
-			if m.cursor < 0 {
-				m.cursor = 0
-			}
+			m.cursor = util.CursorMovePage(m.cursor, len(m.findings), m.pager.PerPage, false)
 			m.pager.Page = m.cursor / m.pager.PerPage
 			m.refreshListViewport()
 			m.refreshBody()
 
 		case key.Matches(msg, g.NextPage):
-			step := m.pager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.cursor += step
-			if m.cursor >= len(m.findings) {
-				m.cursor = len(m.findings) - 1
-				if m.cursor < 0 {
-					m.cursor = 0
-				}
-			}
+			m.cursor = util.CursorMovePage(m.cursor, len(m.findings), m.pager.PerPage, true)
 			m.pager.Page = m.cursor / m.pager.PerPage
 			m.refreshListViewport()
 			m.refreshBody()

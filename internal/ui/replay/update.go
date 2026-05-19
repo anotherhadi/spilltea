@@ -191,20 +191,12 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, g.ScrollUp):
 		vp := m.focusedViewport()
-		step := vp.Height() / 2
-		if step < 1 {
-			step = 1
-		}
-		vp.SetYOffset(vp.YOffset() - step)
+		util.ScrollViewport(&vp, -1)
 		m.setFocusedViewport(vp)
 
 	case key.Matches(msg, g.ScrollDown):
 		vp := m.focusedViewport()
-		step := vp.Height() / 2
-		if step < 1 {
-			step = 1
-		}
-		vp.SetYOffset(vp.YOffset() + step)
+		util.ScrollViewport(&vp, 1)
 		m.setFocusedViewport(vp)
 
 	case key.Matches(msg, g.Left):
@@ -247,37 +239,17 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.refreshBody()
 
 	case key.Matches(msg, keys.Keys.Global.GotoBottom):
-		if len(m.entries) > 0 {
-			m.cursor = len(m.entries) - 1
-			m.pager.Page = m.pager.TotalPages - 1
-			m.refreshListViewport()
-			m.refreshBody()
-		}
+		m.cursor = util.CursorGotoBottom(len(m.entries))
+		m.refreshListViewport()
+		m.refreshBody()
 
 	case key.Matches(msg, keys.Keys.Global.PrevPage):
-		step := m.pager.PerPage
-		if step < 1 {
-			step = 1
-		}
-		m.cursor -= step
-		if m.cursor < 0 {
-			m.cursor = 0
-		}
+		m.cursor = util.CursorMovePage(m.cursor, len(m.entries), m.pager.PerPage, false)
 		m.refreshListViewport()
 		m.refreshBody()
 
 	case key.Matches(msg, keys.Keys.Global.NextPage):
-		step := m.pager.PerPage
-		if step < 1 {
-			step = 1
-		}
-		m.cursor += step
-		if m.cursor >= len(m.entries) {
-			m.cursor = len(m.entries) - 1
-			if m.cursor < 0 {
-				m.cursor = 0
-			}
-		}
+		m.cursor = util.CursorMovePage(m.cursor, len(m.entries), m.pager.PerPage, true)
 		m.refreshListViewport()
 		m.refreshBody()
 

@@ -93,24 +93,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.bodyViewport.SetXOffset(0)
 
 	case tea.MouseWheelMsg:
-		switch msg.Button {
-		case tea.MouseWheelUp:
-			if msg.Mod.Contains(tea.ModShift) {
-				m.bodyViewport.ScrollLeft(6)
-			} else {
-				m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() - 1)
-			}
-		case tea.MouseWheelDown:
-			if msg.Mod.Contains(tea.ModShift) {
-				m.bodyViewport.ScrollRight(6)
-			} else {
-				m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + 1)
-			}
-		case tea.MouseWheelLeft:
-			m.bodyViewport.ScrollLeft(6)
-		case tea.MouseWheelRight:
-			m.bodyViewport.ScrollRight(6)
-		}
+		util.HandleMouseWheel(msg, &m.bodyViewport)
 
 	case tea.KeyPressMsg:
 		h := keys.Keys.History
@@ -276,18 +259,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.clearSearch()
 
 		case key.Matches(msg, g.ScrollUp):
-			step := m.bodyViewport.Height() / 2
-			if step < 1 {
-				step = 1
-			}
-			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() - step)
+			util.ScrollViewport(&m.bodyViewport, -1)
 
 		case key.Matches(msg, g.ScrollDown):
-			step := m.bodyViewport.Height() / 2
-			if step < 1 {
-				step = 1
-			}
-			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + step)
+			util.ScrollViewport(&m.bodyViewport, 1)
 
 		case key.Matches(msg, g.Left):
 			m.bodyViewport.ScrollLeft(6)
@@ -304,41 +279,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.bodyViewport.SetXOffset(0)
 
 		case key.Matches(msg, g.GotoBottom):
-			if len(m.entries) > 0 {
-				m.cursor = len(m.entries) - 1
-				m.pager.Page = m.pager.TotalPages - 1
-				m.refreshListViewport()
-				m.refreshBody()
-				m.bodyViewport.SetYOffset(0)
-				m.bodyViewport.SetXOffset(0)
-			}
+			m.cursor = util.CursorGotoBottom(len(m.entries))
+			m.refreshListViewport()
+			m.refreshBody()
+			m.bodyViewport.SetYOffset(0)
+			m.bodyViewport.SetXOffset(0)
 
 		case key.Matches(msg, g.PrevPage):
-			step := m.pager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.cursor -= step
-			if m.cursor < 0 {
-				m.cursor = 0
-			}
+			m.cursor = util.CursorMovePage(m.cursor, len(m.entries), m.pager.PerPage, false)
 			m.refreshListViewport()
 			m.refreshBody()
 			m.bodyViewport.SetYOffset(0)
 			m.bodyViewport.SetXOffset(0)
 
 		case key.Matches(msg, g.NextPage):
-			step := m.pager.PerPage
-			if step < 1 {
-				step = 1
-			}
-			m.cursor += step
-			if m.cursor >= len(m.entries) {
-				m.cursor = len(m.entries) - 1
-				if m.cursor < 0 {
-					m.cursor = 0
-				}
-			}
+			m.cursor = util.CursorMovePage(m.cursor, len(m.entries), m.pager.PerPage, true)
 			m.refreshListViewport()
 			m.refreshBody()
 			m.bodyViewport.SetYOffset(0)
