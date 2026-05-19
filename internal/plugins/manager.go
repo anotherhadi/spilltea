@@ -184,6 +184,28 @@ func (m *Manager) TogglePlugin(name string) {
 	if m.db != nil {
 		_ = m.db.SavePluginState(name, enabled, configText)
 	}
+	if !enabled {
+		return
+	}
+	hc, ok := found.hooks["on_start"]
+	if !ok {
+		return
+	}
+	if hc.Sync {
+		found.mu.Lock()
+		if _, err := callHook(found, "on_start"); err != nil {
+			log.Printf("plugin %s on_start: %v", found.Name, err)
+		}
+		found.mu.Unlock()
+	} else {
+		go func() {
+			found.mu.Lock()
+			if _, err := callHook(found, "on_start"); err != nil {
+				log.Printf("plugin %s on_start: %v", found.Name, err)
+			}
+			found.mu.Unlock()
+		}()
+	}
 }
 
 func (m *Manager) SaveConfig(name, configText string) {
