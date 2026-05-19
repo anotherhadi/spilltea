@@ -8,6 +8,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 func (m Model) View() tea.View {
@@ -104,7 +105,7 @@ func (m *Model) renderStatusBar() string {
 
 func (m *Model) renderList() string {
 	if len(m.queue) == 0 {
-		return lipgloss.Place(m.listViewport.Width(), m.listViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render("       (｡◕‿‿◕｡)\nwaiting for a request"))
+		return lipgloss.Place(m.listViewport.Width(), m.listViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(｡◕‿‿◕｡)", "waiting for a request")))
 	}
 
 	s := style.S
@@ -160,7 +161,7 @@ func (m *Model) renderList() string {
 
 func (m *Model) renderResponseList() string {
 	if len(m.responseQueue) == 0 {
-		return lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render("     (҂◡_◡)\nno response yet"))
+		return lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(҂◡_◡)", "no response yet")))
 	}
 
 	s := style.S

@@ -307,7 +307,7 @@ func (m *Model) refreshBody() {
 	}
 	if raw == "" {
 		w, h := m.bodyViewport.Width(), m.bodyViewport.Height()
-		m.bodyViewport.SetContent(lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, style.S.Faint.Render("      (˘･_･˘)\nno response stored")))
+		m.bodyViewport.SetContent(lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(˘･_･˘)", "no response stored"))))
 		return
 	}
 	m.bodyViewport.SetContent(style.HighlightHTTP(raw))

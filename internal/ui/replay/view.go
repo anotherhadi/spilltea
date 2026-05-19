@@ -8,6 +8,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 func (m Model) View() tea.View {
@@ -75,7 +76,7 @@ func (m *Model) renderList() string {
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			style.S.Faint.Render("                  (╥﹏╥)\nsend a request from History or Intercept"),
+			style.S.Faint.Render(util.CenterLines("(╥﹏╥)", "send a request from History or Intercept")),
 		)
 	}
 

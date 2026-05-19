@@ -265,11 +265,11 @@ func (m *Model) refreshBody() {
 	m.requestViewport.SetXOffset(0)
 
 	if e.Sending {
-		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render("  (ﾉ◕ヮ◕)ﾉ*:･ﾟ\n   sending...")))
+		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(ﾉ◕ヮ◕)ﾉ*:･ﾟ", "sending..."))))
 	} else if e.ResponseRaw != "" {
 		m.responseViewport.SetContent(style.HighlightHTTP(e.ResponseRaw))
 	} else {
-		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render("    ( •_•)>⌐■\npress send to fire")))
+		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("( •_•)>⌐■", "press send to fire"))))
 	}
 	m.responseViewport.SetYOffset(0)
 	m.responseViewport.SetXOffset(0)

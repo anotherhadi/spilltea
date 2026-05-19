@@ -11,11 +11,12 @@ import (
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 func (m Model) View() tea.View {
 	if m.width == 0 || m.manager == nil {
-		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, style.S.Faint.Render("    (._.)~*.'\n no plugins loaded")))
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(._.)~*.'", "no plugins loaded"))))
 	}
 
 	listH, detailH := style.SplitH(m.height, m.renderStatusBar(), 0.4)
@@ -131,9 +132,9 @@ func (m *Model) renderStatusBar() string {
 func (m *Model) renderList() string {
 	s := style.S
 	if len(m.filtered) == 0 {
-		msg := " (ง •̀_•́)ง\nno plugins"
+		msg := util.CenterLines("(ง •̀_•́)ง", "no plugins", "", "spilltea --add-default-plugins")
 		if m.filter != "" {
-			msg = "   = _ =\nno results"
+			msg = util.CenterLines("= _ =", "no results")
 		}
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),

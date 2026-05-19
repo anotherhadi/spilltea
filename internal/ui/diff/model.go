@@ -10,6 +10,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 type slot struct {
@@ -149,7 +150,7 @@ func (m *Model) refreshViewports() {
 		placeholder := lipgloss.Place(
 			m.leftViewport.Width(), m.leftViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			s.Faint.Render("             <(^_^)>\nsend two entries here to compare"),
+			s.Faint.Render(util.CenterLines("<(^_^)>", "send two entries here to compare")),
 		)
 		m.leftViewport.SetContent(placeholder)
 		m.rightViewport.SetContent("")
@@ -161,7 +162,7 @@ func (m *Model) refreshViewports() {
 		placeholder := lipgloss.Place(
 			m.rightViewport.Width(), m.rightViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			s.Faint.Render("          (・3・)\nwaiting for second entry…"),
+			s.Faint.Render(util.CenterLines("(・3・)", "waiting for second entry…")),
 		)
 		m.rightViewport.SetContent(placeholder)
 		return

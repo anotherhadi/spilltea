@@ -15,6 +15,7 @@ import (
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 type Model struct {
@@ -116,7 +117,7 @@ func (m *Model) refreshBody() {
 
 func renderMarkdown(src string, width int) string {
 	if src == "" {
-		return style.S.Faint.Render(" (ㆆ _ ㆆ)\nno description")
+		return style.S.Faint.Render(util.CenterLines("(ㆆ _ ㆆ)", "no description"))
 	}
 	tmpl, err := template.New("").Parse(src)
 	if err != nil {

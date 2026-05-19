@@ -9,6 +9,7 @@ import (
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 func (m Model) View() tea.View {
@@ -84,9 +85,9 @@ func (m *Model) renderList() string {
 		)
 	}
 	if len(m.entries) == 0 {
-		msg := "    (⌐■_■)\nno history yet"
+		msg := util.CenterLines("(⌐■_■)", "no history yet")
 		if m.searchKind != searchKindOff {
-			msg = "ʕノ•ᴥ•ʔノ ︵ ┻━┻\n   no results"
+			msg = util.CenterLines("ʕノ•ᴥ•ʔノ ︵ ┻━┻", "no results")
 		}
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),

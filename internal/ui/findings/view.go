@@ -54,7 +54,7 @@ func (m *Model) renderList() string {
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			s.Faint.Render("  (҂◡_◡) ᕤ\nno findings"),
+			s.Faint.Render(util.CenterLines("(҂◡_◡) ᕤ", "no findings")),
 		)
 	}
 
