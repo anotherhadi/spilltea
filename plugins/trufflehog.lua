@@ -8,10 +8,22 @@ Requires `trufflehog` v3+ to be installed and available in PATH.
 Each finding is stored on the **Findings** page with the matched detector output.
 Findings are deduplicated per host+path+body content so repeated requests do not create duplicates.
   ]],
+  on_start    = { sync = false },
   on_request  = { sync = false },
   on_response = { sync = false },
   disable_by_default = true,
 }
+
+function on_start()
+  local handle = io.popen("command -v trufflehog 2>/dev/null")
+  local result = handle and handle:read("*a") or ""
+  if handle then handle:close() end
+  if not result or result:match("^%s*$") then
+    log("trufflehog is not installed or not in PATH")
+    notif("TruffleHog", "trufflehog is not installed or not in PATH, plugin disabled", "error")
+    return false
+  end
+end
 
 local function scan(label, content, host, path)
   if not content or content == "" then return end

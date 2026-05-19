@@ -191,17 +191,31 @@ func (m *Manager) TogglePlugin(name string) {
 	if !ok {
 		return
 	}
+	disableIfFalse := func(p *Plugin, ret lua.LValue) {
+		if ret == lua.LFalse {
+			p.Enabled = false
+			if m.db != nil {
+				_ = m.db.SavePluginState(p.Name, false, p.ConfigText)
+			}
+		}
+	}
 	if hc.Sync {
 		found.mu.Lock()
-		if _, err := callHook(found, "on_start"); err != nil {
+		ret, err := callHook(found, "on_start")
+		if err != nil {
 			log.Printf("plugin %s on_start: %v", found.Name, err)
+		} else {
+			disableIfFalse(found, ret)
 		}
 		found.mu.Unlock()
 	} else {
 		go func() {
 			found.mu.Lock()
-			if _, err := callHook(found, "on_start"); err != nil {
+			ret, err := callHook(found, "on_start")
+			if err != nil {
 				log.Printf("plugin %s on_start: %v", found.Name, err)
+			} else {
+				disableIfFalse(found, ret)
 			}
 			found.mu.Unlock()
 		}()
@@ -264,17 +278,31 @@ func (m *Manager) RunOnStart() {
 		if !ok {
 			continue
 		}
+		disableIfFalse := func(p *Plugin, ret lua.LValue) {
+			if ret == lua.LFalse {
+				p.Enabled = false
+				if m.db != nil {
+					_ = m.db.SavePluginState(p.Name, false, p.ConfigText)
+				}
+			}
+		}
 		if hc.Sync {
 			p.mu.Lock()
-			if _, err := callHook(p, "on_start"); err != nil {
+			ret, err := callHook(p, "on_start")
+			if err != nil {
 				log.Printf("plugin %s on_start: %v", p.Name, err)
+			} else {
+				disableIfFalse(p, ret)
 			}
 			p.mu.Unlock()
 		} else {
 			go func(p *Plugin) {
 				p.mu.Lock()
-				if _, err := callHook(p, "on_start"); err != nil {
+				ret, err := callHook(p, "on_start")
+				if err != nil {
 					log.Printf("plugin %s on_start: %v", p.Name, err)
+				} else {
+					disableIfFalse(p, ret)
 				}
 				p.mu.Unlock()
 			}(p)
@@ -316,11 +344,13 @@ func (m *Manager) runSyncDecisionForPlugins(hookName string, argsFor func(*Plugi
 			log.Printf("plugin %s %s: %v", p.Name, hookName, err)
 			continue
 		}
-		switch result {
-		case "drop":
-			return intercept.Drop
-		case "forward":
-			return intercept.Forward
+		if s, ok := result.(lua.LString); ok {
+			switch string(s) {
+			case "drop":
+				return intercept.Drop
+			case "forward":
+				return intercept.Forward
+			}
 		}
 	}
 	return intercept.Intercept
@@ -388,7 +418,7 @@ func (m *Manager) RunSyncOnHistoryEntry(e db.Entry) bool {
 			log.Printf("plugin %s on_history_entry: %v", p.Name, err)
 			continue
 		}
-		if result == "skip" {
+		if s, ok := result.(lua.LString); ok && string(s) == "skip" {
 			return false
 		}
 	}

@@ -292,22 +292,19 @@ func pushEntry(L *lua.LState, e db.Entry) *lua.LTable {
 	return t
 }
 
-func callHook(p *Plugin, hookName string, args ...lua.LValue) (string, error) {
+func callHook(p *Plugin, hookName string, args ...lua.LValue) (lua.LValue, error) {
 	fn := p.L.GetGlobal(hookName)
 	if fn == lua.LNil {
-		return "", nil
+		return lua.LNil, nil
 	}
 	if err := p.L.CallByParam(lua.P{
 		Fn:      fn,
 		NRet:    1,
 		Protect: true,
 	}, args...); err != nil {
-		return "", err
+		return lua.LNil, err
 	}
 	ret := p.L.Get(-1)
 	p.L.Pop(1)
-	if s, ok := ret.(lua.LString); ok {
-		return string(s), nil
-	}
-	return "", nil
+	return ret, nil
 }

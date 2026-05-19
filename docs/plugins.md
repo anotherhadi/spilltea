@@ -31,14 +31,14 @@ Plugin = {
 
 ### Hook reference
 
-| Hook                      | When called                           | Sync/async   | Return value (sync only)                        |
+| Hook                      | When called                           | Sync/async   | Return value                                    |
 | ------------------------- | ------------------------------------- | ------------ | ----------------------------------------------- |
 | `on_config(config_text)`  | At startup and on config save         | always sync  | ignored                                         |
-| `on_start()`              | Once at startup, after `on_config`    | configurable | ignored                                         |
+| `on_start()`              | Once at startup, after `on_config`    | configurable | `false` to self-disable the plugin, otherwise ignored |
 | `on_quit()`               | When the app exits                    | always sync  | ignored                                         |
-| `on_request(req)`         | Every request, before auto-forward    | configurable | `"drop"`, `"forward"`, or `nil`                 |
-| `on_response(req, res)`   | Every response                        | configurable | `"drop"`, `"forward"`, or `nil`                 |
-| `on_history_entry(entry)` | Sync: before DB insert / Async: after | configurable | `"skip"` (don't save), `"keep"` or `nil` (save) |
+| `on_request(req)`         | Every request, before auto-forward    | configurable | `"drop"`, `"forward"`, or `nil` (sync only)     |
+| `on_response(req, res)`   | Every response                        | configurable | `"drop"`, `"forward"`, or `nil` (sync only)     |
+| `on_history_entry(entry)` | Sync: before DB insert / Async: after | configurable | `"skip"` (don't save), `"keep"` or `nil` (save) -- sync only |
 
 ## Request and response objects
 
@@ -140,6 +140,27 @@ Each plugin gets a **config textarea** on the Plugins page. The raw text is pass
 `on_config` and `on_quit` are always synchronous regardless of the Plugin table declaration.
 
 ### Return values for sync hooks
+
+**`on_start`:**
+
+| Return value | Effect                                                                                       |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| `false`      | The plugin is disabled immediately and the state is persisted (equivalent to toggling it off). |
+| anything else | Ignored.                                                                                    |
+
+This is useful for prerequisite checks (binary not found, config invalid, etc.) so the plugin does not silently run in a broken state:
+
+```lua
+function on_start()
+  local h = io.popen("command -v mytool 2>/dev/null")
+  local result = h and h:read("*a") or ""
+  if h then h:close() end
+  if result:match("^%s*$") then
+    notif("MyPlugin", "mytool not found, plugin disabled", "error")
+    return false
+  end
+end
+```
 
 **`on_request` and `on_response`:**
 
