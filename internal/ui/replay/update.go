@@ -20,8 +20,8 @@ import (
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
-	"github.com/anotherhadi/spilltea/internal/util"
 	diffUI "github.com/anotherhadi/spilltea/internal/ui/diff"
+	"github.com/anotherhadi/spilltea/internal/util"
 	"github.com/klauspost/compress/zstd"
 )
 

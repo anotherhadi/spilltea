@@ -14,7 +14,6 @@ const (
 	popupH = 20
 )
 
-
 type OpenMsg struct {
 	RawRequest string
 	Scheme     string
