@@ -81,6 +81,49 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				step = 1
 			}
 			m.bodyViewport.SetYOffset(m.bodyViewport.YOffset() + step)
+		case key.Matches(msg, g.GotoTop):
+			m.cursor = 0
+			m.pager.Page = 0
+			m.refreshListViewport()
+			m.refreshBody()
+
+		case key.Matches(msg, g.GotoBottom):
+			if len(m.findings) > 0 {
+				m.cursor = len(m.findings) - 1
+				m.pager.Page = m.pager.TotalPages - 1
+				m.refreshListViewport()
+				m.refreshBody()
+			}
+
+		case key.Matches(msg, g.PrevPage):
+			step := m.pager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.cursor -= step
+			if m.cursor < 0 {
+				m.cursor = 0
+			}
+			m.pager.Page = m.cursor / m.pager.PerPage
+			m.refreshListViewport()
+			m.refreshBody()
+
+		case key.Matches(msg, g.NextPage):
+			step := m.pager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.cursor += step
+			if m.cursor >= len(m.findings) {
+				m.cursor = len(m.findings) - 1
+				if m.cursor < 0 {
+					m.cursor = 0
+				}
+			}
+			m.pager.Page = m.cursor / m.pager.PerPage
+			m.refreshListViewport()
+			m.refreshBody()
+
 		case key.Matches(msg, g.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			m.recalcSizes()

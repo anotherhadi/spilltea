@@ -60,6 +60,10 @@ keybindings:
     scroll_up: "pgup"
     scroll_down: "pgdown"
     send_to_diff: "ctrl+d"
+    goto_top: "home"
+    goto_bottom: "G,end"
+    prev_page: "["
+    next_page: "]"
 
   intercept:
     forward: "f"

@@ -22,6 +22,10 @@ type GlobalKeyMap struct {
 	ScrollUp      key.Binding
 	ScrollDown    key.Binding
 	SendToDiff    key.Binding
+	GotoTop       key.Binding
+	GotoBottom    key.Binding
+	PrevPage      key.Binding
+	NextPage      key.Binding
 }
 
 func newGlobalKeyMap(cfg config.GlobalKeys) GlobalKeyMap {
@@ -42,6 +46,10 @@ func newGlobalKeyMap(cfg config.GlobalKeys) GlobalKeyMap {
 		ScrollUp:      binding(cfg.ScrollUp, "scroll up"),
 		ScrollDown:    binding(cfg.ScrollDown, "scroll down"),
 		SendToDiff:    binding(cfg.SendToDiff, "send to diff"),
+		GotoTop:       binding(cfg.GotoTop, "go to top"),
+		GotoBottom:    binding(cfg.GotoBottom, "go to bottom"),
+		PrevPage:      binding(cfg.PrevPage, "prev page"),
+		NextPage:      binding(cfg.NextPage, "next page"),
 	}
 }
 
@@ -52,6 +60,7 @@ func (g GlobalKeyMap) Bindings() []key.Binding {
 		g.OpenLogs, g.ToggleSidebar, g.CopyAs, g.Copy,
 		g.SendToReplay, g.SendToDiff,
 		g.ScrollUp, g.ScrollDown,
+		g.GotoTop, g.GotoBottom, g.PrevPage, g.NextPage,
 	}
 }
 

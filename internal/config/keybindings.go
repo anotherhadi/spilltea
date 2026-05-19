@@ -16,6 +16,10 @@ type GlobalKeys struct {
 	ScrollUp      string `mapstructure:"scroll_up"`
 	ScrollDown    string `mapstructure:"scroll_down"`
 	SendToDiff    string `mapstructure:"send_to_diff"`
+	GotoTop       string `mapstructure:"goto_top"`
+	GotoBottom    string `mapstructure:"goto_bottom"`
+	PrevPage      string `mapstructure:"prev_page"`
+	NextPage      string `mapstructure:"next_page"`
 }
 
 type InterceptKeys struct {

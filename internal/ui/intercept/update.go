@@ -146,9 +146,6 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 	case key.Matches(msg, keys.Keys.Global.Right):
 		m.bodyViewport.ScrollRight(6)
 
-	case key.Matches(msg, keys.Keys.Global.Quit):
-		return m, tea.Quit
-
 	case key.Matches(msg, keys.Keys.Intercept.UndoEdits):
 		if onResponses {
 			if len(m.responseQueue) > 0 {
@@ -268,6 +265,30 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 				return diffUI.SendToDiffMsg{Label: label, Raw: raw}
 			}
 		}
+
+	case key.Matches(msg, keys.Keys.Global.GotoTop):
+		if onResponses {
+			m.responseCursor = 0
+		} else {
+			m.cursor = 0
+		}
+		m.refreshListViewport()
+		m.refreshResponseListViewport()
+		m.refreshBody()
+
+	case key.Matches(msg, keys.Keys.Global.GotoBottom):
+		if onResponses {
+			if len(m.responseQueue) > 0 {
+				m.responseCursor = len(m.responseQueue) - 1
+			}
+		} else {
+			if len(m.queue) > 0 {
+				m.cursor = len(m.queue) - 1
+			}
+		}
+		m.refreshListViewport()
+		m.refreshResponseListViewport()
+		m.refreshBody()
 	}
 
 	return m, tea.Batch(*cmds...)

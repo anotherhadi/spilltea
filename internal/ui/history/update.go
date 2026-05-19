@@ -271,6 +271,55 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, g.Right):
 			m.bodyViewport.ScrollRight(6)
 
+		case key.Matches(msg, g.GotoTop):
+			m.cursor = 0
+			m.pager.Page = 0
+			m.refreshListViewport()
+			m.refreshBody()
+			m.bodyViewport.SetYOffset(0)
+			m.bodyViewport.SetXOffset(0)
+
+		case key.Matches(msg, g.GotoBottom):
+			if len(m.entries) > 0 {
+				m.cursor = len(m.entries) - 1
+				m.pager.Page = m.pager.TotalPages - 1
+				m.refreshListViewport()
+				m.refreshBody()
+				m.bodyViewport.SetYOffset(0)
+				m.bodyViewport.SetXOffset(0)
+			}
+
+		case key.Matches(msg, g.PrevPage):
+			step := m.pager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.cursor -= step
+			if m.cursor < 0 {
+				m.cursor = 0
+			}
+			m.refreshListViewport()
+			m.refreshBody()
+			m.bodyViewport.SetYOffset(0)
+			m.bodyViewport.SetXOffset(0)
+
+		case key.Matches(msg, g.NextPage):
+			step := m.pager.PerPage
+			if step < 1 {
+				step = 1
+			}
+			m.cursor += step
+			if m.cursor >= len(m.entries) {
+				m.cursor = len(m.entries) - 1
+				if m.cursor < 0 {
+					m.cursor = 0
+				}
+			}
+			m.refreshListViewport()
+			m.refreshBody()
+			m.bodyViewport.SetYOffset(0)
+			m.bodyViewport.SetXOffset(0)
+
 		case key.Matches(msg, keys.Keys.Global.Help):
 			m.help.ShowAll = !m.help.ShowAll
 			m.recalcSizes()
