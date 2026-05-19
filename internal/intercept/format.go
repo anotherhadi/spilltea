@@ -3,9 +3,9 @@ package intercept
 import (
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 
+	"github.com/anotherhadi/spilltea/internal/util"
 	"github.com/lqqyt2423/go-mitmproxy/proxy"
 )
 
@@ -14,15 +14,8 @@ func FormatRawRequest(f *proxy.Flow) string {
 	r := f.Request
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "%s %s %s\n", r.Method, r.URL.RequestURI(), r.Proto)
-	keys := make([]string, 0, len(r.Header))
-	for k := range r.Header {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		for _, v := range r.Header[k] {
-			fmt.Fprintf(&sb, "%s: %s\n", k, v)
-		}
+	for _, line := range util.SortedHeaderLines(r.Header) {
+		sb.WriteString(line)
 	}
 	sb.WriteString("\n")
 	if len(r.Body) > 0 {
@@ -43,15 +36,8 @@ func FormatRawResponse(f *proxy.Flow) string {
 		proto = "HTTP/1.1"
 	}
 	fmt.Fprintf(&sb, "%s %d %s\n", proto, r.StatusCode, http.StatusText(r.StatusCode))
-	keys := make([]string, 0, len(r.Header))
-	for k := range r.Header {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		for _, v := range r.Header[k] {
-			fmt.Fprintf(&sb, "%s: %s\n", k, v)
-		}
+	for _, line := range util.SortedHeaderLines(r.Header) {
+		sb.WriteString(line)
 	}
 	sb.WriteString("\n")
 	if len(r.Body) > 0 {

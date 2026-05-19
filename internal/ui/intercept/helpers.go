@@ -9,51 +9,32 @@ import (
 
 	"github.com/anotherhadi/spilltea/internal/intercept"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 func parseRawRequest(content string, req *intercept.PendingRequest) {
+	parsed := util.ParseRawRequest(content)
 	r := req.Flow.Request
-	lines := strings.Split(strings.ReplaceAll(content, "\r\n", "\n"), "\n")
-	if len(lines) == 0 {
-		return
+	if parsed.Method != "" {
+		r.Method = parsed.Method
 	}
-
-	parts := strings.SplitN(lines[0], " ", 3)
-	if len(parts) >= 1 {
-		r.Method = strings.TrimSpace(parts[0])
-	}
-	if len(parts) >= 2 {
-		if u, err := url.ParseRequestURI(strings.TrimSpace(parts[1])); err == nil {
+	if parsed.Path != "" {
+		if u, err := url.ParseRequestURI(parsed.Path); err == nil {
 			r.URL.Path = u.Path
 			r.URL.RawQuery = u.RawQuery
 		}
 	}
-	if len(parts) >= 3 {
-		r.Proto = strings.TrimSpace(parts[2])
+	if parsed.Proto != "" {
+		r.Proto = parsed.Proto
 	}
-
 	r.Header = make(http.Header)
-	i := 1
-	for i < len(lines) {
-		line := strings.TrimRight(lines[i], "\r")
-		if line == "" {
-			i++
-			break
-		}
-		if kv := strings.SplitN(line, ": ", 2); len(kv) == 2 {
-			r.Header.Set(strings.TrimSpace(kv[0]), strings.TrimSpace(kv[1]))
-		}
-		i++
+	for _, h := range parsed.Headers {
+		r.Header.Set(h.Key, h.Value)
 	}
-
-	if i < len(lines) {
-		body := strings.Join(lines[i:], "\n")
-		body = strings.TrimRight(body, "\n")
-		if body != "" {
-			r.Body = []byte(body)
-		} else {
-			r.Body = nil
-		}
+	if parsed.Body != "" {
+		r.Body = []byte(parsed.Body)
+	} else {
+		r.Body = nil
 	}
 }
 
