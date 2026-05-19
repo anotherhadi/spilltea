@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 type header struct{ key, value string }
@@ -14,46 +16,22 @@ type parsedRequest struct {
 	path    string
 	host    string
 	scheme  string
-	headers []header
+	headers []header // garder header{key, value} pour compat locale
 	body    string
 }
 
 func parseRaw(raw, scheme string) parsedRequest {
-	lines := strings.Split(strings.ReplaceAll(raw, "\r\n", "\n"), "\n")
-	pr := parsedRequest{scheme: scheme}
-	if len(lines) == 0 {
-		return pr
+	r := util.ParseRawRequest(raw)
+	pr := parsedRequest{
+		method: r.Method,
+		path:   r.Path,
+		host:   r.Host,
+		scheme: scheme,
 	}
-
-	parts := strings.SplitN(lines[0], " ", 3)
-	if len(parts) >= 1 {
-		pr.method = strings.TrimSpace(parts[0])
+	for _, h := range r.Headers {
+		pr.headers = append(pr.headers, header{h.Key, h.Value})
 	}
-	if len(parts) >= 2 {
-		pr.path = strings.TrimSpace(parts[1])
-	}
-
-	i := 1
-	for i < len(lines) {
-		line := strings.TrimRight(lines[i], "\r")
-		if line == "" {
-			i++
-			break
-		}
-		if kv := strings.SplitN(line, ": ", 2); len(kv) == 2 {
-			k := strings.TrimSpace(kv[0])
-			v := strings.TrimSpace(kv[1])
-			pr.headers = append(pr.headers, header{k, v})
-			if strings.EqualFold(k, "host") {
-				pr.host = v
-			}
-		}
-		i++
-	}
-
-	if i < len(lines) {
-		pr.body = strings.TrimRight(strings.Join(lines[i:], "\n"), "\n")
-	}
+	pr.body = r.Body
 	return pr
 }
 
@@ -82,8 +60,27 @@ func formatAs(id, raw, scheme string) string {
 		return toMarkdown(pr)
 	case "har":
 		return toHAR(pr)
+	case "httpie":
+		return toHTTPie(pr)
 	}
 	return raw
+}
+
+func toHTTPie(pr parsedRequest) string {
+	var sb strings.Builder
+	method := strings.ToUpper(pr.method)
+	fmt.Fprintf(&sb, "http %s '%s'", method, pr.fullURL())
+	for _, h := range pr.headers {
+		if strings.EqualFold(h.key, "content-length") {
+			continue
+		}
+		fmt.Fprintf(&sb, " \\\n  '%s:%s'", h.key, h.value)
+	}
+	if pr.body != "" {
+		// Pass body via stdin hint
+		fmt.Fprintf(&sb, " \\\n  <<< %q", pr.body)
+	}
+	return sb.String()
 }
 
 func toMarkdown(pr parsedRequest) string {
