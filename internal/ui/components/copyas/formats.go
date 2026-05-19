@@ -1,7 +1,9 @@
 package copyas
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/url"
 	"strings"
 )
 
@@ -78,6 +80,8 @@ func formatAs(id, raw, scheme string) string {
 		return toFFUF(pr)
 	case "markdown":
 		return toMarkdown(pr)
+	case "har":
+		return toHAR(pr)
 	}
 	return raw
 }
@@ -199,4 +203,105 @@ func toFFUF(pr parsedRequest) string {
 		fmt.Fprintf(&sb, " \\\n  -d '%s'", body)
 	}
 	return sb.String()
+}
+
+func toHAR(pr parsedRequest) string {
+	type harNameValue struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	}
+	type harPostData struct {
+		MimeType string `json:"mimeType"`
+		Text     string `json:"text"`
+	}
+	type harRequest struct {
+		Method      string         `json:"method"`
+		URL         string         `json:"url"`
+		HTTPVersion string         `json:"httpVersion"`
+		Headers     []harNameValue `json:"headers"`
+		QueryString []harNameValue `json:"queryString"`
+		Cookies     []harNameValue `json:"cookies"`
+		HeadersSize int            `json:"headersSize"`
+		BodySize    int            `json:"bodySize"`
+		PostData    *harPostData   `json:"postData,omitempty"`
+	}
+	type harEntry struct {
+		StartedDateTime string     `json:"startedDateTime"`
+		Time            int        `json:"time"`
+		Request         harRequest `json:"request"`
+		Cache           struct{}   `json:"cache"`
+		Timings         struct {
+			Send    int `json:"send"`
+			Wait    int `json:"wait"`
+			Receive int `json:"receive"`
+		} `json:"timings"`
+	}
+	type harLog struct {
+		Version string     `json:"version"`
+		Creator struct {
+			Name    string `json:"name"`
+			Version string `json:"version"`
+		} `json:"creator"`
+		Entries []harEntry `json:"entries"`
+	}
+	type harRoot struct {
+		Log harLog `json:"log"`
+	}
+
+	headers := make([]harNameValue, 0, len(pr.headers))
+	for _, h := range pr.headers {
+		headers = append(headers, harNameValue{h.key, h.value})
+	}
+
+	var qs []harNameValue
+	if idx := strings.Index(pr.path, "?"); idx != -1 {
+		vals, err := url.ParseQuery(pr.path[idx+1:])
+		if err == nil {
+			for k, vs := range vals {
+				for _, v := range vs {
+					qs = append(qs, harNameValue{k, v})
+				}
+			}
+		}
+	}
+	if qs == nil {
+		qs = []harNameValue{}
+	}
+
+	req := harRequest{
+		Method:      pr.method,
+		URL:         pr.fullURL(),
+		HTTPVersion: "HTTP/1.1",
+		Headers:     headers,
+		QueryString: qs,
+		Cookies:     []harNameValue{},
+		HeadersSize: -1,
+		BodySize:    len(pr.body),
+	}
+	if pr.body != "" {
+		mimeType := "application/octet-stream"
+		for _, h := range pr.headers {
+			if strings.EqualFold(h.key, "content-type") {
+				mimeType = h.value
+				break
+			}
+		}
+		req.PostData = &harPostData{MimeType: mimeType, Text: pr.body}
+	}
+
+	root := harRoot{Log: harLog{
+		Version: "1.2",
+		Entries: []harEntry{{
+			StartedDateTime: "1970-01-01T00:00:00.000Z",
+			Time:            -1,
+			Request:         req,
+		}},
+	}}
+	root.Log.Creator.Name = "spilltea"
+
+	b, err := json.MarshalIndent(root, "", "  ")
+	if err != nil {
+		return ""
+	}
+	return string(b)
 }

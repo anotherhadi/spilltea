@@ -45,6 +45,7 @@ var allFormats = []list.Item{
 	formatItem{"go", "Go", "net/http package"},
 	formatItem{"ffuf", "FFUF", "web fuzzer: FUZZ in query string"},
 	formatItem{"markdown", "Markdown", "formatted for documentation"},
+	formatItem{"har", "HAR", "HTTP Archive (JSON)"},
 }
 
 type Model struct {
