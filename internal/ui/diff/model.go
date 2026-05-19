@@ -13,6 +13,135 @@ import (
 	"github.com/anotherhadi/spilltea/internal/util"
 )
 
+// isWordChar reports whether c belongs to a "word" token (letter, digit, underscore).
+func isWordChar(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_'
+}
+
+// tokenize splits s into runs of word characters and individual non-word bytes.
+func tokenize(s string) []string {
+	var out []string
+	i := 0
+	for i < len(s) {
+		if isWordChar(s[i]) {
+			j := i
+			for j < len(s) && isWordChar(s[j]) {
+				j++
+			}
+			out = append(out, s[i:j])
+			i = j
+		} else {
+			out = append(out, s[i:i+1])
+			i++
+		}
+	}
+	return out
+}
+
+// wordDiff computes a token-level diff between leftLine and rightLine and
+// returns the two rendered strings with changed tokens highlighted.
+func wordDiff(leftLine, rightLine string) (leftRendered, rightRendered string) {
+	lToks := tokenize(leftLine)
+	rToks := tokenize(rightLine)
+
+	n, m := len(lToks), len(rToks)
+	dp := make([][]int, n+1)
+	for i := range dp {
+		dp[i] = make([]int, m+1)
+	}
+	for i := 1; i <= n; i++ {
+		for j := 1; j <= m; j++ {
+			if lToks[i-1] == rToks[j-1] {
+				dp[i][j] = dp[i-1][j-1] + 1
+			} else if dp[i-1][j] >= dp[i][j-1] {
+				dp[i][j] = dp[i-1][j]
+			} else {
+				dp[i][j] = dp[i][j-1]
+			}
+		}
+	}
+
+	type segment struct {
+		kind int // 0=same, 1=left-only, 2=right-only
+		tok  string
+	}
+	segs := make([]segment, 0, n+m)
+	i, j := n, m
+	for i > 0 || j > 0 {
+		switch {
+		case i > 0 && j > 0 && lToks[i-1] == rToks[j-1]:
+			segs = append(segs, segment{0, lToks[i-1]})
+			i--
+			j--
+		case j > 0 && (i == 0 || dp[i][j-1] >= dp[i-1][j]):
+			segs = append(segs, segment{2, rToks[j-1]})
+			j--
+		default:
+			segs = append(segs, segment{1, lToks[i-1]})
+			i--
+		}
+	}
+	for lo, hi := 0, len(segs)-1; lo < hi; lo, hi = lo+1, hi-1 {
+		segs[lo], segs[hi] = segs[hi], segs[lo]
+	}
+
+	s := style.S
+	boldErr := lipgloss.NewStyle().Foreground(s.Error).Bold(true)
+	boldOk := lipgloss.NewStyle().Foreground(s.Success).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(s.Subtle)
+
+	var lb, rb strings.Builder
+	for _, seg := range segs {
+		switch seg.kind {
+		case 0:
+			lb.WriteString(dim.Render(seg.tok))
+			rb.WriteString(dim.Render(seg.tok))
+		case 1:
+			lb.WriteString(boldErr.Render(seg.tok))
+		case 2:
+			rb.WriteString(boldOk.Render(seg.tok))
+		}
+	}
+	return lb.String(), rb.String()
+}
+
+// applyWordDiff post-processes line-level diff arrays to apply token-level
+// highlighting to equal-sized blocks of removed/added lines.
+func applyWordDiff(left, right []diffLine) {
+	i := 0
+	for i < len(left) {
+		if left[i].kind != lineRemoved {
+			i++
+			continue
+		}
+		rStart := i
+		for i < len(left) && left[i].kind == lineRemoved {
+			i++
+		}
+		rEnd := i
+		aStart := i
+		for i < len(left) && left[i].kind == lineAdded {
+			i++
+		}
+		aEnd := i
+
+		nRemoved := rEnd - rStart
+		nAdded := aEnd - aStart
+		if nRemoved == 0 || nAdded == 0 {
+			continue
+		}
+		pairs := nRemoved
+		if nAdded < pairs {
+			pairs = nAdded
+		}
+		for k := 0; k < pairs; k++ {
+			lText, rText := wordDiff(left[rStart+k].plainText, right[aStart+k].plainText)
+			left[rStart+k].text = lText
+			right[aStart+k].text = rText
+		}
+	}
+}
+
 type slot struct {
 	label string
 	raw   string
@@ -39,8 +168,9 @@ const (
 )
 
 type diffLine struct {
-	text string
-	kind lineKind
+	text      string // displayed text (highlighted, possibly word-diff decorated)
+	plainText string // plain text for word-diff pairing (empty for padding lines)
+	kind      lineKind
 }
 
 type Model struct {
@@ -127,6 +257,7 @@ func (m *Model) computeDiff() {
 	leftHL := hlLines(leftNorm)
 	rightHL := hlLines(rightNorm)
 	m.leftLines, m.rightLines = lcsAlignedDiff(leftPlain, rightPlain, leftHL, rightHL)
+	applyWordDiff(m.leftLines, m.rightLines)
 }
 
 func normRaw(s string) string {
@@ -228,10 +359,10 @@ func lcsAlignedDiff(a, b, aHL, bHL []string) (left, right []diffLine) {
 			j--
 		case j > 0 && (i == 0 || dp[i][j-1] >= dp[i-1][j]):
 			left = append(left, diffLine{kind: lineAdded})
-			right = append(right, diffLine{text: hlB(j - 1), kind: lineAdded})
+			right = append(right, diffLine{text: hlB(j - 1), plainText: b[j-1], kind: lineAdded})
 			j--
 		default:
-			left = append(left, diffLine{text: hlA(i - 1), kind: lineRemoved})
+			left = append(left, diffLine{text: hlA(i - 1), plainText: a[i-1], kind: lineRemoved})
 			right = append(right, diffLine{kind: lineRemoved})
 			i--
 		}
