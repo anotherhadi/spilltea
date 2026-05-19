@@ -1,11 +1,13 @@
 package proxy
 
 import (
+	"encoding/base64"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/anotherhadi/spilltea/internal/config"
@@ -115,7 +117,7 @@ func Start(broker *intercept.Broker, mgr *plugins.Manager) error {
 
 	opts := &goproxy.Options{
 		Addr:              addr,
-		StreamLargeBodies: 1024 * 1024 * 5,
+		StreamLargeBodies: int64(cfg.MaxBodySizeMB) * 1024 * 1024,
 		CaRootPath:        caPath,
 		Upstream:          cfg.UpstreamProxy,
 	}
@@ -125,8 +127,39 @@ func Start(broker *intercept.Broker, mgr *plugins.Manager) error {
 		return err
 	}
 
+	if cfg.ProxyAuth != "" {
+		parts := strings.SplitN(cfg.ProxyAuth, ":", 2)
+		if len(parts) == 2 {
+			wantUser, wantPass := parts[0], parts[1]
+			p.SetAuthProxy(func(res http.ResponseWriter, req *http.Request) (bool, error) {
+				user, pass, ok := parseBasicProxyAuth(req.Header.Get("Proxy-Authorization"))
+				if !ok || user != wantUser || pass != wantPass {
+					res.Header().Set("Proxy-Authenticate", `Basic realm="spilltea"`)
+					return false, fmt.Errorf("invalid credentials")
+				}
+				return true, nil
+			})
+		}
+	}
+
 	p.AddAddon(&interceptAddon{broker: broker, plugins: mgr})
 	return p.Start()
+}
+
+func parseBasicProxyAuth(header string) (user, pass string, ok bool) {
+	const prefix = "Basic "
+	if !strings.HasPrefix(header, prefix) {
+		return "", "", false
+	}
+	decoded, err := base64.StdEncoding.DecodeString(header[len(prefix):])
+	if err != nil {
+		return "", "", false
+	}
+	parts := strings.SplitN(string(decoded), ":", 2)
+	if len(parts) != 2 {
+		return "", "", false
+	}
+	return parts[0], parts[1], true
 }
 
 func dropResponse() *goproxy.Response {
