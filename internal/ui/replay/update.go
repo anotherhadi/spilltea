@@ -1,18 +1,17 @@
 package replay
 
 import (
-	"bytes"
 	"crypto/tls"
 	"fmt"
 	"io"
 	"net/http"
-	"sort"
 	"strings"
 	"time"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/anotherhadi/spilltea/internal/config"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
@@ -213,6 +212,47 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.refreshListViewport()
 		m.refreshBody()
 
+	case key.Matches(msg, keys.Keys.Global.GotoTop):
+		m.cursor = 0
+		m.pager.Page = 0
+		m.refreshListViewport()
+		m.refreshBody()
+
+	case key.Matches(msg, keys.Keys.Global.GotoBottom):
+		if len(m.entries) > 0 {
+			m.cursor = len(m.entries) - 1
+			m.pager.Page = m.pager.TotalPages - 1
+			m.refreshListViewport()
+			m.refreshBody()
+		}
+
+	case key.Matches(msg, keys.Keys.Global.PrevPage):
+		step := m.pager.PerPage
+		if step < 1 {
+			step = 1
+		}
+		m.cursor -= step
+		if m.cursor < 0 {
+			m.cursor = 0
+		}
+		m.refreshListViewport()
+		m.refreshBody()
+
+	case key.Matches(msg, keys.Keys.Global.NextPage):
+		step := m.pager.PerPage
+		if step < 1 {
+			step = 1
+		}
+		m.cursor += step
+		if m.cursor >= len(m.entries) {
+			m.cursor = len(m.entries) - 1
+			if m.cursor < 0 {
+				m.cursor = 0
+			}
+		}
+		m.refreshListViewport()
+		m.refreshBody()
+
 	case key.Matches(msg, g.Help):
 		m.help.ShowAll = !m.help.ShowAll
 		m.recalcSizes()
@@ -276,58 +316,35 @@ func (m *Model) refreshBody() {
 }
 
 func doSend(entry Entry) (responseRaw string, statusCode int, err error) {
-	lines := strings.Split(strings.ReplaceAll(entry.RequestRaw, "\r\n", "\n"), "\n")
-	if len(lines) == 0 {
+	parsed := util.ParseRawRequest(entry.RequestRaw)
+	if parsed.Method == "" {
 		return "", 0, fmt.Errorf("empty request")
 	}
 
-	parts := strings.SplitN(lines[0], " ", 3)
-	if len(parts) < 2 {
-		return "", 0, fmt.Errorf("invalid request line")
+	host := parsed.Host
+	if host == "" {
+		host = entry.Host
 	}
-	method := strings.TrimSpace(parts[0])
-	path := strings.TrimSpace(parts[1])
-
 	headers := make(http.Header)
-	host := entry.Host
-	i := 1
-	for i < len(lines) {
-		line := strings.TrimRight(lines[i], "\r")
-		if line == "" {
-			i++
-			break
+	for _, h := range parsed.Headers {
+		if strings.EqualFold(h.Key, "host") {
+			continue
 		}
-		if kv := strings.SplitN(line, ": ", 2); len(kv) == 2 {
-			k := strings.TrimSpace(kv[0])
-			v := strings.TrimSpace(kv[1])
-			if strings.ToLower(k) == "host" {
-				host = v
-			} else {
-				headers.Add(k, v)
-			}
-		}
-		i++
-	}
-
-	var bodyBytes []byte
-	if i < len(lines) {
-		b := strings.Join(lines[i:], "\n")
-		b = strings.TrimRight(b, "\n")
-		bodyBytes = []byte(b)
+		headers.Add(h.Key, h.Value)
 	}
 
 	scheme := entry.Scheme
 	if scheme == "" {
 		scheme = "https"
 	}
-	urlStr := scheme + "://" + host + path
+	urlStr := scheme + "://" + host + parsed.Path
 
 	var bodyReader io.Reader
-	if len(bodyBytes) > 0 {
-		bodyReader = bytes.NewReader(bodyBytes)
+	if parsed.Body != "" {
+		bodyReader = strings.NewReader(parsed.Body)
 	}
 
-	req, err := http.NewRequest(method, urlStr, bodyReader)
+	req, err := http.NewRequest(parsed.Method, urlStr, bodyReader)
 	if err != nil {
 		return "", 0, err
 	}
@@ -349,19 +366,13 @@ func doSend(entry Entry) (responseRaw string, statusCode int, err error) {
 	}
 	defer resp.Body.Close()
 
-	respBody, _ := io.ReadAll(resp.Body)
+	limit := int64(config.Global.App.MaxBodySizeMB) * 1024 * 1024
+	respBody, _ := io.ReadAll(io.LimitReader(resp.Body, limit))
 
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "%s %d %s\n", resp.Proto, resp.StatusCode, http.StatusText(resp.StatusCode))
-	sortedKeys := make([]string, 0, len(resp.Header))
-	for k := range resp.Header {
-		sortedKeys = append(sortedKeys, k)
-	}
-	sort.Strings(sortedKeys)
-	for _, k := range sortedKeys {
-		for _, v := range resp.Header[k] {
-			fmt.Fprintf(&sb, "%s: %s\n", k, v)
-		}
+	for _, line := range util.SortedHeaderLines(resp.Header) {
+		sb.WriteString(line)
 	}
 	sb.WriteString("\n")
 	sb.Write(respBody)
@@ -390,7 +401,11 @@ func entryToDB(e Entry) db.ReplayEntry {
 }
 
 func entryFromMsg(msg SendToReplayMsg) Entry {
-	method, host, path := parseFirstLine(msg.RequestRaw, msg.Host)
+	parsed := util.ParseRawRequest(msg.RequestRaw)
+	host := parsed.Host
+	if host == "" {
+		host = msg.Host
+	}
 	scheme := msg.Scheme
 	if scheme == "" {
 		scheme = util.InferScheme(host)
@@ -398,34 +413,9 @@ func entryFromMsg(msg SendToReplayMsg) Entry {
 	return Entry{
 		Scheme:      scheme,
 		Host:        host,
-		Path:        path,
-		Method:      method,
+		Path:        parsed.Path,
+		Method:      parsed.Method,
 		OriginalRaw: msg.RequestRaw,
 		RequestRaw:  msg.RequestRaw,
 	}
-}
-
-func parseFirstLine(raw, fallbackHost string) (method, host, path string) {
-	host = fallbackHost
-	path = "/"
-	lines := strings.SplitN(raw, "\n", 2)
-	if len(lines) == 0 {
-		return
-	}
-	parts := strings.Fields(lines[0])
-	if len(parts) >= 1 {
-		method = parts[0]
-	}
-	if len(parts) >= 2 {
-		path = parts[1]
-	}
-	if len(lines) > 1 {
-		for _, line := range strings.Split(lines[1], "\n") {
-			if strings.HasPrefix(strings.ToLower(line), "host:") {
-				host = strings.TrimSpace(line[5:])
-				break
-			}
-		}
-	}
-	return
 }
