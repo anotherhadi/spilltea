@@ -40,16 +40,10 @@ function on_start()
     return
   end
 
-  -- Fetch the current outbound IP via a public API.
-  local ok, result = pcall(function()
-    local handle = io.popen("curl -sf https://api.ipify.org 2>/dev/null")
-    if not handle then return nil end
-    local ip = handle:read("*a")
-    handle:close()
-    return ip and ip:match("^%s*(.-)%s*$") or nil
-  end)
+  local result, err = shell_pipe("curl -sf https://api.ipify.org 2>/dev/null")
+  result = result and result:match("^%s*(.-)%s*$") or nil
 
-  if not ok or not result or result == "" then
+  if err or not result or result == "" then
     log("could not determine outbound IP, skipping check")
     notif("IP Filter", "Could not determine outbound IP, skipping check", "warning")
     return
