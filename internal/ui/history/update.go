@@ -230,6 +230,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
+		case key.Matches(msg, h.Flag):
+			if len(m.entries) > 0 && m.database != nil {
+				m.database.ToggleFlag(m.entries[m.cursor].ID)
+				return m, m.RefreshCmd()
+			}
+
 		case key.Matches(msg, h.DeleteEntry):
 			if len(m.entries) > 0 {
 				id := m.entries[m.cursor].ID

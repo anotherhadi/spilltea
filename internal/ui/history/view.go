@@ -113,7 +113,7 @@ func (m *Model) renderList() string {
 		w := m.listViewport.Width()
 
 		statusStr := fmt.Sprintf("%3d", e.StatusCode)
-		const fixedW = 2 + 7 + 1 + 3 + 1 + 10 + 1
+		const fixedW = 2 + 2 + 7 + 1 + 3 + 1 + 10 + 1
 		hostPathW := w - fixedW
 		if hostPathW < 0 {
 			hostPathW = 0
@@ -121,12 +121,21 @@ func (m *Model) renderList() string {
 
 		ts := e.Timestamp.Format("15:04:05")
 		statusSt := style.StatusStyle(e.StatusCode, 3)
+		flagSt := lipgloss.NewStyle().Foreground(s.Primary)
 
 		var line string
 		if selected {
 			bg := lipgloss.NewStyle().Background(selBg)
+			flagStr := "  "
+			if e.Flagged {
+				flagStr = icons.I.Flag + " "
+				if icons.I.Flag == "" {
+					flagStr = "★ "
+				}
+			}
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				bg.Bold(true).Foreground(s.Primary).Width(2).Render(">"),
+				bg.Foreground(s.Primary).Width(2).Render(flagStr),
 				s.Method(e.Method).Background(selBg).Render(e.Method),
 				bg.Width(1).Render(""),
 				statusSt.Background(selBg).Render(statusStr),
@@ -136,8 +145,16 @@ func (m *Model) renderList() string {
 				bg.Bold(true).Width(hostPathW).Render(e.Host+e.Path),
 			)
 		} else {
+			flagStr := "  "
+			if e.Flagged {
+				flagStr = icons.I.Flag + " "
+				if icons.I.Flag == "" {
+					flagStr = "★ "
+				}
+			}
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				"  ",
+				flagSt.Width(2).Render(flagStr),
 				s.Method(e.Method).Render(e.Method),
 				" ",
 				statusSt.Render(statusStr),

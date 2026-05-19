@@ -20,6 +20,7 @@ type Icons struct {
 	New       string
 	Temp      string
 	Project   string
+	Flag      string
 }
 
 var I *Icons
@@ -44,6 +45,7 @@ func Init(cfg *config.Config) {
 			New:       "󰐕 ",
 			Temp:      "󰙨 ",
 			Project:   "󰉋 ",
+			Flag:      "󰈻 ",
 		}
 	} else {
 		I = &Icons{}

@@ -39,6 +39,7 @@ type HistoryKeys struct {
 	DeleteAll   string `mapstructure:"delete_all"`
 	Filter      string `mapstructure:"filter"`
 	SqlQuery    string `mapstructure:"sql_query"`
+	Flag        string `mapstructure:"flag"`
 }
 
 type HomeKeys struct {

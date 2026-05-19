@@ -40,7 +40,8 @@ func (d *DB) migrate() error {
 			status_code  INTEGER NOT NULL,
 			request_raw  TEXT NOT NULL,
 			response_raw TEXT NOT NULL,
-			body_hash    TEXT NOT NULL DEFAULT ''
+			body_hash    TEXT NOT NULL DEFAULT '',
+			flagged      INTEGER NOT NULL DEFAULT 0
 		);
 CREATE TABLE IF NOT EXISTS replay_entries (
 			id           INTEGER PRIMARY KEY AUTOINCREMENT,

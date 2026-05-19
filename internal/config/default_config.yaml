@@ -82,6 +82,7 @@ keybindings:
     delete_all: "X"
     sql_query: ":"
     filter: "/"
+    flag: "m"
 
   home:
     open: "enter,l"

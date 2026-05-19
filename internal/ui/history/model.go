@@ -159,7 +159,7 @@ func (m historyKeyMap) FullHelp() [][]key.Binding {
 	h := keys.Keys.History
 	g := keys.Keys.Global
 	pageGlobals := []key.Binding{g.Up, g.Down, g.CycleFocus, g.ScrollUp, g.ScrollDown, g.Left, g.Right, g.Escape, g.SendToReplay, g.SendToDiff, g.Copy, g.CopyAs}
-	all := []key.Binding{h.DeleteEntry, h.DeleteAll, h.Filter, h.SqlQuery}
+	all := []key.Binding{h.Flag, h.DeleteEntry, h.DeleteAll, h.Filter, h.SqlQuery}
 	all = append(all, pageGlobals...)
 	all = append(all, g.CommonBindings()...)
 	return keys.ChunkByWidth(all, m.width)

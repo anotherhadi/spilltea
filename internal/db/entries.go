@@ -17,6 +17,7 @@ type Entry struct {
 	StatusCode  int
 	RequestRaw  string
 	ResponseRaw string
+	Flagged     bool
 }
 
 func bodyHash(body string) string {
@@ -71,10 +72,12 @@ func scanEntries(rows *sql.Rows) ([]Entry, error) {
 	for rows.Next() {
 		var e Entry
 		var ts string
-		if err := rows.Scan(&e.ID, &ts, &e.Method, &e.Host, &e.Path, &e.StatusCode, &e.RequestRaw, &e.ResponseRaw); err != nil {
+		var flagged int
+		if err := rows.Scan(&e.ID, &ts, &e.Method, &e.Host, &e.Path, &e.StatusCode, &e.RequestRaw, &e.ResponseRaw, &flagged); err != nil {
 			return nil, err
 		}
 		e.Timestamp, _ = time.Parse(time.RFC3339, ts)
+		e.Flagged = flagged != 0
 		entries = append(entries, e)
 	}
 	return entries, rows.Err()
@@ -82,7 +85,7 @@ func scanEntries(rows *sql.Rows) ([]Entry, error) {
 
 func (d *DB) ListEntries() ([]Entry, error) {
 	rows, err := d.conn.Query(
-		`SELECT id, timestamp, method, host, path, status_code, request_raw, response_raw
+		`SELECT id, timestamp, method, host, path, status_code, request_raw, response_raw, flagged
 		 FROM entries ORDER BY id DESC`,
 	)
 	if err != nil {
@@ -95,7 +98,7 @@ func (d *DB) ListEntries() ([]Entry, error) {
 func (d *DB) SearchEntries(term string) ([]Entry, error) {
 	like := "%" + term + "%"
 	rows, err := d.conn.Query(
-		`SELECT id, timestamp, method, host, path, status_code, request_raw, response_raw
+		`SELECT id, timestamp, method, host, path, status_code, request_raw, response_raw, flagged
 		 FROM entries
 		 WHERE method LIKE ? OR host LIKE ? OR path LIKE ? OR request_raw LIKE ? OR response_raw LIKE ?
 		 ORDER BY id DESC`,
@@ -121,13 +124,18 @@ func (d *DB) QueryEntries(where string) ([]Entry, error) {
 	if _, err := roConn.Exec("PRAGMA query_only=ON"); err != nil {
 		return nil, err
 	}
-	q := "SELECT id, timestamp, method, host, path, status_code, request_raw, response_raw FROM entries WHERE " + strings.TrimSpace(where)
+	q := "SELECT id, timestamp, method, host, path, status_code, request_raw, response_raw, flagged FROM entries WHERE " + strings.TrimSpace(where)
 	rows, err := roConn.Query(q)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	return scanEntries(rows)
+}
+
+func (d *DB) ToggleFlag(id int64) error {
+	_, err := d.conn.Exec(`UPDATE entries SET flagged = NOT flagged WHERE id = ?`, id)
+	return err
 }
 
 func (d *DB) DeleteEntry(id int64) error {
