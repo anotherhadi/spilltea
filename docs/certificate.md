@@ -5,7 +5,7 @@
    - On Chrome:
      - Open your Chrome settings, search for "Certificates" and click on "Security".
      - In the security settings page, scroll down and click on "Manage certificates".
-     - Select the "Authorities" tab and click on "Import tab and click on "Import".
+     - Select the "Authorities" tab and click on "Import".
      - Select the `mitmproxy-ca-cert.pem` file in `{{.Cfg.App.CertDir}}`.
    - On Firefox:
      - Open your Firefox settings, search for "Certificates" and click on "View Certificates".
