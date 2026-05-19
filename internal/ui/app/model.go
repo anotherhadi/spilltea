@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -31,10 +32,9 @@ const tickInterval = 2 * time.Second
 type tickMsg struct{}
 
 func tickCmd() tea.Cmd {
-	return func() tea.Msg {
-		time.Sleep(tickInterval)
+	return tea.Tick(tickInterval, func(time.Time) tea.Msg {
 		return tickMsg{}
-	}
+	})
 }
 
 var sidebarEntries = pageRegistry
@@ -94,14 +94,17 @@ func New(broker *intercept.Broker, name, path string) Model {
 		sidebarState:  sidebarState(cfg.TUI.DefaultSidebarState),
 	}
 
-	if d, err := db.Open(path); err == nil {
-		m.database = d
-		broker.SetDB(d)
-		m.history.SetDB(d)
-		m.replay.SetDB(d)
-		m.findingsPage.SetDB(d)
-		mgr.SetDB(d)
+	d, err := db.Open(path)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "db: %v\n", err)
+		os.Exit(1)
 	}
+	m.database = d
+	broker.SetDB(d)
+	m.history.SetDB(d)
+	m.replay.SetDB(d)
+	m.findingsPage.SetDB(d)
+	mgr.SetDB(d)
 
 	pluginsDir := config.ExpandPath(cfg.App.PluginsDir)
 	if err := mgr.LoadFromDir(pluginsDir); err != nil {

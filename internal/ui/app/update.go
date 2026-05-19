@@ -104,6 +104,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case proxyPkg.ErrMsg:
 		if msg.Err != nil {
 			log.Printf("proxy error: %v", msg.Err)
+			return m, tea.Batch(
+				func() tea.Msg {
+					return notificationsUI.NotificationMsg{
+						Title: "Proxy Error",
+						Body:  msg.Err.Error(),
+						Kind:  notificationsUI.KindError,
+					}
+				},
+				tea.Quit,
+			)
 		}
 		return m, nil
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"path/filepath"
 	"runtime/debug"
@@ -56,7 +55,8 @@ func main() {
 	}
 
 	if *flagAddDefaultPlugins {
-		cfgPath := filepath.Join(os.Getenv("HOME"), ".config", "spilltea", "config.yaml")
+		home, _ := os.UserHomeDir()
+		cfgPath := filepath.Join(home, ".config", "spilltea", "config.yaml")
 		if *flagConfig != "" {
 			cfgPath = *flagConfig
 		}
@@ -78,7 +78,8 @@ func main() {
 	}
 
 	if *flagAddDefaultConfig {
-		cfgPath := filepath.Join(os.Getenv("HOME"), ".config", "spilltea", "config.yaml")
+		home, _ := os.UserHomeDir()
+		cfgPath := filepath.Join(home, ".config", "spilltea", "config.yaml")
 		if *flagConfig != "" {
 			cfgPath = *flagConfig
 		}
@@ -95,7 +96,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfgPath := filepath.Join(os.Getenv("HOME"), ".config", "spilltea", "config.yaml")
+	home, _ := os.UserHomeDir()
+	cfgPath := filepath.Join(home, ".config", "spilltea", "config.yaml")
 	if *flagConfig != "" {
 		cfgPath = *flagConfig
 	}
@@ -118,15 +120,6 @@ func main() {
 	if *flagUpstreamProxy != "" {
 		config.Global.App.UpstreamProxy = *flagUpstreamProxy
 	}
-
-	addr := fmt.Sprintf("%s:%d", config.Global.App.Host, config.Global.App.Port)
-	// Check if the proxy port is available before starting the UI.
-	ln, err := net.Listen("tcp", addr)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "proxy: cannot bind to %s: %v\n", addr, err)
-		os.Exit(1)
-	}
-	ln.Close()
 
 	style.Init(config.Global)
 	icons.Init(config.Global)

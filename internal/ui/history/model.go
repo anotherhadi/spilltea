@@ -10,6 +10,7 @@ import (
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 type panel int
@@ -62,7 +63,12 @@ func (m Model) CurrentRaw() string {
 	return m.entries[m.cursor].RequestRaw
 }
 
-func (m Model) CurrentScheme() string { return "https" }
+func (m Model) CurrentScheme() string {
+	if len(m.entries) == 0 || m.cursor >= len(m.entries) {
+		return "https"
+	}
+	return util.InferScheme(m.entries[m.cursor].Host)
+}
 
 // RefreshCmd returns the appropriate load command given the current search state.
 // The app model should call this instead of LoadEntriesCmd directly so that

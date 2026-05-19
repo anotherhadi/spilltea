@@ -16,7 +16,6 @@ func newLuaState(mgr *Manager, p *Plugin) *lua.LState {
 		name string
 		fn   lua.LGFunction
 	}{
-		{lua.LoadLibName, lua.OpenPackage},
 		{lua.BaseLibName, lua.OpenBase},
 		{lua.TabLibName, lua.OpenTable},
 		{lua.StringLibName, lua.OpenString},
@@ -26,6 +25,10 @@ func newLuaState(mgr *Manager, p *Plugin) *lua.LState {
 		L.Push(L.NewFunction(lib.fn))
 		L.Push(lua.LString(lib.name))
 		L.Call(1, 0)
+	}
+	// Remove filesystem-access functions to prevent plugins from reading/executing arbitrary files.
+	for _, name := range []string{"dofile", "loadfile", "load"} {
+		L.SetGlobal(name, lua.LNil)
 	}
 	registerUtilities(L, mgr, p)
 	return L

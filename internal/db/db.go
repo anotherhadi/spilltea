@@ -9,6 +9,7 @@ import (
 
 type DB struct {
 	conn    *sql.DB
+	path    string
 	dedupMu sync.Mutex
 }
 
@@ -17,7 +18,7 @@ func Open(path string) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	d := &DB{conn: conn}
+	d := &DB{conn: conn, path: path}
 	if err := d.migrate(); err != nil {
 		conn.Close()
 		return nil, err
@@ -26,6 +27,9 @@ func Open(path string) (*DB, error) {
 }
 
 func (d *DB) migrate() error {
+	if _, err := d.conn.Exec(`PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=OFF;`); err != nil {
+		return err
+	}
 	_, err := d.conn.Exec(`
 		CREATE TABLE IF NOT EXISTS entries (
 			id           INTEGER PRIMARY KEY AUTOINCREMENT,

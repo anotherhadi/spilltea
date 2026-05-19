@@ -2,6 +2,7 @@ package config
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -67,7 +68,7 @@ func Load(path string) error {
 	viper.SetConfigType("yaml")
 	viper.SetConfigFile(path)
 	if err := viper.ReadInConfig(); err != nil {
-		if !os.IsNotExist(err) {
+		if !errors.Is(err, os.ErrNotExist) {
 			return err
 		}
 	}

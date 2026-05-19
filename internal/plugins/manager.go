@@ -81,6 +81,9 @@ func (m *Manager) LoadFromDir(dir string) error {
 		m.plugins = append(m.plugins, p)
 		m.mu.Unlock()
 	}
+	m.mu.Lock()
+	sort.Slice(m.plugins, func(i, j int) bool { return m.plugins[i].Priority > m.plugins[j].Priority })
+	m.mu.Unlock()
 	return nil
 }
 
@@ -157,7 +160,6 @@ func (m *Manager) GetPlugins() []*Plugin {
 	defer m.mu.RUnlock()
 	out := make([]*Plugin, len(m.plugins))
 	copy(out, m.plugins)
-	sort.Slice(out, func(i, j int) bool { return out[i].Priority > out[j].Priority })
 	return out
 }
 

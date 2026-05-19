@@ -69,6 +69,10 @@ func (a *interceptAddon) Response(f *goproxy.Flow) {
 			if err != nil {
 				log.Printf("proxy: reading response body: %v", err)
 			}
+			if int64(len(body)) == limit {
+				log.Printf("proxy: response body truncated at %dMB for %s", config.Global.App.MaxBodySizeMB, f.Request.URL.Host)
+				body = append(body, []byte(fmt.Sprintf("\n\n[body truncated at %dMB]", config.Global.App.MaxBodySizeMB))...)
+			}
 			f.Response.Body = body
 			f.Response.BodyReader = nil
 		}

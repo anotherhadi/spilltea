@@ -28,6 +28,9 @@ type Model struct {
 	pager        paginator.Model
 	help         help.Model
 
+	renderer      *glamour.TermRenderer
+	rendererWidth int
+
 	width  int
 	height int
 }
@@ -77,6 +80,11 @@ func (m *Model) recalcSizes() {
 	m.bodyViewport.SetWidth(inner)
 	m.bodyViewport.SetHeight(bodyVH)
 
+	if m.rendererWidth != inner {
+		m.renderer = nil
+		m.rendererWidth = 0
+	}
+
 	m.refreshListViewport()
 	m.refreshBody()
 }
@@ -110,12 +118,12 @@ func (m *Model) refreshBody() {
 		return
 	}
 	f := m.findings[m.cursor]
-	rendered := renderMarkdown(f.Description, m.bodyViewport.Width())
+	rendered := m.renderMarkdownCached(f.Description, m.bodyViewport.Width())
 	m.bodyViewport.SetContent(rendered)
 	m.bodyViewport.GotoTop()
 }
 
-func renderMarkdown(src string, width int) string {
+func (m *Model) renderMarkdownCached(src string, width int) string {
 	if src == "" {
 		return style.S.Faint.Render(util.CenterLines("(ㆆ _ ㆆ)", "no description"))
 	}
@@ -130,14 +138,21 @@ func renderMarkdown(src string, width int) string {
 	if width < 10 {
 		width = 80
 	}
-	r, err := glamour.NewTermRenderer(
-		glamour.WithStyles(style.GlamourStyleConfig(config.Global)),
-		glamour.WithWordWrap(width),
-	)
-	if err != nil {
+	// Rebuild renderer if width changed or not yet built.
+	if m.renderer == nil || m.rendererWidth != width {
+		r, err := glamour.NewTermRenderer(
+			glamour.WithStyles(style.GlamourStyleConfig(config.Global)),
+			glamour.WithWordWrap(width),
+		)
+		if err == nil {
+			m.renderer = r
+			m.rendererWidth = width
+		}
+	}
+	if m.renderer == nil {
 		return buf.String()
 	}
-	out, err := r.Render(buf.String())
+	out, err := m.renderer.Render(buf.String())
 	if err != nil {
 		return buf.String()
 	}
