@@ -105,20 +105,29 @@ func wordDiff(leftLine, rightLine string) (leftRendered, rightRendered string) {
 	return lb.String(), rb.String()
 }
 
-// applyWordDiff post-processes line-level diff arrays to apply token-level
-// highlighting to equal-sized blocks of removed/added lines.
-func applyWordDiff(left, right []diffLine) {
+// pairAndHighlight collapses adjacent removed/added blocks onto the same rows
+// (eliminating the interleaved padding lines) and applies word-level diff
+// highlighting to each paired line. Unpaired excess removals/additions keep
+// their original single-sided padding row.
+func pairAndHighlight(left, right []diffLine) ([]diffLine, []diffLine) {
+	newLeft := make([]diffLine, 0, len(left))
+	newRight := make([]diffLine, 0, len(right))
+
 	i := 0
 	for i < len(left) {
 		if left[i].kind != lineRemoved {
+			newLeft = append(newLeft, left[i])
+			newRight = append(newRight, right[i])
 			i++
 			continue
 		}
+
 		rStart := i
 		for i < len(left) && left[i].kind == lineRemoved {
 			i++
 		}
 		rEnd := i
+
 		aStart := i
 		for i < len(left) && left[i].kind == lineAdded {
 			i++
@@ -127,19 +136,31 @@ func applyWordDiff(left, right []diffLine) {
 
 		nRemoved := rEnd - rStart
 		nAdded := aEnd - aStart
-		if nRemoved == 0 || nAdded == 0 {
-			continue
-		}
 		pairs := nRemoved
 		if nAdded < pairs {
 			pairs = nAdded
 		}
+
 		for k := 0; k < pairs; k++ {
-			lText, rText := wordDiff(left[rStart+k].plainText, right[aStart+k].plainText)
-			left[rStart+k].text = lText
-			right[aStart+k].text = rText
+			lLine := left[rStart+k]
+			rLine := right[aStart+k]
+			lLine.text, rLine.text = wordDiff(lLine.plainText, rLine.plainText)
+			newLeft = append(newLeft, lLine)
+			newRight = append(newRight, rLine)
+		}
+
+		for k := pairs; k < nRemoved; k++ {
+			newLeft = append(newLeft, left[rStart+k])
+			newRight = append(newRight, diffLine{kind: lineRemoved})
+		}
+
+		for k := pairs; k < nAdded; k++ {
+			newLeft = append(newLeft, diffLine{kind: lineAdded})
+			newRight = append(newRight, right[aStart+k])
 		}
 	}
+
+	return newLeft, newRight
 }
 
 type slot struct {
@@ -257,7 +278,7 @@ func (m *Model) computeDiff() {
 	leftHL := hlLines(leftNorm)
 	rightHL := hlLines(rightNorm)
 	m.leftLines, m.rightLines = lcsAlignedDiff(leftPlain, rightPlain, leftHL, rightHL)
-	applyWordDiff(m.leftLines, m.rightLines)
+	m.leftLines, m.rightLines = pairAndHighlight(m.leftLines, m.rightLines)
 }
 
 func normRaw(s string) string {
