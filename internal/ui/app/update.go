@@ -212,6 +212,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.page == pageFindings {
 					if md := m.findingsPage.CurrentMarkdown(); md != "" {
 						copyUI.WriteClipboard(md)
+						return m, func() tea.Msg {
+							return notificationsUI.NotificationMsg{
+								Title: "Copied",
+								Body:  "Finding copied to clipboard",
+								Kind:  notificationsUI.KindSuccess,
+							}
+						}
 					}
 					return m, nil
 				}
