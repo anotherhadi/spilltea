@@ -15,9 +15,10 @@ Every plugin must declare a `Plugin` table and implement the hooks it wants to u
 
 ```lua
 Plugin = {
-  name        = "My Plugin",
-  description = "What this plugin does.",
-  priority    = 0,  -- higher = runs before other plugins (default: 0)
+  name               = "My Plugin",
+  description        = "What this plugin does.",
+  priority           = 0,     -- higher = runs before other plugins (default: 0)
+  disable_by_default = true,  -- if true, plugin starts disabled on first load (default: false)
 
   -- Declare which hooks you use and whether they are synchronous (default: false).
   -- on_config and on_quit are always sync and do not need to be declared here.

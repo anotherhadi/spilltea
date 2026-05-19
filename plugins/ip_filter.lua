@@ -10,6 +10,7 @@ Checks that the proxy's outbound IP is in an allowed list on startup.
 - if no IPs are configured, the check is skipped
   ]],
   on_start = { sync = false },
+  disable_by_default = true,
 }
 
 local whitelist = {}

@@ -117,6 +117,10 @@ func (m *Manager) loadPlugin(path string) (*Plugin, error) {
 		p.Priority = int(n)
 	}
 
+	if pluginTable.RawGetString("disable_by_default") == lua.LTrue {
+		p.Enabled = false
+	}
+
 	// Hooks configurable via the Plugin table (sync field).
 	configurableHooks := map[string]bool{
 		"on_start":         false, // async by default
