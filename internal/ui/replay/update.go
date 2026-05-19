@@ -21,6 +21,7 @@ import (
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/util"
+	diffUI "github.com/anotherhadi/spilltea/internal/ui/diff"
 	"github.com/klauspost/compress/zstd"
 )
 
@@ -252,6 +253,24 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.cursor = util.CursorMovePage(m.cursor, len(m.entries), m.pager.PerPage, true)
 		m.refreshListViewport()
 		m.refreshBody()
+
+	case key.Matches(msg, g.SendToDiff):
+		if len(m.entries) > 0 {
+			e := m.entries[m.cursor]
+			var raw, label string
+			if m.focusedPanel == panelResponse {
+				raw = e.ResponseRaw
+				label = fmt.Sprintf("%d %s", e.StatusCode, http.StatusText(e.StatusCode))
+			} else {
+				raw = e.RequestRaw
+				label = e.Method + " " + e.Host + e.Path
+			}
+			if raw != "" {
+				return m, func() tea.Msg {
+					return diffUI.SendToDiffMsg{Label: label, Raw: raw}
+				}
+			}
+		}
 
 	case key.Matches(msg, g.Help):
 		m.help.ShowAll = !m.help.ShowAll
