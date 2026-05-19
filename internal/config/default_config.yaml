@@ -59,7 +59,7 @@ keybindings:
     down: "down,j"
     left: "left,h"
     right: "right,l"
-    goto_top: "home"
+    goto_top: "g"
     goto_bottom: "G,end"
     scroll_up: "pgup"
     scroll_down: "pgdown"
