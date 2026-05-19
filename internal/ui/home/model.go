@@ -142,6 +142,11 @@ type Project struct {
 	ModTime time.Time
 }
 
+// ProjectSelectedMsg is emitted when the user picks a project from the home screen.
+type ProjectSelectedMsg struct {
+	Project *Project
+}
+
 type inputMode int
 
 const (
@@ -161,15 +166,11 @@ type Model struct {
 	list        list.Model
 	projectDir  string
 	nameInput   textinput.Model
-	selected    *Project
 	width       int
 	height      int
 	teapotFrame int
 }
 
-// Selected returns the project chosen by the user, or nil if the program was
-// quit without making a selection.
-func (m Model) Selected() *Project { return m.selected }
 
 func New(projectDir string) Model {
 	projects := loadProjects(projectDir)

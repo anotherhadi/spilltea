@@ -127,32 +127,25 @@ func main() {
 
 	projectDir := config.ExpandPath(config.Global.App.ProjectDir)
 
-	// Resolve project: either from --project flag or by running the home UI.
-	var project *homeUI.Project
+	// If --project flag is set, skip the home screen entirely.
 	if *flagProject != "" {
-		p, err := homeUI.OpenProject(projectDir, *flagProject)
+		project, err := homeUI.OpenProject(projectDir, *flagProject)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "project: %v\n", err)
 			os.Exit(1)
 		}
-		project = p
-	} else {
-		finalModel, err := tea.NewProgram(homeUI.New(projectDir)).Run()
-		if err != nil {
+		broker := intercept.NewBroker()
+		m := appUI.New(broker, project.Name, project.Path)
+		if _, err := tea.NewProgram(m).Run(); err != nil {
 			fmt.Fprintf(os.Stderr, "tui: %v\n", err)
 			os.Exit(1)
 		}
-		project = finalModel.(homeUI.Model).Selected()
-	}
-
-	// User quit the home screen without selecting a project.
-	if project == nil {
 		return
 	}
 
-	broker := intercept.NewBroker()
-	m := appUI.New(broker, project.Name, project.Path)
-	if _, err := tea.NewProgram(m).Run(); err != nil {
+	// Run home + app in a single program to avoid a blank flash on transition.
+	root := rootModel{home: homeUI.New(projectDir)}
+	if _, err := tea.NewProgram(root).Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "tui: %v\n", err)
 		os.Exit(1)
 	}

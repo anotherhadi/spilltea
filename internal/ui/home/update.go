@@ -76,11 +76,11 @@ func (m Model) handleSelection() (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		initProjectFiles(dir)
-		m.selected = &Project{Name: "temporary", Path: filepath.Join(dir, "data.db")}
-		return m, tea.Quit
+		p := &Project{Name: "temporary", Path: filepath.Join(dir, "data.db")}
+		return m, func() tea.Msg { return ProjectSelectedMsg{Project: p} }
 	default:
-		m.selected = &Project{Name: item.name, Path: item.path}
-		return m, tea.Quit
+		p := &Project{Name: item.name, Path: item.path}
+		return m, func() tea.Msg { return ProjectSelectedMsg{Project: p} }
 	}
 }
 
@@ -117,8 +117,8 @@ func (m Model) updateNaming(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 		initProjectFiles(dir)
-		m.selected = &Project{Name: name, Path: filepath.Join(dir, "data.db")}
-		return m, tea.Quit
+		p := &Project{Name: name, Path: filepath.Join(dir, "data.db")}
+		return m, func() tea.Msg { return ProjectSelectedMsg{Project: p} }
 	default:
 		var cmd tea.Cmd
 		m.nameInput, cmd = m.nameInput.Update(msg)
