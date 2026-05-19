@@ -25,6 +25,7 @@ func writeClipboard(text string) {
 type OpenMsg struct {
 	RawRequest string
 	Scheme     string
+	ShowURL    bool
 }
 
 type copyItem struct {
@@ -90,6 +91,17 @@ func (m *Model) Open(msg OpenMsg) {
 	m.rawRequest = msg.RawRequest
 	m.scheme = msg.Scheme
 	m.open = true
+	items := allItems
+	if !msg.ShowURL {
+		filtered := make([]list.Item, 0, len(allItems))
+		for _, it := range allItems {
+			if it.(copyItem).id != "url" {
+				filtered = append(filtered, it)
+			}
+		}
+		items = filtered
+	}
+	m.list.SetItems(items)
 	m.list.ResetFilter()
 	m.list.Select(0)
 	m.list.SetSize(m.popupInnerWidth(), m.listHeight())

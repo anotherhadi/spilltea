@@ -78,6 +78,10 @@ func (m Model) Init() tea.Cmd { return nil }
 
 func (m Model) IsEditing() bool { return m.editing }
 
+func (m Model) IsResponseFocused() bool {
+	return m.captureResponse && m.focusedPanel == panelResponses
+}
+
 func (m Model) CurrentScheme() string {
 	if len(m.queue) == 0 {
 		return "https"

@@ -187,21 +187,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch {
 			case key.Matches(msg, keys.Keys.Global.CopyAs):
 				var raw, scheme string
+				var responseFocused bool
 				switch m.page {
-				case pageDiff:
-					raw = m.diff.CurrentRaw()
-					scheme = "https"
 				case pageIntercept:
 					raw = m.intercept.CurrentRaw()
 					scheme = m.intercept.CurrentScheme()
+					responseFocused = m.intercept.IsResponseFocused()
 				case pageHistory:
 					raw = m.history.CurrentRaw()
 					scheme = m.history.CurrentScheme()
+					responseFocused = m.history.IsResponseFocused()
 				case pageReplay:
 					raw = m.replay.CurrentRaw()
 					scheme = m.replay.CurrentScheme()
+					responseFocused = m.replay.IsResponseFocused()
 				}
-				if raw != "" {
+				if raw != "" && !responseFocused {
 					m.copyAs.SetSize(m.width, m.height)
 					m.copyAs.Open(copyasUI.OpenMsg{RawRequest: raw, Scheme: scheme})
 				}
@@ -209,23 +210,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case key.Matches(msg, keys.Keys.Global.Copy):
 				var raw, scheme string
+				var responseFocused bool
 				switch m.page {
 				case pageIntercept:
 					raw = m.intercept.CurrentRaw()
 					scheme = m.intercept.CurrentScheme()
-				case pageDiff:
-					raw = m.diff.CurrentRaw()
-					scheme = "https"
+					responseFocused = m.intercept.IsResponseFocused()
 				case pageHistory:
 					raw = m.history.CurrentRaw()
 					scheme = m.history.CurrentScheme()
+					responseFocused = m.history.IsResponseFocused()
 				case pageReplay:
 					raw = m.replay.CurrentRaw()
 					scheme = m.replay.CurrentScheme()
+					responseFocused = m.replay.IsResponseFocused()
 				}
 				if raw != "" {
 					m.copy.SetSize(m.width, m.height)
-					m.copy.Open(copyUI.OpenMsg{RawRequest: raw, Scheme: scheme})
+					m.copy.Open(copyUI.OpenMsg{RawRequest: raw, Scheme: scheme, ShowURL: !responseFocused})
 				}
 				return m, nil
 

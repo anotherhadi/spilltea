@@ -34,11 +34,20 @@ type Entry struct {
 	Err         error
 }
 
+type panel int
+
+const (
+	panelList     panel = iota
+	panelRequest
+	panelResponse
+)
+
 type Model struct {
-	entries  []Entry
-	cursor   int
-	editing  bool
-	database *db.DB
+	entries      []Entry
+	cursor       int
+	editing      bool
+	focusedPanel panel
+	database     *db.DB
 
 	listViewport     viewport.Model
 	requestViewport  viewport.Model
@@ -68,9 +77,16 @@ func (m Model) Init() tea.Cmd { return nil }
 
 func (m Model) IsEditing() bool { return m.editing }
 
+func (m Model) IsResponseFocused() bool {
+	return m.focusedPanel == panelResponse
+}
+
 func (m Model) CurrentRaw() string {
 	if len(m.entries) == 0 || m.cursor >= len(m.entries) {
 		return ""
+	}
+	if m.focusedPanel == panelResponse {
+		return m.entries[m.cursor].ResponseRaw
 	}
 	return m.entries[m.cursor].RequestRaw
 }
@@ -183,12 +199,12 @@ type replayKeyMap struct{ width int }
 func (replayKeyMap) ShortHelp() []key.Binding {
 	g := keys.Keys.Global
 	r := keys.Keys.Replay
-	return []key.Binding{g.Up, g.Down, r.Send, r.Edit, g.Help}
+	return []key.Binding{g.Up, g.Down, g.CycleFocus, r.Send, r.Edit, g.Help}
 }
 
 func (m replayKeyMap) FullHelp() [][]key.Binding {
 	g := keys.Keys.Global
-	pageGlobals := []key.Binding{g.Up, g.Down, g.ScrollUp, g.ScrollDown, g.Left, g.Right, g.Escape, g.Copy, g.CopyAs}
+	pageGlobals := []key.Binding{g.Up, g.Down, g.CycleFocus, g.ScrollUp, g.ScrollDown, g.Left, g.Right, g.Escape, g.Copy, g.CopyAs}
 	all := append(keys.Keys.Replay.Bindings(), pageGlobals...)
 	all = append(all, g.CommonBindings()...)
 	return keys.ChunkByWidth(all, m.width)

@@ -34,9 +34,9 @@ func (m Model) View() tea.View {
 
 func (m *Model) renderListPanel(w, h int) string {
 	s := style.S
-	panelStyle := s.PanelFocused
-	if m.editing {
-		panelStyle = s.Panel
+	panelStyle := s.Panel
+	if !m.editing && m.focusedPanel == panelList {
+		panelStyle = s.PanelFocused
 	}
 	var dots string
 	if len(m.entries) > 0 {
@@ -58,13 +58,20 @@ func (m *Model) renderRequestPanel(w, h int) string {
 		border = s.PanelFocused
 	} else {
 		body = m.requestViewport.View()
+		if m.focusedPanel == panelRequest {
+			border = s.PanelFocused
+		}
 	}
 	return style.RenderWithTitle(border, icons.I.Request+"Request", body, w, h)
 }
 
 func (m *Model) renderResponsePanel(w, h int) string {
 	s := style.S
-	return style.RenderWithTitle(s.Panel, icons.I.Response+"Response", m.responseViewport.View(), w, h)
+	border := s.Panel
+	if !m.editing && m.focusedPanel == panelResponse {
+		border = s.PanelFocused
+	}
+	return style.RenderWithTitle(border, icons.I.Response+"Response", m.responseViewport.View(), w, h)
 }
 
 func (m *Model) renderStatusBar() string {

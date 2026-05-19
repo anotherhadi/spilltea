@@ -60,7 +60,14 @@ func (m Model) CurrentRaw() string {
 	if len(m.entries) == 0 || m.cursor >= len(m.entries) {
 		return ""
 	}
+	if m.focusedPanel == panelResponse {
+		return m.entries[m.cursor].ResponseRaw
+	}
 	return m.entries[m.cursor].RequestRaw
+}
+
+func (m Model) IsResponseFocused() bool {
+	return m.focusedPanel == panelResponse
 }
 
 func (m Model) CurrentScheme() string {

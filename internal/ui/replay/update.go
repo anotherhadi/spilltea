@@ -1,6 +1,9 @@
 package replay
 
 import (
+	"bytes"
+	"compress/gzip"
+	"compress/zlib"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -9,8 +12,11 @@ import (
 	"time"
 
 	"charm.land/bubbles/v2/key"
+	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/andybalholm/brotli"
+	"github.com/klauspost/compress/zstd"
 	"github.com/anotherhadi/spilltea/internal/config"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
@@ -91,14 +97,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.requestViewport.ScrollLeft(6)
 					m.responseViewport.ScrollLeft(6)
 				} else {
-					m.responseViewport.SetYOffset(m.responseViewport.YOffset() - 1)
+					m.scrollFocusedViewportVertical(-1)
 				}
 			case tea.MouseWheelDown:
 				if msg.Mod.Contains(tea.ModShift) {
 					m.requestViewport.ScrollRight(6)
 					m.responseViewport.ScrollRight(6)
 				} else {
-					m.responseViewport.SetYOffset(m.responseViewport.YOffset() + 1)
+					m.scrollFocusedViewportVertical(1)
 				}
 			case tea.MouseWheelLeft:
 				m.requestViewport.ScrollLeft(6)
@@ -124,17 +130,35 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	r := keys.Keys.Replay
 	switch {
 	case key.Matches(msg, g.Up):
-		if m.cursor > 0 {
-			m.cursor--
-			m.refreshListViewport()
-			m.refreshBody()
+		if m.focusedPanel == panelList {
+			if m.cursor > 0 {
+				m.cursor--
+				m.refreshListViewport()
+				m.refreshBody()
+			}
+		} else {
+			m.scrollFocusedViewportVertical(-1)
 		}
 
 	case key.Matches(msg, g.Down):
-		if m.cursor < len(m.entries)-1 {
-			m.cursor++
-			m.refreshListViewport()
-			m.refreshBody()
+		if m.focusedPanel == panelList {
+			if m.cursor < len(m.entries)-1 {
+				m.cursor++
+				m.refreshListViewport()
+				m.refreshBody()
+			}
+		} else {
+			m.scrollFocusedViewportVertical(1)
+		}
+
+	case key.Matches(msg, g.CycleFocus):
+		switch m.focusedPanel {
+		case panelList:
+			m.focusedPanel = panelRequest
+		case panelRequest:
+			m.focusedPanel = panelResponse
+		default:
+			m.focusedPanel = panelList
 		}
 
 	case key.Matches(msg, r.Send):
@@ -166,18 +190,22 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		}
 
 	case key.Matches(msg, g.ScrollUp):
-		step := m.responseViewport.Height() / 2
+		vp := m.focusedViewport()
+		step := vp.Height() / 2
 		if step < 1 {
 			step = 1
 		}
-		m.responseViewport.SetYOffset(m.responseViewport.YOffset() - step)
+		vp.SetYOffset(vp.YOffset() - step)
+		m.setFocusedViewport(vp)
 
 	case key.Matches(msg, g.ScrollDown):
-		step := m.responseViewport.Height() / 2
+		vp := m.focusedViewport()
+		step := vp.Height() / 2
 		if step < 1 {
 			step = 1
 		}
-		m.responseViewport.SetYOffset(m.responseViewport.YOffset() + step)
+		vp.SetYOffset(vp.YOffset() + step)
+		m.setFocusedViewport(vp)
 
 	case key.Matches(msg, g.Left):
 		m.requestViewport.ScrollLeft(6)
@@ -280,6 +308,29 @@ func (m Model) updateEditMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// focusedViewport returns the viewport that should receive scroll events.
+// When the list is focused, scroll targets the request panel.
+func (m *Model) focusedViewport() viewport.Model {
+	if m.focusedPanel == panelResponse {
+		return m.responseViewport
+	}
+	return m.requestViewport
+}
+
+func (m *Model) setFocusedViewport(vp viewport.Model) {
+	if m.focusedPanel == panelResponse {
+		m.responseViewport = vp
+	} else {
+		m.requestViewport = vp
+	}
+}
+
+func (m *Model) scrollFocusedViewportVertical(delta int) {
+	vp := m.focusedViewport()
+	vp.SetYOffset(vp.YOffset() + delta)
+	m.setFocusedViewport(vp)
+}
+
 func (m *Model) refreshListViewport() {
 	if m.pager.PerPage > 0 {
 		if len(m.entries) == 0 {
@@ -369,6 +420,14 @@ func doSend(entry Entry) (responseRaw string, statusCode int, err error) {
 	limit := int64(config.Global.App.MaxBodySizeMB) * 1024 * 1024
 	respBody, _ := io.ReadAll(io.LimitReader(resp.Body, limit))
 
+	if enc := resp.Header.Get("Content-Encoding"); enc != "" {
+		if decoded, decErr := decodeBody(enc, respBody); decErr == nil {
+			respBody = decoded
+			resp.Header.Del("Content-Encoding")
+			resp.Header.Del("Content-Length")
+		}
+	}
+
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "%s %d %s\n", resp.Proto, resp.StatusCode, http.StatusText(resp.StatusCode))
 	for _, line := range util.SortedHeaderLines(resp.Header) {
@@ -378,6 +437,35 @@ func doSend(entry Entry) (responseRaw string, statusCode int, err error) {
 	sb.Write(respBody)
 
 	return sb.String(), resp.StatusCode, nil
+}
+
+func decodeBody(encoding string, body []byte) ([]byte, error) {
+	switch strings.ToLower(strings.TrimSpace(encoding)) {
+	case "gzip":
+		r, err := gzip.NewReader(bytes.NewReader(body))
+		if err != nil {
+			return nil, err
+		}
+		defer r.Close()
+		return io.ReadAll(r)
+	case "br":
+		return io.ReadAll(brotli.NewReader(bytes.NewReader(body)))
+	case "deflate":
+		r, err := zlib.NewReader(bytes.NewReader(body))
+		if err != nil {
+			return nil, err
+		}
+		defer r.Close()
+		return io.ReadAll(r)
+	case "zstd":
+		r, err := zstd.NewReader(bytes.NewReader(body))
+		if err != nil {
+			return nil, err
+		}
+		defer r.Close()
+		return io.ReadAll(r)
+	}
+	return nil, fmt.Errorf("unsupported encoding: %s", encoding)
 }
 
 func entryToDB(e Entry) db.ReplayEntry {

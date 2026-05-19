@@ -405,7 +405,7 @@ func (diffKeyMap) ShortHelp() []key.Binding {
 
 func (m diffKeyMap) FullHelp() [][]key.Binding {
 	g := keys.Keys.Global
-	pageGlobals := []key.Binding{g.Up, g.Down, g.CycleFocus, g.ScrollUp, g.ScrollDown, g.Left, g.Right, g.Copy, g.CopyAs}
+	pageGlobals := []key.Binding{g.Up, g.Down, g.CycleFocus, g.ScrollUp, g.ScrollDown, g.Left, g.Right}
 	all := append(keys.Keys.Diff.Bindings(), pageGlobals...)
 	all = append(all, g.CommonBindings()...)
 	return keys.ChunkByWidth(all, m.width)

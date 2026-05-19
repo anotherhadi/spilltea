@@ -15,6 +15,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			log.Printf("findings load error: %v", msg.Err)
 			return m, nil
 		}
+		var prevID int64
+		if len(m.findings) > 0 && m.cursor < len(m.findings) {
+			prevID = m.findings[m.cursor].ID
+		}
 		m.findings = msg.Findings
 		if m.cursor >= len(m.findings) {
 			m.cursor = max(0, len(m.findings)-1)
@@ -26,7 +30,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.pager.SetTotalPages(len(m.findings))
 		}
 		m.refreshListViewport()
-		m.refreshBody()
+		var newID int64
+		if len(m.findings) > 0 && m.cursor < len(m.findings) {
+			newID = m.findings[m.cursor].ID
+		}
+		if newID != prevID {
+			m.refreshBody()
+		} else {
+			m.refreshBodyKeepScroll()
+		}
 		return m, nil
 
 	case tea.MouseWheelMsg:

@@ -17,6 +17,8 @@ type Finding struct {
 // UpsertFinding inserts the finding if the (plugin_name, dedup_key) pair does
 // not already exist. Returns true when the row was actually inserted.
 func (d *DB) UpsertFinding(f Finding) (bool, error) {
+	d.dedupMu.Lock()
+	defer d.dedupMu.Unlock()
 	res, err := d.conn.Exec(
 		`INSERT OR IGNORE INTO findings (plugin_name, dedup_key, title, description, severity, dismissed, created_at)
 		 VALUES (?, ?, ?, ?, ?, 0, ?)`,

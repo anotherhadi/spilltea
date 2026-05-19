@@ -113,6 +113,14 @@ type FindingsLoadedMsg struct {
 }
 
 func (m *Model) refreshBody() {
+	m.refreshBodyScroll(true)
+}
+
+func (m *Model) refreshBodyKeepScroll() {
+	m.refreshBodyScroll(false)
+}
+
+func (m *Model) refreshBodyScroll(reset bool) {
 	if len(m.findings) == 0 {
 		m.bodyViewport.SetContent("")
 		return
@@ -120,7 +128,9 @@ func (m *Model) refreshBody() {
 	f := m.findings[m.cursor]
 	rendered := m.renderMarkdownCached(f.Description, m.bodyViewport.Width())
 	m.bodyViewport.SetContent(rendered)
-	m.bodyViewport.GotoTop()
+	if reset {
+		m.bodyViewport.GotoTop()
+	}
 }
 
 func (m *Model) renderMarkdownCached(src string, width int) string {
