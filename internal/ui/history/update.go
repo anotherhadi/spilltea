@@ -36,18 +36,36 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.searchKind != searchKindOff && (m.searchAccepted || m.searchInput.Value() != "") {
 			return m, nil
 		}
-		prevCursor := m.cursor
+		// Remember the selected entry's ID so we can re-anchor after the list is
+		// reloaded (new entries are prepended; a pure index-based cursor would
+		// silently jump to a different entry).
+		var selectedID int64
+		if m.cursor >= 0 && m.cursor < len(m.entries) {
+			selectedID = m.entries[m.cursor].ID
+		}
 		m.entries = msg.Entries
+		entryChanged := true
+		if selectedID != 0 {
+			for i, e := range m.entries {
+				if e.ID == selectedID {
+					m.cursor = i
+					entryChanged = false
+					break
+				}
+			}
+		}
 		if m.cursor >= len(m.entries) {
 			m.cursor = len(m.entries) - 1
+			entryChanged = true
 		}
 		if m.cursor < 0 {
 			m.cursor = 0
+			entryChanged = true
 		}
 		m.pager.SetTotalPages(len(m.entries))
 		m.refreshListViewport()
 		m.refreshBody()
-		if m.cursor != prevCursor {
+		if entryChanged {
 			m.bodyViewport.SetYOffset(0)
 			m.bodyViewport.SetXOffset(0)
 		}
