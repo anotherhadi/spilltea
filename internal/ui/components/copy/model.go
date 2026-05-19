@@ -1,9 +1,6 @@
 package copy
 
 import (
-	"encoding/base64"
-	"fmt"
-	"os"
 	"strings"
 
 	"charm.land/bubbles/v2/list"
@@ -17,10 +14,6 @@ const (
 	popupH = 20
 )
 
-func WriteClipboard(text string) {
-	encoded := base64.StdEncoding.EncodeToString([]byte(text))
-	fmt.Fprintf(os.Stderr, "\033]52;c;%s\a", encoded)
-}
 
 type OpenMsg struct {
 	RawRequest string

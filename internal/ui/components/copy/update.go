@@ -4,16 +4,26 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"github.com/anotherhadi/spilltea/internal/keys"
+	notificationsUI "github.com/anotherhadi/spilltea/internal/ui/components/notifications"
 )
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	if kp, ok := msg.(tea.KeyPressMsg); ok {
 		switch {
 		case kp.String() == "enter":
-			if item, ok := m.list.SelectedItem().(copyItem); ok {
-				WriteClipboard(m.extract(item.id))
-			}
 			m.open = false
+			if item, ok := m.list.SelectedItem().(copyItem); ok {
+				return m, tea.Batch(
+					tea.SetClipboard(m.extract(item.id)),
+					func() tea.Msg {
+						return notificationsUI.NotificationMsg{
+							Title: "Copied",
+							Body:  "Request copied to clipboard",
+							Kind:  notificationsUI.KindSuccess,
+						}
+					},
+				)
+			}
 			return m, nil
 		case key.Matches(kp, keys.Keys.Global.Escape):
 			if m.list.SettingFilter() {

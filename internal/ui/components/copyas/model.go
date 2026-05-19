@@ -1,10 +1,6 @@
 package copyas
 
 import (
-	"encoding/base64"
-	"fmt"
-	"os"
-
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -16,12 +12,6 @@ const (
 	popupH = 20
 )
 
-// writeClipboard uses the OSC 52 terminal escape sequence to set the clipboard.
-// Supported by most modern terminals (foot, kitty, wezterm, alacritty, xterm…).
-func writeClipboard(text string) {
-	encoded := base64.StdEncoding.EncodeToString([]byte(text))
-	fmt.Fprintf(os.Stderr, "\033]52;c;%s\a", encoded)
-}
 
 type OpenMsg struct {
 	RawRequest string

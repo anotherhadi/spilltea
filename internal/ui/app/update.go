@@ -211,14 +211,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, keys.Keys.Global.Copy):
 				if m.page == pageFindings {
 					if md := m.findingsPage.CurrentMarkdown(); md != "" {
-						copyUI.WriteClipboard(md)
-						return m, func() tea.Msg {
-							return notificationsUI.NotificationMsg{
-								Title: "Copied",
-								Body:  "Finding copied to clipboard",
-								Kind:  notificationsUI.KindSuccess,
-							}
-						}
+						return m, tea.Batch(
+							tea.SetClipboard(md),
+							func() tea.Msg {
+								return notificationsUI.NotificationMsg{
+									Title: "Copied",
+									Body:  "Finding copied to clipboard",
+									Kind:  notificationsUI.KindSuccess,
+								}
+							},
+						)
 					}
 					return m, nil
 				}
