@@ -47,35 +47,35 @@ tui:
 keybindings:
   global:
     quit: "q,ctrl+c"
+    help: "?"
     open_logs: "ctrl+g"
     toggle_sidebar: "ctrl+b"
-    help: "?"
+    cycle_focus: "tab"
+    send_to_replay: "ctrl+r"
+    send_to_diff: "ctrl+d"
+    copy_as: "ctrl+y"
+    copy: "y"
     up: "up,k"
     down: "down,j"
     left: "left,h"
     right: "right,l"
-    cycle_focus: "tab"
-    copy_as: "ctrl+y"
-    copy: "y"
-    send_to_replay: "ctrl+r"
-    scroll_up: "pgup"
-    scroll_down: "pgdown"
-    send_to_diff: "ctrl+d"
     goto_top: "home"
     goto_bottom: "G,end"
+    scroll_up: "pgup"
+    scroll_down: "pgdown"
     prev_page: "["
     next_page: "]"
 
   intercept:
+    toggle_intercept: "i"
+    capture_response: "r"
     forward: "f"
     forward_all: "F"
     drop: "d"
     drop_all: "D"
-    toggle_intercept: "i"
-    capture_response: "r"
-    undo_edits: "ctrl+z"
     edit: "e,enter"
     edit_external: "E"
+    undo_edits: "ctrl+z"
 
   history:
     delete_entry: "x"
@@ -85,20 +85,20 @@ keybindings:
     flag: "m"
 
   home:
-    open: "enter,l"
+    open: "l,enter"
     delete: "x"
     filter: "/"
 
   replay:
-    send: "enter,s"
+    send: "s, enter"
     edit: "e"
     edit_external: "E"
-    undo_edits: "R"
+    undo_edits: "ctrl+z"
     delete_entry: "x"
     delete_all: "X"
 
   diff:
-    clear: "c"
+    clear: "x"
 
   findings:
     dismiss: "x"
