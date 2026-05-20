@@ -3,7 +3,7 @@
   buildGoApplication,
 }: let
   pname = "spilltea";
-  version = "0.0.5";
+  version = "0.0.6";
   ldflags = ["-s" "-w" "-X main.version=${version}"];
   pkg = buildGoApplication {
     inherit pname version ldflags;
