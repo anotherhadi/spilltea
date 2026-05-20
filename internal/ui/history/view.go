@@ -46,7 +46,7 @@ func (m *Model) renderBodyPanel(h int) string {
 	if m.focusedPanel == panelResponse {
 		title = icons.I.Response + "Response"
 	}
-	return style.RenderWithTitle(s.Panel, title, m.bodyViewport.View(), m.width, h)
+	return style.RenderWithTitle(s.Panel, title, style.ViewportView(&m.bodyViewport), m.width, h)
 }
 
 func (m *Model) renderStatusBar() string {

@@ -58,8 +58,8 @@ func (m *Model) renderPanels(panelH int) string {
 		rightBorder = s.PanelFocused
 	}
 
-	left := style.RenderWithTitle(leftBorder, leftTitle, m.leftViewport.View(), leftW, panelH)
-	right := style.RenderWithTitle(rightBorder, rightTitle, m.rightViewport.View(), rightW, panelH)
+	left := style.RenderWithTitle(leftBorder, leftTitle, style.ViewportView(&m.leftViewport), leftW, panelH)
+	right := style.RenderWithTitle(rightBorder, rightTitle, style.ViewportView(&m.rightViewport), rightW, panelH)
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, left, right)
 }

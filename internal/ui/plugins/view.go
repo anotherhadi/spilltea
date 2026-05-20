@@ -73,7 +73,7 @@ func (m *Model) renderDetailPanel(h int) string {
 			s.Faint.Render(filepath.Base(info.FilePath)),
 	)
 
-	parts := []string{header, m.detailViewport.View()}
+	parts := []string{header, style.ViewportView(&m.detailViewport)}
 
 	if m.hasConfig() {
 		var configLabel string

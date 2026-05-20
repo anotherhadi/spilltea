@@ -87,7 +87,7 @@ func (m *Model) renderBodyPanel(h int) string {
 	if m.editing {
 		body = m.textarea.View()
 	} else {
-		body = m.bodyViewport.View()
+		body = style.ViewportView(&m.bodyViewport)
 	}
 
 	border := s.Panel

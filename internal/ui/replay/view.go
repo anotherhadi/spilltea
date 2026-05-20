@@ -57,7 +57,7 @@ func (m *Model) renderRequestPanel(w, h int) string {
 		body = m.textarea.View()
 		border = s.PanelFocused
 	} else {
-		body = m.requestViewport.View()
+		body = style.ViewportView(&m.requestViewport)
 		if m.focusedPanel == panelRequest {
 			border = s.PanelFocused
 		}
@@ -71,7 +71,7 @@ func (m *Model) renderResponsePanel(w, h int) string {
 	if !m.editing && m.focusedPanel == panelResponse {
 		border = s.PanelFocused
 	}
-	return style.RenderWithTitle(border, icons.I.Response+"Response", m.responseViewport.View(), w, h)
+	return style.RenderWithTitle(border, icons.I.Response+"Response", style.ViewportView(&m.responseViewport), w, h)
 }
 
 func (m *Model) renderStatusBar() string {

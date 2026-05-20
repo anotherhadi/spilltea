@@ -15,6 +15,25 @@ func NewViewport() viewport.Model {
 	return vp
 }
 
+func ViewportView(vp *viewport.Model) string {
+	v := vp.View()
+	if vp.AtBottom() {
+		return v
+	}
+	lines := strings.Split(v, "\n")
+	if len(lines) == 0 {
+		return v
+	}
+	arrow := lipgloss.NewStyle().Foreground(S.Subtle).Render("↓")
+	arrowW := lipgloss.Width(arrow)
+	inner := vp.Width() - 2*arrowW
+	if inner < 0 {
+		inner = 0
+	}
+	lines[len(lines)-1] = arrow + strings.Repeat(" ", inner) + arrow
+	return strings.Join(lines, "\n")
+}
+
 func NewPaginator() paginator.Model {
 	p := paginator.New()
 	p.Type = paginator.Dots

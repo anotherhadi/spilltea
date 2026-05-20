@@ -18,6 +18,7 @@ func Paint(c color.Color, s string) string {
 func HighlightHTTP(raw string) string {
 	raw = strings.ReplaceAll(raw, "\r\n", "\n")
 	raw = strings.ReplaceAll(raw, "\r", "\n")
+	raw = strings.ReplaceAll(raw, "\t", "    ")
 	idx := strings.Index(raw, "\n\n")
 	if idx == -1 {
 		return highlightHeaders(raw)

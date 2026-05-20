@@ -45,7 +45,7 @@ func (m *Model) renderBodyPanel(h int) string {
 	if len(m.findings) > 0 {
 		title = m.findings[m.cursor].Title
 	}
-	return style.RenderWithTitle(s.Panel, title, m.bodyViewport.View(), m.width, h)
+	return style.RenderWithTitle(s.Panel, title, style.ViewportView(&m.bodyViewport), m.width, h)
 }
 
 func (m *Model) renderList() string {
