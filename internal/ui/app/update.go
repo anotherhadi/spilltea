@@ -37,6 +37,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case intercept.RequestArrivedMsg:
 		updated, cmd := m.intercept.Update(msg)
 		m.intercept = updated.(interceptUI.Model)
+		if m.page == pageIntercept {
+			m.intercept.ClearUnread()
+		}
 		return m, tea.Batch(cmd, intercept.WaitForRequest(m.broker))
 	case intercept.ResponseArrivedMsg:
 		updated, cmd := m.intercept.Update(msg)
@@ -129,6 +132,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case findingsUI.FindingsLoadedMsg:
 		updated, cmd := m.findingsPage.Update(msg)
 		m.findingsPage = updated.(findingsUI.Model)
+		if m.page == pageFindings {
+			m.findingsPage.ClearUnread()
+		}
 		return m, cmd
 
 	case replayUI.SendToReplayMsg:
@@ -258,7 +264,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, m.history.RefreshCmd()
 					}
 					if p == pageFindings {
+						m.findingsPage.ClearUnread()
 						return m, findingsUI.RefreshCmd(m.database)
+					}
+					if p == pageIntercept {
+						m.intercept.ClearUnread()
 					}
 				}
 			}

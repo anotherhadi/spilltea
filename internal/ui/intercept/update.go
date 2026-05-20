@@ -31,6 +31,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		wasEmpty := len(m.queue) == 0
 		m.queue = append(m.queue, msg.Req)
+		m.hasUnread = true
 		m.refreshListViewport()
 		if wasEmpty && (!m.captureResponse || m.focusedPanel == panelRequests) {
 			m.refreshBody()

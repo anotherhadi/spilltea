@@ -61,11 +61,15 @@ func (m *Model) renderSidebar() string {
 	lineStyle := lipgloss.NewStyle().Width(inner).Padding(0, 1)
 
 	var items strings.Builder
+	badgeUnread := lipgloss.NewStyle().Foreground(s.Warning).Bold(true)
+
 	for i, entry := range sidebarEntries {
 		selected := entry.id == m.page
 		badgeStyle, textStyle := badgeNormal, textNormal
 		if selected {
 			badgeStyle, textStyle = badgeSelected, textSelected
+		} else if entry.hasUpdate != nil && entry.hasUpdate(m) {
+			badgeStyle = badgeUnread
 		}
 		icon := ""
 		if entry.icon != nil {

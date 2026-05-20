@@ -19,9 +19,11 @@ import (
 )
 
 type Model struct {
-	database *db.DB
-	findings []db.Finding
-	cursor   int
+	database   *db.DB
+	findings   []db.Finding
+	cursor     int
+	hasUnread  bool
+	knownCount int
 
 	listViewport viewport.Model
 	bodyViewport viewport.Model
@@ -45,6 +47,9 @@ func New() Model {
 }
 
 func (m Model) Init() tea.Cmd { return nil }
+
+func (m Model) HasUnread() bool { return m.hasUnread }
+func (m *Model) ClearUnread()   { m.hasUnread = false; m.knownCount = len(m.findings) }
 
 func (m *Model) CurrentMarkdown() string {
 	if len(m.findings) == 0 {

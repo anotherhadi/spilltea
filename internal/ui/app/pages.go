@@ -37,6 +37,8 @@ type pageEntry struct {
 	isEditing func(m *Model) bool
 	// resize propagates a new (w, h) to the page model.
 	resize func(m *Model, w, h int)
+	// hasUpdate reports whether the page has unseen updates.
+	hasUpdate func(m *Model) bool
 }
 
 var pageRegistry = []pageEntry{
@@ -52,6 +54,7 @@ var pageRegistry = []pageEntry{
 		},
 		isEditing: func(m *Model) bool { return m.intercept.IsEditing() },
 		resize:    func(m *Model, w, h int) { m.intercept.SetSize(w, h) },
+		hasUpdate: func(m *Model) bool { return m.intercept.HasUnread() },
 	},
 	{
 		id:   pageHistory,
@@ -114,7 +117,8 @@ var pageRegistry = []pageEntry{
 			m.findingsPage = updated.(findingsUI.Model)
 			return cmd
 		},
-		resize: func(m *Model, w, h int) { m.findingsPage.SetSize(w, h) },
+		resize:    func(m *Model, w, h int) { m.findingsPage.SetSize(w, h) },
+		hasUpdate: func(m *Model) bool { return m.findingsPage.HasUnread() },
 	},
 	{
 		id:   pageDocs,

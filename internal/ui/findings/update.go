@@ -21,6 +21,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			prevID = m.findings[m.cursor].ID
 		}
 		m.findings = msg.Findings
+		if len(m.findings) > m.knownCount {
+			m.hasUnread = true
+		}
 		if m.cursor >= len(m.findings) {
 			m.cursor = max(0, len(m.findings)-1)
 		}

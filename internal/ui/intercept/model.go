@@ -30,6 +30,7 @@ type Model struct {
 
 	editing              bool
 	interceptEnabled     bool
+	hasUnread            bool
 	pendingEdits         map[*intercept.PendingRequest]string
 	pendingResponseEdits map[*intercept.PendingResponse]string
 
@@ -75,6 +76,9 @@ func New(broker *intercept.Broker) Model {
 }
 
 func (m Model) Init() tea.Cmd { return nil }
+
+func (m Model) HasUnread() bool { return m.hasUnread }
+func (m *Model) ClearUnread()   { m.hasUnread = false }
 
 func (m Model) IsEditing() bool { return m.editing }
 
