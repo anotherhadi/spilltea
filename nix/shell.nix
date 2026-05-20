@@ -53,6 +53,7 @@ in
         go
         python3
         doctoc
+        trufflehog
         gomod2nixPkgs.gomod2nix
       ]
       ++ hooks.enabledPackages;
