@@ -138,14 +138,14 @@ func sanitizeName(s string) string {
 }
 
 func IsValidProjectName(s string) bool {
-	if s == "tmp" {
+	if s == "tmp" || s == "temp" || s == "temporary" {
 		return true
 	}
 	return s != "" && s == sanitizeName(s)
 }
 
 func OpenProject(projectDir, name string) (*Project, error) {
-	if name == "tmp" {
+	if name == "tmp" || name == "temp" || name == "temporary" {
 		dir := tempDir()
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return nil, err
