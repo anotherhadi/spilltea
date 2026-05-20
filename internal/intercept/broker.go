@@ -58,9 +58,13 @@ func (b *Broker) SetOnNewEntry(cb func(db.Entry)) {
 }
 
 func NewBroker() *Broker {
+	size := config.Global.Intercept.QueueSize
+	if size <= 0 {
+		size = 64
+	}
 	b := &Broker{
-		Incoming:         make(chan *PendingRequest, 64),
-		IncomingResponse: make(chan *PendingResponse, 64),
+		Incoming:         make(chan *PendingRequest, size),
+		IncomingResponse: make(chan *PendingResponse, size),
 	}
 	b.SetAutoForwardRegex(config.Global.Intercept.AutoForwardRegex)
 	return b

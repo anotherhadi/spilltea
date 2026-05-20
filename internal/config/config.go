@@ -41,6 +41,7 @@ type Config struct {
 		DefaultInterceptEnabled bool     `mapstructure:"default_intercept_enabled"`
 		DefaultCaptureResponse  bool     `mapstructure:"default_capture_response"`
 		AutoForwardRegex        []string `mapstructure:"auto_forward_regex"`
+		QueueSize               int      `mapstructure:"queue_size"`
 	} `mapstructure:"intercept"`
 
 	Replay struct {
@@ -82,7 +83,7 @@ func WriteDefaultConfig(path string) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("create config dir: %w", err)
 	}
-	if err := os.WriteFile(path, defaultConfig, 0o644); err != nil {
+	if err := os.WriteFile(path, defaultConfig, 0o600); err != nil {
 		return fmt.Errorf("write config: %w", err)
 	}
 	return nil

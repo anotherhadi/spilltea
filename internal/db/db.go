@@ -9,6 +9,7 @@ import (
 
 type DB struct {
 	conn    *sql.DB
+	roConn  *sql.DB
 	path    string
 	dedupMu sync.Mutex
 }
@@ -27,6 +28,17 @@ func Open(path string) (*DB, error) {
 		conn.Close()
 		return nil, err
 	}
+	roConn, err := sql.Open("sqlite", path)
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+	if _, err := roConn.Exec("PRAGMA query_only=ON"); err != nil {
+		conn.Close()
+		roConn.Close()
+		return nil, err
+	}
+	d.roConn = roConn
 	return d, nil
 }
 
@@ -94,6 +106,7 @@ func (d *DB) Close() error {
 	if d == nil {
 		return nil
 	}
+	_ = d.roConn.Close()
 	return d.conn.Close()
 }
 

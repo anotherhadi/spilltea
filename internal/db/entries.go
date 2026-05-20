@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 )
@@ -63,7 +64,11 @@ func (d *DB) InsertEntry(e Entry, body string) (Entry, error) {
 	if err != nil {
 		return e, err
 	}
-	e.ID, _ = res.LastInsertId()
+	var idErr error
+	e.ID, idErr = res.LastInsertId()
+	if idErr != nil {
+		log.Printf("db: LastInsertId: %v", idErr)
+	}
 	return e, nil
 }
 
@@ -113,19 +118,11 @@ func (d *DB) SearchEntries(term string) ([]Entry, error) {
 
 // QueryEntries runs a WHERE expression supplied by the user against the entries
 // table (e.g. "status_code = 404" or "host LIKE '%example.com%'").
-// It opens a dedicated read-only connection so that any DML or DDL in the
-// user-supplied expression is rejected by SQLite before it can execute.
+// Uses the persistent read-only connection (PRAGMA query_only=ON) so that any
+// DML or DDL in the user-supplied expression is rejected by SQLite before it executes.
 func (d *DB) QueryEntries(where string) ([]Entry, error) {
-	roConn, err := sql.Open("sqlite", d.path)
-	if err != nil {
-		return nil, err
-	}
-	defer roConn.Close()
-	if _, err := roConn.Exec("PRAGMA query_only=ON"); err != nil {
-		return nil, err
-	}
 	q := "SELECT id, timestamp, method, host, path, status_code, request_raw, response_raw, flagged FROM entries WHERE " + strings.TrimSpace(where)
-	rows, err := roConn.Query(q)
+	rows, err := d.roConn.Query(q)
 	if err != nil {
 		return nil, err
 	}

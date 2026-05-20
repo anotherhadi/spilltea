@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"crypto/subtle"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -46,7 +47,6 @@ func (a *interceptAddon) Request(f *goproxy.Flow) {
 		switch a.plugins.RunSyncOnRequest(f) {
 		case intercept.Drop:
 			f.Response = dropResponse()
-			go a.plugins.RunAsyncOnRequest(f)
 			return
 		case intercept.Forward:
 			go a.plugins.RunAsyncOnRequest(f)
@@ -133,7 +133,9 @@ func Start(broker *intercept.Broker, mgr *plugins.Manager) error {
 			wantUser, wantPass := parts[0], parts[1]
 			p.SetAuthProxy(func(res http.ResponseWriter, req *http.Request) (bool, error) {
 				user, pass, ok := parseBasicProxyAuth(req.Header.Get("Proxy-Authorization"))
-				if !ok || user != wantUser || pass != wantPass {
+				userOK := subtle.ConstantTimeCompare([]byte(user), []byte(wantUser))
+				passOK := subtle.ConstantTimeCompare([]byte(pass), []byte(wantPass))
+				if !ok || userOK&passOK != 1 {
 					res.Header().Set("Proxy-Authenticate", `Basic realm="spilltea"`)
 					return false, fmt.Errorf("invalid credentials")
 				}

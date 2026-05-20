@@ -1,6 +1,7 @@
 package util
 
 import (
+	"log"
 	"os"
 	"os/exec"
 
@@ -27,7 +28,9 @@ func OpenExternalEditor(content string) tea.Cmd {
 		return nil
 	}
 	tmpPath := f.Name()
-	_, _ = f.WriteString(content)
+	if _, err := f.WriteString(content); err != nil {
+		log.Printf("editor: writing temp file: %v", err)
+	}
 	f.Close()
 	return tea.ExecProcess(exec.Command(editor, tmpPath), func(err error) tea.Msg {
 		defer os.Remove(tmpPath)

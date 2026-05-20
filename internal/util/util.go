@@ -3,6 +3,7 @@ package util
 import (
 	"strings"
 
+	"charm.land/bubbles/v2/paginator"
 	"charm.land/lipgloss/v2"
 )
 
@@ -26,6 +27,18 @@ func CenterLines(lines ...string) string {
 		centered[i] = lipgloss.PlaceHorizontal(maxWidth, lipgloss.Center, l)
 	}
 	return strings.Join(centered, "\n")
+}
+
+// PageBounds returns clamped start/end indices for rendering a paginated list.
+func PageBounds(p paginator.Model, total int) (start, end int) {
+	start, end = p.GetSliceBounds(total)
+	if start < 0 {
+		start = 0
+	}
+	if end < start {
+		end = start
+	}
+	return
 }
 
 // InferScheme returns "http" for port 80, "https" otherwise.

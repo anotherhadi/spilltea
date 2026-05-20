@@ -5,13 +5,14 @@ app:
   project_dir: ~/.local/share/spilltea
   plugins_dir: ~/.config/spilltea/plugins
   upstream_proxy: "" # e.g. http://corporate-proxy:8888 or http://user:pass@host:8888
-  proxy_auth: "" # require basic auth to use the proxy, format: user:pass (empty = disabled)
+  proxy_auth: "" # require basic auth to use the proxy, format: user:pass (empty = disabled). Also run: chmod 600 ~/.config/spilltea/config.yaml
   max_body_size_mb: 50 # max response body size read into memory for large streamed responses (MB)
   external_editor: "" # override $EDITOR for external editing (e.g. nvim, code --wait)
 
 intercept:
   default_intercept_enabled: true
   default_capture_response: false
+  queue_size: 64 # max pending intercepted requests/responses before the proxy blocks
   auto_forward_regex:
     - '\.(js|css|png|gif|ico|woff2?|ttf|svg)(\?.*)?$'
 

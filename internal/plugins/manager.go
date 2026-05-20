@@ -182,7 +182,9 @@ func (m *Manager) TogglePlugin(name string) {
 	configText := found.ConfigText
 	found.mu.Unlock()
 	if m.db != nil {
-		_ = m.db.SavePluginState(name, enabled, configText)
+		if err := m.db.SavePluginState(name, enabled, configText); err != nil {
+			log.Printf("plugin %s: save state: %v", name, err)
+		}
 	}
 	if !enabled {
 		return
@@ -195,7 +197,9 @@ func (m *Manager) TogglePlugin(name string) {
 		if ret == lua.LFalse {
 			p.Enabled = false
 			if m.db != nil {
-				_ = m.db.SavePluginState(p.Name, false, p.ConfigText)
+				if err := m.db.SavePluginState(p.Name, false, p.ConfigText); err != nil {
+					log.Printf("plugin %s: save state: %v", p.Name, err)
+				}
 			}
 		}
 	}
@@ -241,7 +245,9 @@ func (m *Manager) SaveConfig(name, configText string) {
 	_, hasOnConfig := found.hooks["on_config"]
 	found.mu.Unlock()
 	if m.db != nil {
-		_ = m.db.SavePluginState(name, enabled, configText)
+		if err := m.db.SavePluginState(name, enabled, configText); err != nil {
+			log.Printf("plugin %s: save state: %v", name, err)
+		}
 	}
 	if !hasOnConfig {
 		return
@@ -282,7 +288,9 @@ func (m *Manager) RunOnStart() {
 			if ret == lua.LFalse {
 				p.Enabled = false
 				if m.db != nil {
-					_ = m.db.SavePluginState(p.Name, false, p.ConfigText)
+					if err := m.db.SavePluginState(p.Name, false, p.ConfigText); err != nil {
+						log.Printf("plugin %s: save state: %v", p.Name, err)
+					}
 				}
 			}
 		}

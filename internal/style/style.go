@@ -28,6 +28,12 @@ type Styles struct {
 
 	PagerDotActive   string
 	PagerDotInactive string
+
+	methodGet      lipgloss.Style
+	methodPost     lipgloss.Style
+	methodPutPatch lipgloss.Style
+	methodDelete   lipgloss.Style
+	methodDefault  lipgloss.Style
 }
 
 var S *Styles
@@ -46,6 +52,7 @@ func Init(cfg *config.Config) {
 	primary := lipgloss.Color("#" + c.Base0D)   // Accent: primary
 	purple := lipgloss.Color("#" + c.Base0E)    // Purple: editing
 
+	methodBase := lipgloss.NewStyle().Bold(true).Width(7)
 	S = &Styles{
 		Primary:   primary,
 		Success:   success,
@@ -74,6 +81,12 @@ func Init(cfg *config.Config) {
 
 		PagerDotActive:   lipgloss.NewStyle().Foreground(primary).SetString("•").String(),
 		PagerDotInactive: lipgloss.NewStyle().Foreground(subtle).SetString("•").String(),
+
+		methodGet:      methodBase.Foreground(success),
+		methodPost:     methodBase.Foreground(warning),
+		methodPutPatch: methodBase.Foreground(primary),
+		methodDelete:   methodBase.Foreground(errCol),
+		methodDefault:  methodBase.Foreground(text),
 	}
 }
 
@@ -90,17 +103,16 @@ func NewHelp() help.Model {
 }
 
 func (s *Styles) Method(method string) lipgloss.Style {
-	base := lipgloss.NewStyle().Bold(true).Width(7)
 	switch method {
 	case "GET":
-		return base.Foreground(s.Success)
+		return s.methodGet
 	case "POST":
-		return base.Foreground(s.Warning)
+		return s.methodPost
 	case "PUT", "PATCH":
-		return base.Foreground(s.Primary)
+		return s.methodPutPatch
 	case "DELETE":
-		return base.Foreground(s.Error)
+		return s.methodDelete
 	default:
-		return base.Foreground(s.Text)
+		return s.methodDefault
 	}
 }

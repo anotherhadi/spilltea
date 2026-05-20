@@ -96,13 +96,7 @@ func (m *Model) renderList() string {
 		)
 	}
 
-	start, end := m.pager.GetSliceBounds(len(m.entries))
-	if start < 0 {
-		start = 0
-	}
-	if end < start {
-		end = start
-	}
+	start, end := util.PageBounds(m.pager, len(m.entries))
 
 	var sb strings.Builder
 	for i, e := range m.entries[start:end] {

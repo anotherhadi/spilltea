@@ -15,9 +15,7 @@ Findings are deduplicated per host+path+body content so repeated requests do not
 }
 
 function on_start()
-  local handle = io.popen("command -v trufflehog 2>/dev/null")
-  local result = handle and handle:read("*a") or ""
-  if handle then handle:close() end
+  local result, _ = shell_pipe("command -v trufflehog 2>/dev/null")
   if not result or result:match("^%s*$") then
     log("trufflehog is not installed or not in PATH")
     notif("TruffleHog", "trufflehog is not installed or not in PATH, plugin disabled", "error")

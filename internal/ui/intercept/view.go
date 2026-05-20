@@ -109,13 +109,7 @@ func (m *Model) renderList() string {
 	}
 
 	s := style.S
-	start, end := m.pager.GetSliceBounds(len(m.queue))
-	if start < 0 {
-		start = 0
-	}
-	if end < start {
-		end = start
-	}
+	start, end := util.PageBounds(m.pager, len(m.queue))
 
 	var sb strings.Builder
 	for i, req := range m.queue[start:end] {
@@ -165,13 +159,7 @@ func (m *Model) renderResponseList() string {
 	}
 
 	s := style.S
-	start, end := m.responsePager.GetSliceBounds(len(m.responseQueue))
-	if start < 0 {
-		start = 0
-	}
-	if end < start {
-		end = start
-	}
+	start, end := util.PageBounds(m.responsePager, len(m.responseQueue))
 
 	var sb strings.Builder
 	for i, resp := range m.responseQueue[start:end] {
