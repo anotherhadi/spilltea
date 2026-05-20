@@ -11,6 +11,7 @@ type HookConfig struct {
 }
 
 type Plugin struct {
+	ID          string
 	Name        string
 	Description string
 	FilePath    string
@@ -37,6 +38,7 @@ func (p *Plugin) HookConfig(name string) (HookConfig, bool) {
 }
 
 type Info struct {
+	ID          string
 	Name        string
 	Description string
 	FilePath    string
@@ -57,6 +59,7 @@ func (p *Plugin) Info() Info {
 		hooks[k] = v
 	}
 	return Info{
+		ID:          p.ID,
 		Name:        p.Name,
 		Description: p.Description,
 		FilePath:    p.FilePath,

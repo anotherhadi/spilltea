@@ -33,14 +33,14 @@ Plugin = {
 
 ### Hook reference
 
-| Hook                      | When called                           | Sync/async   | Return value                                    |
-| ------------------------- | ------------------------------------- | ------------ | ----------------------------------------------- |
-| `on_config()`             | At startup and on config save         | always sync  | ignored                                         |
-| `on_start()`              | Once at startup, after `on_config`    | configurable | `false` to self-disable the plugin, otherwise ignored |
-| `on_quit()`               | When the app exits                    | always sync  | ignored                                         |
-| `on_request(req)`         | Every request, before auto-forward    | configurable | `"drop"`, `"forward"`, or `nil` (sync only)     |
-| `on_response(req, res)`   | Every response                        | configurable | `"drop"`, `"forward"`, or `nil` (sync only)     |
-| `on_history_entry(entry)` | Sync: before DB insert / Async: after | configurable | `"skip"` (don't save), `"keep"` or `nil` (save) -- sync only |
+| Hook                      | When called                           | Sync/async   | Return value                                                                              |
+| ------------------------- | ------------------------------------- | ------------ | ----------------------------------------------------------------------------------------- |
+| `on_config()`             | At startup and on config save         | always sync  | ignored                                                                                   |
+| `on_start()`              | Once at startup, after `on_config`    | configurable | `false` to self-disable the plugin, otherwise ignored                                     |
+| `on_quit()`               | When the app exits                    | always sync  | ignored                                                                                   |
+| `on_request(req)`         | Every request, before auto-forward    | configurable | `"drop"`, `"forward"`, or `nil` (nil does nothing and le the user/TUI choose) (sync only) |
+| `on_response(req, res)`   | Every response                        | configurable | `"drop"`, `"forward"`, or `nil` (nil does nothing and le the user/TUI choose) (sync only) |
+| `on_history_entry(entry)` | Sync: before DB insert / Async: after | configurable | `"skip"` (don't save), `"keep"` or `nil` (save) (sync only)                               |
 
 ## Request and response objects
 
@@ -130,28 +130,32 @@ local cfg = get_config()
 
 ### Finding deduplication
 
-A finding is identified by `(plugin_name, key)`. If a finding with that pair already exists in the database it will **not** be re-created, even across restarts. If the user **dismisses** a finding it is permanently hidden and will never reappear, even if the plugin generates it again.
+A finding is identified by `(plugin_name, key)`. If a finding with that pair already exists in the database it will **not** be re-created, even across restarts.
+If the user **dismisses** a finding it is permanently hidden and will never reappear, even if the plugin generates it again.
 
 ## Configuration
 
-Plugin configuration is stored in a `plugins.yaml` file alongside the project database. Each plugin has an `enable` toggle and an optional `config` block (arbitrary YAML).
+Plugin configuration is stored in a `plugins.yaml` file alongside the project database.
+Each plugin is keyed by its filename (without the `.lua` extension) and has an `enable` toggle and an optional `config` block (arbitrary YAML).
 
 ```yaml
 plugins:
-    my_plugin:
-        enable: true
-        config: |
-            some_key: some_value
-            list:
-              - item1
-              - item2
-    other_plugin:
-        enable: false
+  my_plugin:
+    enable: true
+    config:
+      some_key: some_value
+      list:
+        - item1
+        - item2
+  other_plugin:
+    enable: false
 ```
 
-The config block is edited from the **Plugins** page in the TUI. Inside a plugin, call `get_config()` to retrieve the config as a Lua table.
+The config block is edited from the **Plugins** page in the TUI.
+Inside a plugin, call `get_config()` to retrieve the config as a Lua table.
 
-`on_config()` is called once at startup (before `on_start`) and again every time the user saves the config in the TUI. It is the right place to read `get_config()` and populate local variables.
+`on_config()` is called once at startup (before `on_start`) and again every time the user saves the config in the TUI.
+It is the right place to read `get_config()` and populate local variables.
 
 ```lua
 local items = {}
@@ -174,49 +178,13 @@ end
 
 `on_config` and `on_quit` are always synchronous regardless of the Plugin table declaration.
 
-### Return values for sync hooks
-
-**`on_start`:**
-
-| Return value | Effect                                                                                       |
-| ------------ | -------------------------------------------------------------------------------------------- |
-| `false`      | The plugin is disabled immediately and the state is persisted (equivalent to toggling it off). |
-| anything else | Ignored.                                                                                    |
-
-This is useful for prerequisite checks (binary not found, config invalid, etc.) so the plugin does not silently run in a broken state:
-
-```lua
-function on_start()
-  local h = io.popen("command -v mytool 2>/dev/null")
-  local result = h and h:read("*a") or ""
-  if h then h:close() end
-  if result:match("^%s*$") then
-    notif("MyPlugin", "mytool not found, plugin disabled", "error")
-    return false
-  end
-end
-```
-
-**`on_request` and `on_response`:**
-
-| Return value | Effect                                                                            |
-| ------------ | --------------------------------------------------------------------------------- |
-| `"drop"`     | The flow is dropped immediately and never shown in the intercept panel.           |
-| `"forward"`  | The flow is forwarded immediately without going through the intercept panel.      |
-| `nil`        | Normal behaviour: the flow appears in the intercept panel for the user to decide. |
-
-**`on_history_entry` (sync only):**
-
-| Return value      | Effect                            |
-| ----------------- | --------------------------------- |
-| `"skip"`          | The entry is not saved to the DB. |
-| `"keep"` or `nil` | The entry is saved normally.      |
-
-Sync `on_history_entry` runs **before** the DB insert, so it can prevent an entry from ever appearing in history. Async `on_history_entry` runs **after** the insert and cannot affect it.
+Sync `on_history_entry` runs **before** the DB insert, so it can prevent an entry from ever appearing in history.
+Async `on_history_entry` runs **after** the insert and cannot affect it.
 
 ## Priority
 
-Plugins with a higher `priority` value run before plugins with a lower value (default `0`). This matters for sync hooks that return a decision: the first plugin to return a non-nil value short-circuits the remaining plugins.
+Plugins with a higher `priority` value run before plugins with a lower value (default `0`).
+This matters for sync hooks that return a decision: the first plugin to return a non-nil value short-circuits the remaining plugins.
 
 ```lua
 Plugin = {

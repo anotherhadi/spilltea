@@ -59,11 +59,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.textarea.Blur()
 				if info, ok := m.selected(); ok && m.manager != nil {
 					val := m.textarea.Value()
-					m.manager.SaveConfig(info.Name, val)
+					m.manager.SaveConfig(info.ID, val)
 					// Update cached info.
 					m.filtered[m.cursor].ConfigText = val
 					for i := range m.items {
-						if m.items[i].Name == info.Name {
+						if m.items[i].ID == info.ID {
 							m.items[i].ConfigText = val
 							break
 						}
@@ -107,10 +107,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, pk.Toggle):
 			if info, ok := m.selected(); ok && m.manager != nil {
-				m.manager.TogglePlugin(info.Name)
+				m.manager.TogglePlugin(info.ID)
 				m.filtered[m.cursor].Enabled = !info.Enabled
 				for i := range m.items {
-					if m.items[i].Name == info.Name {
+					if m.items[i].ID == info.ID {
 						m.items[i].Enabled = !info.Enabled
 						break
 					}

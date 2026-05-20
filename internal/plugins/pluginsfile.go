@@ -8,8 +8,8 @@ import (
 )
 
 type pluginFileEntry struct {
-	Enable bool   `yaml:"enable"`
-	Config string `yaml:"config,omitempty"`
+	Enable bool        `yaml:"enable"`
+	Config interface{} `yaml:"config,omitempty"`
 }
 
 type pluginsFileData struct {
@@ -51,28 +51,46 @@ func (pf *PluginsFile) save() error {
 	return os.WriteFile(pf.path, raw, 0o600)
 }
 
-func (pf *PluginsFile) get(name string) (enabled bool, config string, found bool) {
-	e, ok := pf.data.Plugins[name]
-	return e.Enable, e.Config, ok
+func (pf *PluginsFile) get(id string) (enabled bool, config string, found bool) {
+	e, ok := pf.data.Plugins[id]
+	if !ok {
+		return false, "", false
+	}
+	if e.Config == nil {
+		return e.Enable, "", true
+	}
+	raw, err := yaml.Marshal(e.Config)
+	if err != nil {
+		return e.Enable, "", true
+	}
+	return e.Enable, string(raw), true
 }
 
-func (pf *PluginsFile) register(name string, defaultEnabled bool) {
-	if _, ok := pf.data.Plugins[name]; !ok {
-		pf.data.Plugins[name] = pluginFileEntry{Enable: defaultEnabled}
+func (pf *PluginsFile) register(id string, defaultEnabled bool) {
+	if _, ok := pf.data.Plugins[id]; !ok {
+		pf.data.Plugins[id] = pluginFileEntry{Enable: defaultEnabled}
 		_ = pf.save()
 	}
 }
 
-func (pf *PluginsFile) setEnabled(name string, enabled bool) error {
-	e := pf.data.Plugins[name]
+func (pf *PluginsFile) setEnabled(id string, enabled bool) error {
+	e := pf.data.Plugins[id]
 	e.Enable = enabled
-	pf.data.Plugins[name] = e
+	pf.data.Plugins[id] = e
 	return pf.save()
 }
 
-func (pf *PluginsFile) setConfig(name string, configText string) error {
-	e := pf.data.Plugins[name]
-	e.Config = configText
-	pf.data.Plugins[name] = e
+func (pf *PluginsFile) setConfig(id string, configText string) error {
+	e := pf.data.Plugins[id]
+	if configText == "" {
+		e.Config = nil
+	} else {
+		var parsed interface{}
+		if err := yaml.Unmarshal([]byte(configText), &parsed); err != nil {
+			return err
+		}
+		e.Config = parsed
+	}
+	pf.data.Plugins[id] = e
 	return pf.save()
 }

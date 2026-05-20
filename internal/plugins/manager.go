@@ -68,11 +68,11 @@ func (m *Manager) LoadFromDir(dir string) error {
 			continue
 		}
 		if m.pluginsFile != nil {
-			if enabled, configText, found := m.pluginsFile.get(p.Name); found {
+			if enabled, configText, found := m.pluginsFile.get(p.ID); found {
 				p.Enabled = enabled
 				p.ConfigText = configText
 			} else {
-				m.pluginsFile.register(p.Name, p.Enabled)
+				m.pluginsFile.register(p.ID, p.Enabled)
 			}
 		}
 		m.mu.Lock()
@@ -87,6 +87,7 @@ func (m *Manager) LoadFromDir(dir string) error {
 
 func (m *Manager) loadPlugin(path string) (*Plugin, error) {
 	p := &Plugin{
+		ID:       strings.TrimSuffix(filepath.Base(path), ".lua"),
 		FilePath: path,
 		Enabled:  true,
 		hooks:    make(map[string]HookConfig),
@@ -107,7 +108,7 @@ func (m *Manager) loadPlugin(path string) (*Plugin, error) {
 		p.Name = string(s)
 	}
 	if p.Name == "" {
-		p.Name = strings.TrimSuffix(filepath.Base(path), ".lua")
+		p.Name = p.ID
 	}
 
 	if s, ok := pluginTable.RawGetString("description").(lua.LString); ok {
@@ -155,11 +156,11 @@ func (m *Manager) GetPlugins() []*Plugin {
 	return out
 }
 
-func (m *Manager) TogglePlugin(name string) {
+func (m *Manager) TogglePlugin(id string) {
 	m.mu.RLock()
 	var found *Plugin
 	for _, p := range m.plugins {
-		if p.Name == name {
+		if p.ID == id {
 			found = p
 			break
 		}
@@ -173,8 +174,8 @@ func (m *Manager) TogglePlugin(name string) {
 	enabled := found.Enabled
 	found.mu.Unlock()
 	if m.pluginsFile != nil {
-		if err := m.pluginsFile.setEnabled(name, enabled); err != nil {
-			log.Printf("plugin %s: save state: %v", name, err)
+		if err := m.pluginsFile.setEnabled(id, enabled); err != nil {
+			log.Printf("plugin %s: save state: %v", id, err)
 		}
 	}
 	if !enabled {
@@ -188,8 +189,8 @@ func (m *Manager) TogglePlugin(name string) {
 		if ret == lua.LFalse {
 			p.Enabled = false
 			if m.pluginsFile != nil {
-				if err := m.pluginsFile.setEnabled(p.Name, false); err != nil {
-					log.Printf("plugin %s: save state: %v", p.Name, err)
+				if err := m.pluginsFile.setEnabled(p.ID, false); err != nil {
+					log.Printf("plugin %s: save state: %v", p.ID, err)
 				}
 			}
 		}
@@ -217,11 +218,11 @@ func (m *Manager) TogglePlugin(name string) {
 	}
 }
 
-func (m *Manager) SaveConfig(name, configText string) {
+func (m *Manager) SaveConfig(id, configText string) {
 	m.mu.RLock()
 	var found *Plugin
 	for _, p := range m.plugins {
-		if p.Name == name {
+		if p.ID == id {
 			found = p
 			break
 		}
@@ -234,8 +235,8 @@ func (m *Manager) SaveConfig(name, configText string) {
 	found.ConfigText = configText
 	found.mu.Unlock()
 	if m.pluginsFile != nil {
-		if err := m.pluginsFile.setConfig(name, configText); err != nil {
-			log.Printf("plugin %s: save config: %v", name, err)
+		if err := m.pluginsFile.setConfig(id, configText); err != nil {
+			log.Printf("plugin %s: save config: %v", id, err)
 		}
 	}
 	if _, ok := found.hooks["on_config"]; !ok {
@@ -243,7 +244,7 @@ func (m *Manager) SaveConfig(name, configText string) {
 	}
 	found.mu.Lock()
 	if _, err := callHook(found, "on_config"); err != nil {
-		log.Printf("plugin %s on_config: %v", name, err)
+		log.Printf("plugin %s on_config: %v", id, err)
 	}
 	found.mu.Unlock()
 }
@@ -273,8 +274,8 @@ func (m *Manager) RunOnStart() {
 			if ret == lua.LFalse {
 				p.Enabled = false
 				if m.pluginsFile != nil {
-					if err := m.pluginsFile.setEnabled(p.Name, false); err != nil {
-						log.Printf("plugin %s: save state: %v", p.Name, err)
+					if err := m.pluginsFile.setEnabled(p.ID, false); err != nil {
+						log.Printf("plugin %s: save state: %v", p.ID, err)
 					}
 				}
 			}
