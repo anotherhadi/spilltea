@@ -8,6 +8,7 @@
     hooks = {
       gofmt.enable = true;
       govet.enable = true;
+      stylua.enable = true;
 
       gomod2nix = {
         enable = true;
@@ -53,6 +54,7 @@ in
         go
         python3
         doctoc
+        stylua
         trufflehog
         gomod2nixPkgs.gomod2nix
       ]
