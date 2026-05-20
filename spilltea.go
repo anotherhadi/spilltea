@@ -8,6 +8,9 @@ import (
 	"path/filepath"
 )
 
+//go:embed docs
+var DocsFS embed.FS
+
 //go:embed plugins/*.lua
 var PluginsFS embed.FS
 
