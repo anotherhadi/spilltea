@@ -1,3 +1,4 @@
 .claude/
 CLAUDE.md
 result/
+.pre-commit-config.yaml
