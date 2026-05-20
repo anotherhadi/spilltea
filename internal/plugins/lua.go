@@ -11,6 +11,7 @@ import (
 	"github.com/anotherhadi/spilltea/internal/db"
 	goproxy "github.com/lqqyt2423/go-mitmproxy/proxy"
 	lua "github.com/yuin/gopher-lua"
+	"gopkg.in/yaml.v3"
 )
 
 func newLuaState(mgr *Manager, p *Plugin) *lua.LState {
@@ -175,6 +176,27 @@ func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 		return 0
 	}))
 
+	L.SetGlobal("get_config", L.NewFunction(func(L *lua.LState) int {
+		// p.mu is already held by the hook caller - do not lock again.
+		configText := p.ConfigText
+		if configText == "" {
+			L.Push(L.NewTable())
+			return 1
+		}
+		var data interface{}
+		if err := yaml.Unmarshal([]byte(configText), &data); err != nil || data == nil {
+			L.Push(L.NewTable())
+			return 1
+		}
+		lv := goToLuaValue(L, data)
+		if _, ok := lv.(*lua.LTable); !ok {
+			L.Push(L.NewTable())
+			return 1
+		}
+		L.Push(lv)
+		return 1
+	}))
+
 	L.SetGlobal("shell_pipe", L.NewFunction(func(L *lua.LState) int {
 		cmd := L.CheckString(1)
 		input := L.OptString(2, "")
@@ -199,6 +221,35 @@ func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 		L.Push(lua.LNil)
 		return 2
 	}))
+}
+
+func goToLuaValue(L *lua.LState, v interface{}) lua.LValue {
+	switch val := v.(type) {
+	case map[string]interface{}:
+		t := L.NewTable()
+		for k, v2 := range val {
+			L.SetField(t, k, goToLuaValue(L, v2))
+		}
+		return t
+	case []interface{}:
+		t := L.NewTable()
+		for i, v2 := range val {
+			L.RawSetInt(t, i+1, goToLuaValue(L, v2))
+		}
+		return t
+	case string:
+		return lua.LString(val)
+	case int:
+		return lua.LNumber(val)
+	case float64:
+		return lua.LNumber(val)
+	case bool:
+		if val {
+			return lua.LTrue
+		}
+		return lua.LFalse
+	}
+	return lua.LNil
 }
 
 func luaTableString(t *lua.LTable, key string) string {

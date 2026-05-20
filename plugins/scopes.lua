@@ -3,43 +3,40 @@ Plugin = {
   description = [[
 Auto-forward requests and exclude them from history based on patterns.
 
-**Config**:
-- `pattern`    - whitelist: only intercept matching requests/responses and history entries
-- `!pattern`   - blacklist: skip matching requests/responses and history entries
-- `r:pattern`  - whitelist for requests/responses only (history unaffected)
-- `r:!pattern` - blacklist for requests/responses only
-- `h:pattern`  - whitelist for history entries only (requests unaffected)
-- `h:!pattern` - blacklist for history entries only
-- lines starting with `#` are comments
+**Config** (YAML):
+```yaml
+patterns:
+  - "pattern"      # whitelist: only intercept matching requests/responses and history
+  - "!pattern"     # blacklist: skip matching requests/responses and history
+  - "r:pattern"    # whitelist for requests/responses only
+  - "r:!pattern"   # blacklist for requests/responses only
+  - "h:pattern"    # whitelist for history only
+  - "h:!pattern"   # blacklist for history only
+```
 
 Example (ignore static assets):
-```
-!%.css$
-!%.js$
-!%.png$
-```
-
-Example (focus on mytarget.com, skip everything else):
-```
-mytarget%.com/
+```yaml
+patterns:
+  - "!%.css$"
+  - "!%.js$"
+  - "!%.png$"
 ```
 
-Example (intercept mytarget.com except its static assets):
-```
-mytarget%.com/
-!%.css$
-!%.js$
-!%.png$
+Example (focus on mytarget.com):
+```yaml
+patterns:
+  - "mytarget%.com/"
 ```
 
-Example (disable history: whitelist never matches any real URL):
-```
-h:^$
+Example (disable history):
+```yaml
+patterns:
+  - "h:^$"
 ```
   ]],
   priority         = 100,
   on_request       = { sync = true },
-  on_response       = { sync = true },
+  on_response      = { sync = true },
   on_history_entry = { sync = true },
 }
 
@@ -50,11 +47,13 @@ local whitelist_req  = {}
 local blacklist_hist = {}
 local whitelist_hist = {}
 
-function on_config(config_text)
+function on_config()
   blacklist, whitelist = {}, {}
   blacklist_req, whitelist_req = {}, {}
   blacklist_hist, whitelist_hist = {}, {}
-  for line in config_text:gmatch("[^\n]+") do
+  local cfg = get_config()
+  if not cfg or not cfg.patterns then return end
+  for _, line in ipairs(cfg.patterns) do
     local trimmed = line:match("^%s*(.-)%s*$")
     if trimmed ~= "" and trimmed:sub(1, 1) ~= "#" then
       local scope = trimmed:match("^([rh]):")

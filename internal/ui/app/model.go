@@ -106,6 +106,12 @@ func New(broker *intercept.Broker, name, path string) Model {
 	m.findingsPage.SetDB(d)
 	mgr.SetDB(d)
 
+	pf, err := plugins.OpenPluginsFile(path)
+	if err != nil {
+		log.Printf("plugins file: %v", err)
+	}
+	mgr.SetPluginsFile(pf)
+
 	pluginsDir := config.ExpandPath(cfg.App.PluginsDir)
 	if err := mgr.LoadFromDir(pluginsDir); err != nil {
 		log.Printf("plugins: %v", err)

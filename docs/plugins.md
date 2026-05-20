@@ -1,5 +1,7 @@
 # Plugins
 
+> **Warning:** Plugins can execute arbitrary shell commands, read and write files via `shell_pipe`, and access all intercepted traffic. Only load plugins you trust and have reviewed. You are solely responsible for the plugins you run.
+
 Spilltea supports Lua plugins that can intercept, modify, and analyze HTTP traffic.
 You can found some pre-built plugins [here](../../plugins/).
 
@@ -33,7 +35,7 @@ Plugin = {
 
 | Hook                      | When called                           | Sync/async   | Return value                                    |
 | ------------------------- | ------------------------------------- | ------------ | ----------------------------------------------- |
-| `on_config(config_text)`  | At startup and on config save         | always sync  | ignored                                         |
+| `on_config()`             | At startup and on config save         | always sync  | ignored                                         |
 | `on_start()`              | Once at startup, after `on_config`    | configurable | `false` to self-disable the plugin, otherwise ignored |
 | `on_quit()`               | When the app exits                    | always sync  | ignored                                         |
 | `on_request(req)`         | Every request, before auto-forward    | configurable | `"drop"`, `"forward"`, or `nil` (sync only)     |
@@ -120,6 +122,10 @@ if err then
 else
   log("output: " .. out)
 end
+
+-- Return the plugin's config section as a Lua table (parsed from YAML).
+-- Returns an empty table if no config is set.
+local cfg = get_config()
 ```
 
 ### Finding deduplication
@@ -128,9 +134,38 @@ A finding is identified by `(plugin_name, key)`. If a finding with that pair alr
 
 ## Configuration
 
-Each plugin gets a **config textarea** on the Plugins page. The raw text is passed as-is to `on_config(config_text)`. Parse it however you like (line by line, key=value, JSON, etc.).
+Plugin configuration is stored in a `plugins.yaml` file alongside the project database. Each plugin has an `enable` toggle and an optional `config` block (arbitrary YAML).
 
-`on_config` is called once at startup (before `on_start`) and again every time the user saves the config in the UI.
+```yaml
+plugins:
+    my_plugin:
+        enable: true
+        config: |
+            some_key: some_value
+            list:
+              - item1
+              - item2
+    other_plugin:
+        enable: false
+```
+
+The config block is edited from the **Plugins** page in the TUI. Inside a plugin, call `get_config()` to retrieve the config as a Lua table.
+
+`on_config()` is called once at startup (before `on_start`) and again every time the user saves the config in the TUI. It is the right place to read `get_config()` and populate local variables.
+
+```lua
+local items = {}
+
+function on_config()
+  items = {}
+  local cfg = get_config()
+  if cfg and cfg.list then
+    for _, v in ipairs(cfg.list) do
+      table.insert(items, v)
+    end
+  end
+end
+```
 
 ## Sync vs async
 

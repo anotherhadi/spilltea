@@ -72,12 +72,7 @@ CREATE TABLE IF NOT EXISTS replay_entries (
 			status_code  INTEGER NOT NULL,
 			error_msg    TEXT NOT NULL
 		);
-		CREATE TABLE IF NOT EXISTS plugins (
-			name        TEXT PRIMARY KEY,
-			enabled     INTEGER NOT NULL DEFAULT 1,
-			config_text TEXT NOT NULL DEFAULT ''
-		);
-		CREATE TABLE IF NOT EXISTS findings (
+CREATE TABLE IF NOT EXISTS findings (
 			id          INTEGER PRIMARY KEY AUTOINCREMENT,
 			plugin_name TEXT NOT NULL,
 			dedup_key   TEXT NOT NULL,

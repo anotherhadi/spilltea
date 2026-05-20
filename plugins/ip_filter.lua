@@ -3,33 +3,34 @@ Plugin = {
   description = [[
 Checks that the proxy's outbound IP is in an allowed list on startup.
 
-**Config**:
-- one IP per line
-- prefix with `!` for a blacklist entry (blocked)
-- prefix with `#` to comment it out (ignored)
-- if no IPs are configured, the check is skipped
+**Config** (YAML):
+```yaml
+ips:
+  - "1.2.3.4"     # whitelist entry
+  - "!5.6.7.8"    # blacklist entry (blocked)
+```
+- If no IPs are configured, the check is skipped.
   ]],
-  on_start = { sync = false },
+  on_start          = { sync = false },
   disable_by_default = true,
 }
 
 local whitelist = {}
 local blacklist = {}
 
-function on_config(config_text)
-  whitelist = {}
-  blacklist = {}
-
-  for line in config_text:gmatch("[^\n]+") do
-    local trimmed = line:match("^%s*(.-)%s*$")
-    if trimmed ~= "" and trimmed:sub(1, 1) ~= "#" then
-      if trimmed:sub(1, 1) == "!" then
-        local ip = trimmed:sub(2):match("^%s*(.-)%s*$")
-        if ip ~= "" then
-          table.insert(blacklist, ip)
+function on_config()
+  whitelist, blacklist = {}, {}
+  local cfg = get_config()
+  if cfg and cfg.ips then
+    for _, entry in ipairs(cfg.ips) do
+      local trimmed = entry:match("^%s*(.-)%s*$")
+      if trimmed ~= "" then
+        if trimmed:sub(1, 1) == "!" then
+          local ip = trimmed:sub(2):match("^%s*(.-)%s*$")
+          if ip ~= "" then table.insert(blacklist, ip) end
+        else
+          table.insert(whitelist, trimmed)
         end
-      else
-        table.insert(whitelist, trimmed)
       end
     end
   end

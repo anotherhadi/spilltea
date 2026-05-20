@@ -19,8 +19,9 @@ type Manager struct {
 	mu      sync.RWMutex
 	plugins []*Plugin
 
-	db     *db.DB
-	broker *intercept.Broker
+	db          *db.DB
+	pluginsFile *PluginsFile
+	broker      *intercept.Broker
 
 	Notifs chan PluginNotifMsg
 	Quit   chan string
@@ -43,6 +44,10 @@ func (m *Manager) SetDB(d *db.DB) {
 	m.db = d
 }
 
+func (m *Manager) SetPluginsFile(pf *PluginsFile) {
+	m.pluginsFile = pf
+}
+
 func (m *Manager) LoadFromDir(dir string) error {
 	entries, err := os.ReadDir(dir)
 	if os.IsNotExist(err) {
@@ -50,17 +55,6 @@ func (m *Manager) LoadFromDir(dir string) error {
 	}
 	if err != nil {
 		return err
-	}
-
-	var states map[string]db.PluginState
-	if m.db != nil {
-		list, err := m.db.LoadPluginStates()
-		if err == nil {
-			states = make(map[string]db.PluginState, len(list))
-			for _, s := range list {
-				states[s.Name] = s
-			}
-		}
 	}
 
 	for _, e := range entries {
@@ -73,9 +67,13 @@ func (m *Manager) LoadFromDir(dir string) error {
 			log.Printf("plugin load error %s: %v", path, err)
 			continue
 		}
-		if s, ok := states[p.Name]; ok {
-			p.Enabled = s.Enabled
-			p.ConfigText = s.ConfigText
+		if m.pluginsFile != nil {
+			if enabled, configText, found := m.pluginsFile.get(p.Name); found {
+				p.Enabled = enabled
+				p.ConfigText = configText
+			} else {
+				m.pluginsFile.register(p.Name, p.Enabled)
+			}
 		}
 		m.mu.Lock()
 		m.plugins = append(m.plugins, p)
@@ -131,12 +129,6 @@ func (m *Manager) loadPlugin(path string) (*Plugin, error) {
 		"on_response":      false,
 		"on_history_entry": false,
 	}
-	// Fixed-sync hooks: always sync, not configurable.
-	fixedSyncHooks := map[string]struct{}{
-		"on_config": {},
-		"on_quit":   {},
-	}
-
 	for hookName, defaultSync := range configurableHooks {
 		if tbl, ok := pluginTable.RawGetString(hookName).(*lua.LTable); ok {
 			p.hooks[hookName] = HookConfig{Sync: tbl.RawGetString("sync") == lua.LTrue}
@@ -146,9 +138,9 @@ func (m *Manager) loadPlugin(path string) (*Plugin, error) {
 			p.hooks[hookName] = HookConfig{Sync: defaultSync}
 		}
 	}
-	for hookName := range fixedSyncHooks {
-		if p.L.GetGlobal(hookName) != lua.LNil {
-			p.hooks[hookName] = HookConfig{Sync: true}
+	for _, fixedSync := range []string{"on_config", "on_quit"} {
+		if p.L.GetGlobal(fixedSync) != lua.LNil {
+			p.hooks[fixedSync] = HookConfig{Sync: true}
 		}
 	}
 
@@ -179,10 +171,9 @@ func (m *Manager) TogglePlugin(name string) {
 	found.mu.Lock()
 	found.Enabled = !found.Enabled
 	enabled := found.Enabled
-	configText := found.ConfigText
 	found.mu.Unlock()
-	if m.db != nil {
-		if err := m.db.SavePluginState(name, enabled, configText); err != nil {
+	if m.pluginsFile != nil {
+		if err := m.pluginsFile.setEnabled(name, enabled); err != nil {
 			log.Printf("plugin %s: save state: %v", name, err)
 		}
 	}
@@ -196,8 +187,8 @@ func (m *Manager) TogglePlugin(name string) {
 	disableIfFalse := func(p *Plugin, ret lua.LValue) {
 		if ret == lua.LFalse {
 			p.Enabled = false
-			if m.db != nil {
-				if err := m.db.SavePluginState(p.Name, false, p.ConfigText); err != nil {
+			if m.pluginsFile != nil {
+				if err := m.pluginsFile.setEnabled(p.Name, false); err != nil {
 					log.Printf("plugin %s: save state: %v", p.Name, err)
 				}
 			}
@@ -241,41 +232,35 @@ func (m *Manager) SaveConfig(name, configText string) {
 	}
 	found.mu.Lock()
 	found.ConfigText = configText
-	enabled := found.Enabled
-	_, hasOnConfig := found.hooks["on_config"]
 	found.mu.Unlock()
-	if m.db != nil {
-		if err := m.db.SavePluginState(name, enabled, configText); err != nil {
-			log.Printf("plugin %s: save state: %v", name, err)
+	if m.pluginsFile != nil {
+		if err := m.pluginsFile.setConfig(name, configText); err != nil {
+			log.Printf("plugin %s: save config: %v", name, err)
 		}
 	}
-	if !hasOnConfig {
+	if _, ok := found.hooks["on_config"]; !ok {
 		return
 	}
-	// on_config is always sync.
 	found.mu.Lock()
-	if _, err := callHook(found, "on_config", lua.LString(configText)); err != nil {
-		log.Printf("plugin %s on_config (config reload): %v", name, err)
+	if _, err := callHook(found, "on_config"); err != nil {
+		log.Printf("plugin %s on_config: %v", name, err)
 	}
 	found.mu.Unlock()
 }
 
 func (m *Manager) RunOnStart() {
-	// on_config runs first, always sync, for every enabled plugin that has it.
 	for _, p := range m.GetPlugins() {
 		if !p.Enabled {
 			continue
 		}
-		if _, ok := p.hooks["on_config"]; !ok {
-			continue
+		if _, ok := p.hooks["on_config"]; ok {
+			p.mu.Lock()
+			if _, err := callHook(p, "on_config"); err != nil {
+				log.Printf("plugin %s on_config: %v", p.Name, err)
+			}
+			p.mu.Unlock()
 		}
-		p.mu.Lock()
-		if _, err := callHook(p, "on_config", lua.LString(p.ConfigText)); err != nil {
-			log.Printf("plugin %s on_config: %v", p.Name, err)
-		}
-		p.mu.Unlock()
 	}
-	// on_start runs after, sync or async depending on plugin config.
 	for _, p := range m.GetPlugins() {
 		if !p.Enabled {
 			continue
@@ -287,8 +272,8 @@ func (m *Manager) RunOnStart() {
 		disableIfFalse := func(p *Plugin, ret lua.LValue) {
 			if ret == lua.LFalse {
 				p.Enabled = false
-				if m.db != nil {
-					if err := m.db.SavePluginState(p.Name, false, p.ConfigText); err != nil {
+				if m.pluginsFile != nil {
+					if err := m.pluginsFile.setEnabled(p.Name, false); err != nil {
 						log.Printf("plugin %s: save state: %v", p.Name, err)
 					}
 				}

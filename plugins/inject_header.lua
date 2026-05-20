@@ -3,20 +3,26 @@ Plugin = {
   description = [[
 Inject custom headers into every intercepted request.
 
-**Config**:
-- one 'Header-Name: value' per line.
+**Config** (YAML):
+```yaml
+headers:
+  - "X-My-Header: myvalue"
+```
   ]],
   on_request  = { sync = true },
 }
 
 local headers = {}
 
-function on_config(config_text)
+function on_config()
   headers = {}
-  for line in config_text:gmatch("[^\n]+") do
-    local name, value = line:match("^([^:]+):%s*(.+)$")
-    if name and value then
-      table.insert(headers, { name = name, value = value })
+  local cfg = get_config()
+  if cfg and cfg.headers then
+    for _, line in ipairs(cfg.headers) do
+      local name, value = line:match("^([^:]+):%s*(.+)$")
+      if name and value then
+        table.insert(headers, { name = name, value = value })
+      end
     end
   end
 end
