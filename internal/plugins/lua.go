@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"log"
+	"net/url"
 	"os/exec"
 	"strings"
 	"time"
@@ -289,6 +290,21 @@ func pushRequest(L *lua.LState, f *goproxy.Flow) *lua.LTable {
 	L.SetField(t, "set_body", L.NewFunction(func(L *lua.LState) int {
 		body := L.CheckString(2)
 		r.Body = []byte(body)
+		return 0
+	}))
+
+	L.SetField(t, "set_path", L.NewFunction(func(L *lua.LState) int {
+		r.URL.Path = L.CheckString(2)
+		return 0
+	}))
+
+	L.SetField(t, "set_url", L.NewFunction(func(L *lua.LState) int {
+		parsed, err := url.Parse(L.CheckString(2))
+		if err != nil {
+			log.Printf("[plugin] set_url: %v", err)
+			return 0
+		}
+		r.URL = parsed
 		return 0
 	}))
 
