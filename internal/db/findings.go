@@ -35,7 +35,7 @@ func (d *DB) UpsertFinding(f Finding) (bool, error) {
 func (d *DB) LoadFindings() ([]Finding, error) {
 	rows, err := d.conn.Query(
 		`SELECT id, plugin_name, dedup_key, title, description, severity, created_at
-		 FROM findings WHERE dismissed = 0 ORDER BY id DESC`,
+		 FROM findings WHERE dismissed = 0 ORDER BY id ASC`,
 	)
 	if err != nil {
 		return nil, err
