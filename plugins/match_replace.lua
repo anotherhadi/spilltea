@@ -3,7 +3,7 @@ Plugin = {
 	description = [[
 Automatically find and replace content in requests and responses.
 
-**Config** (YAML):
+**Config**:
 ```yaml
 rules:
   - on: "request"         # "request", "response", or "both" (default: "both")

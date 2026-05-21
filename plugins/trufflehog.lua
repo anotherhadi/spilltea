@@ -4,9 +4,6 @@ Plugin = {
 Scans request and response bodies for secrets using [TruffleHog](https://github.com/trufflesecurity/trufflehog).
 
 Requires `trufflehog` v3+ to be installed and available in PATH.
-
-Each finding is stored on the **Findings** page with the matched detector output.
-Findings are deduplicated per host+path+body content so repeated requests do not create duplicates.
   ]],
 	on_start = { sync = false },
 	on_request = { sync = false },
@@ -56,7 +53,7 @@ local function scan(label, content, host, path)
 	for _, block in ipairs(blocks) do
 		create_finding({
 			title = "Secret detected in " .. label .. " (" .. host .. ")",
-			description = "**Host:** `" .. host .. "`  \n**Path:** `" .. path .. "`\n\n```\n" .. block .. "\n```",
+			description = "**Host:** `" .. host .. "`\n\n**Path:** `" .. path .. "`\n\n```\n" .. block .. "\n```",
 			key = host .. "|" .. path .. "|" .. label .. "|" .. block,
 			severity = "high",
 		})

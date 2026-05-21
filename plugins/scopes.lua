@@ -3,7 +3,7 @@ Plugin = {
 	description = [[
 Auto-forward requests and exclude them from history based on patterns.
 
-**Config** (YAML):
+**Config**:
 ```yaml
 patterns:
   - "pattern"      # whitelist: only intercept matching requests/responses and history

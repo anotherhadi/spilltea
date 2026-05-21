@@ -185,9 +185,11 @@ local function scan(label, ct, body, host, path)
 					title = "Potential secret in " .. label .. " (" .. host .. ")",
 					description = "**Host:** `"
 						.. host
-						.. "`  \n**Path:** `"
+						.. "`\n"
+						.. "\n**Path:** `"
 						.. path
-						.. "`\n\n**Match:** `"
+						.. "`\n"
+						.. "\n**Match:** `"
 						.. display
 						.. "`\n\n"
 						.. ctx,

@@ -3,7 +3,7 @@ Plugin = {
 	description = [[
 Inject custom headers into every intercepted request.
 
-**Config** (YAML):
+**Config**:
 ```yaml
 headers:
   - "X-My-Header: myvalue"

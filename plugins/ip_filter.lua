@@ -3,12 +3,13 @@ Plugin = {
 	description = [[
 Checks that the proxy's outbound IP is in an allowed list on startup.
 
-**Config** (YAML):
+**Config**:
 ```yaml
 ips:
   - "1.2.3.4"     # whitelist entry
   - "!5.6.7.8"    # blacklist entry (blocked)
 ```
+
 - If no IPs are configured, the check is skipped.
   ]],
 	on_start = { sync = false },
