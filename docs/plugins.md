@@ -154,6 +154,9 @@ plugins:
 The config block is edited from the **Plugins** page in the TUI.
 Inside a plugin, call `get_config()` to retrieve the config as a Lua table.
 
+Global defaults for any plugin can be set in `~/.config/spilltea/config.yaml` under a `plugins` key with the same structure as `plugins.yaml`.
+These defaults are applied the first time a plugin is loaded in a project; once the plugin has an entry in the project's `plugins.yaml`, the project config takes full precedence and the global defaults are ignored.
+
 `on_config()` is called once at startup (before `on_start`) and again every time the user saves the config in the TUI.
 It is the right place to read `get_config()` and populate local variables.
 

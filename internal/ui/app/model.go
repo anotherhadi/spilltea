@@ -112,6 +112,14 @@ func New(broker *intercept.Broker, name, path string) Model {
 	}
 	mgr.SetPluginsFile(pf)
 
+	if len(cfg.Plugins) > 0 {
+		defaults := make(map[string]plugins.GlobalDefault, len(cfg.Plugins))
+		for id, gp := range cfg.Plugins {
+			defaults[id] = plugins.GlobalDefault{Enable: gp.Enable, Config: gp.Config}
+		}
+		mgr.SetGlobalDefaults(defaults)
+	}
+
 	pluginsDir := config.ExpandPath(cfg.App.PluginsDir)
 	if err := mgr.LoadFromDir(pluginsDir); err != nil {
 		log.Printf("plugins: %v", err)

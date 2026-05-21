@@ -54,6 +54,13 @@ type Config struct {
 	} `mapstructure:"history"`
 
 	Keybindings Keybindings `mapstructure:"keybindings"`
+
+	Plugins map[string]GlobalPlugin `mapstructure:"plugins"`
+}
+
+type GlobalPlugin struct {
+	Enable *bool       `mapstructure:"enable"`
+	Config interface{} `mapstructure:"config"`
 }
 
 var Global *Config

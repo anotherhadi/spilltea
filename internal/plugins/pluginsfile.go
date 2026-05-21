@@ -66,9 +66,16 @@ func (pf *PluginsFile) get(id string) (enabled bool, config string, found bool) 
 	return e.Enable, string(raw), true
 }
 
-func (pf *PluginsFile) register(id string, defaultEnabled bool) {
+func (pf *PluginsFile) register(id string, defaultEnabled bool, configText string) {
 	if _, ok := pf.data.Plugins[id]; !ok {
-		pf.data.Plugins[id] = pluginFileEntry{Enable: defaultEnabled}
+		entry := pluginFileEntry{Enable: defaultEnabled}
+		if configText != "" {
+			var parsed interface{}
+			if err := yaml.Unmarshal([]byte(configText), &parsed); err == nil {
+				entry.Config = parsed
+			}
+		}
+		pf.data.Plugins[id] = entry
 		_ = pf.save()
 	}
 }

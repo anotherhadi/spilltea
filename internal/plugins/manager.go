@@ -13,15 +13,23 @@ import (
 	"github.com/anotherhadi/spilltea/internal/intercept"
 	goproxy "github.com/lqqyt2423/go-mitmproxy/proxy"
 	lua "github.com/yuin/gopher-lua"
+	"gopkg.in/yaml.v3"
 )
+
+// GlobalDefault holds global defaults for a single plugin, read from config.yaml.
+type GlobalDefault struct {
+	Enable *bool
+	Config interface{}
+}
 
 type Manager struct {
 	mu      sync.RWMutex
 	plugins []*Plugin
 
-	db          *db.DB
-	pluginsFile *PluginsFile
-	broker      *intercept.Broker
+	db             *db.DB
+	pluginsFile    *PluginsFile
+	broker         *intercept.Broker
+	globalDefaults map[string]GlobalDefault
 
 	Notifs chan PluginNotifMsg
 	Quit   chan string
@@ -48,6 +56,10 @@ func (m *Manager) SetPluginsFile(pf *PluginsFile) {
 	m.pluginsFile = pf
 }
 
+func (m *Manager) SetGlobalDefaults(defaults map[string]GlobalDefault) {
+	m.globalDefaults = defaults
+}
+
 func (m *Manager) LoadFromDir(dir string) error {
 	entries, err := os.ReadDir(dir)
 	if os.IsNotExist(err) {
@@ -72,7 +84,17 @@ func (m *Manager) LoadFromDir(dir string) error {
 				p.Enabled = enabled
 				p.ConfigText = configText
 			} else {
-				m.pluginsFile.register(p.ID, p.Enabled)
+				if def, ok := m.globalDefaults[p.ID]; ok {
+					if def.Enable != nil {
+						p.Enabled = *def.Enable
+					}
+					if def.Config != nil {
+						if raw, err := yaml.Marshal(def.Config); err == nil {
+							p.ConfigText = string(raw)
+						}
+					}
+				}
+				m.pluginsFile.register(p.ID, p.Enabled, p.ConfigText)
 			}
 		}
 		m.mu.Lock()
