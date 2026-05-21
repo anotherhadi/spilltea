@@ -249,11 +249,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, h.DeleteAll):
 			if m.database != nil {
 				if m.searchKind != searchKindOff {
+					hasUnflagged := false
 					for _, e := range m.entries {
+						if !e.Flagged {
+							hasUnflagged = true
+							break
+						}
+					}
+					for _, e := range m.entries {
+						if hasUnflagged && e.Flagged {
+							continue
+						}
 						m.database.DeleteEntry(e.ID)
 					}
 				} else {
-					m.database.DeleteAllEntries()
+					m.database.DeleteAllExceptFlagged()
 				}
 			}
 			return m, m.clearSearch()

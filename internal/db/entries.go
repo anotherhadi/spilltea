@@ -144,3 +144,18 @@ func (d *DB) DeleteAllEntries() error {
 	_, err := d.conn.Exec(`DELETE FROM entries`)
 	return err
 }
+
+// DeleteAllExceptFlagged deletes all unflagged entries. If there are no
+// unflagged entries (only flagged ones remain), it deletes everything.
+func (d *DB) DeleteAllExceptFlagged() error {
+	var count int
+	if err := d.conn.QueryRow(`SELECT COUNT(*) FROM entries WHERE flagged = 0`).Scan(&count); err != nil {
+		return err
+	}
+	if count > 0 {
+		_, err := d.conn.Exec(`DELETE FROM entries WHERE flagged = 0`)
+		return err
+	}
+	_, err := d.conn.Exec(`DELETE FROM entries`)
+	return err
+}
