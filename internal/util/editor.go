@@ -15,7 +15,7 @@ type EditorFinishedMsg struct {
 	Err     error
 }
 
-func OpenExternalEditor(content string) tea.Cmd {
+func resolveEditor() string {
 	editor := config.Global.App.ExternalEditor
 	if editor == "" {
 		editor = os.Getenv("EDITOR")
@@ -23,6 +23,10 @@ func OpenExternalEditor(content string) tea.Cmd {
 	if editor == "" {
 		editor = "vi"
 	}
+	return editor
+}
+
+func openWithEditor(content string, callback func(string, error) tea.Msg) tea.Cmd {
 	f, err := os.CreateTemp("", "spilltea-*.http")
 	if err != nil {
 		return nil
@@ -32,8 +36,14 @@ func OpenExternalEditor(content string) tea.Cmd {
 		log.Printf("editor: writing temp file: %v", err)
 	}
 	f.Close()
-	return tea.ExecProcess(exec.Command(editor, tmpPath), func(err error) tea.Msg {
+	return tea.ExecProcess(exec.Command(resolveEditor(), tmpPath), func(err error) tea.Msg {
 		defer os.Remove(tmpPath)
+		return callback(tmpPath, err)
+	})
+}
+
+func OpenExternalEditor(content string) tea.Cmd {
+	return openWithEditor(content, func(tmpPath string, err error) tea.Msg {
 		if err != nil {
 			return EditorFinishedMsg{Err: err}
 		}
@@ -42,5 +52,11 @@ func OpenExternalEditor(content string) tea.Cmd {
 			return EditorFinishedMsg{Err: readErr}
 		}
 		return EditorFinishedMsg{Content: string(data)}
+	})
+}
+
+func OpenExternalEditorView(content string) tea.Cmd {
+	return openWithEditor(content, func(_ string, _ error) tea.Msg {
+		return nil
 	})
 }

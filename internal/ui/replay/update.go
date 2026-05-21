@@ -181,6 +181,9 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, r.EditExt):
 		if len(m.entries) > 0 {
+			if m.focusedPanel == panelResponse {
+				return m, util.OpenExternalEditorView(m.entries[m.cursor].ResponseRaw)
+			}
 			return m, util.OpenExternalEditor(m.entries[m.cursor].RequestRaw)
 		}
 
