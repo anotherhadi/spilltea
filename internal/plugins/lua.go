@@ -3,12 +3,16 @@ package plugins
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
+	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"os/exec"
 	"strings"
 	"time"
 
+	"github.com/anotherhadi/spilltea/internal/config"
 	"github.com/anotherhadi/spilltea/internal/db"
 	goproxy "github.com/lqqyt2423/go-mitmproxy/proxy"
 	lua "github.com/yuin/gopher-lua"
@@ -196,6 +200,78 @@ func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 		}
 		L.Push(lv)
 		return 1
+	}))
+
+	L.SetGlobal("send_request", L.NewFunction(func(L *lua.LState) int {
+		method := L.CheckString(1)
+		rawURL := L.CheckString(2)
+		hdrs := L.OptTable(3, L.NewTable())
+		body := L.OptString(4, "")
+		opts := L.OptTable(5, L.NewTable())
+
+		insecure := false
+		if v, ok := L.GetField(opts, "insecure").(lua.LBool); ok {
+			insecure = bool(v)
+		}
+
+		transport := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: insecure},
+		}
+		if up := config.Global.App.UpstreamProxy; up != "" {
+			if proxyURL, err := url.Parse(up); err == nil {
+				transport.Proxy = http.ProxyURL(proxyURL)
+			}
+		}
+		client := &http.Client{
+			Transport: transport,
+			Timeout:   30 * time.Second,
+		}
+
+		var bodyReader io.Reader
+		if body != "" {
+			bodyReader = strings.NewReader(body)
+		}
+		req, err := http.NewRequest(method, rawURL, bodyReader)
+		if err != nil {
+			L.Push(lua.LNil)
+			L.Push(lua.LString(err.Error()))
+			return 2
+		}
+		hdrs.ForEach(func(k, v lua.LValue) {
+			ks, kok := k.(lua.LString)
+			vs, vok := v.(lua.LString)
+			if kok && vok {
+				req.Header.Set(string(ks), string(vs))
+			}
+		})
+
+		resp, err := client.Do(req)
+		if err != nil {
+			L.Push(lua.LNil)
+			L.Push(lua.LString(err.Error()))
+			return 2
+		}
+		defer resp.Body.Close()
+
+		respBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			L.Push(lua.LNil)
+			L.Push(lua.LString(err.Error()))
+			return 2
+		}
+
+		result := L.NewTable()
+		L.SetField(result, "status_code", lua.LNumber(resp.StatusCode))
+		L.SetField(result, "body", lua.LString(string(respBody)))
+		respHeaders := L.NewTable()
+		for k, vals := range resp.Header {
+			L.SetField(respHeaders, k, lua.LString(strings.Join(vals, ", ")))
+		}
+		L.SetField(result, "headers", respHeaders)
+
+		L.Push(result)
+		L.Push(lua.LNil)
+		return 2
 	}))
 
 	L.SetGlobal("shell_pipe", L.NewFunction(func(L *lua.LState) int {

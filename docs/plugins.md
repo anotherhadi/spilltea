@@ -123,6 +123,26 @@ else
   log("output: " .. out)
 end
 
+-- Send an HTTP request directly (bypasses the proxy pipeline and other plugins).
+-- method:  HTTP method ("GET", "POST", etc.)
+-- url:     full URL to request
+-- headers: table of request headers (optional, pass {} if unused)
+-- body:    request body string (optional, pass "" if unused)
+-- options: optional table of options:
+--   insecure = true  skip TLS certificate verification
+-- Returns: response table, error string (nil on success).
+local res, err = send_request("POST", "https://example.com/api", {
+  ["Authorization"] = "Bearer " .. token,
+  ["Content-Type"]  = "application/json",
+}, '{"key":"value"}', { insecure = true })
+if err then
+  log("request failed: " .. err)
+else
+  log(tostring(res.status_code))
+  log(res.body)
+  log(res.headers["Content-Type"] or "")
+end
+
 -- Return the plugin's config section as a Lua table (parsed from YAML).
 -- Returns an empty table if no config is set.
 local cfg = get_config()
