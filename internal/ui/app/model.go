@@ -55,6 +55,7 @@ type Model struct {
 	database      *db.DB
 	logFile       *os.File
 	pluginManager *plugins.Manager
+	fatalErr      error
 
 	width         int
 	height        int
@@ -134,6 +135,8 @@ func New(broker *intercept.Broker, name, path string) Model {
 
 	return m
 }
+
+func (m Model) FatalErr() error { return m.fatalErr }
 
 func (m Model) Init() tea.Cmd {
 	mgr := m.pluginManager

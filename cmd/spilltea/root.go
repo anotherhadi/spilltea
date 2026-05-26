@@ -58,3 +58,12 @@ func (m rootModel) View() tea.View {
 	}
 	return m.home.View()
 }
+
+func (m rootModel) FatalErr() error {
+	if m.state == rootStateApp {
+		if app, ok := m.app.(appUI.Model); ok {
+			return app.FatalErr()
+		}
+	}
+	return nil
+}

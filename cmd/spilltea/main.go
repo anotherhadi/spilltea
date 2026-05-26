@@ -137,17 +137,31 @@ func main() {
 		}
 		broker := intercept.NewBroker()
 		m := appUI.New(broker, project.Name, project.Path)
-		if _, err := tea.NewProgram(m).Run(); err != nil {
+		final, err := tea.NewProgram(m).Run()
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "tui: %v\n", err)
 			os.Exit(1)
+		}
+		if app, ok := final.(appUI.Model); ok {
+			if ferr := app.FatalErr(); ferr != nil {
+				fmt.Fprintf(os.Stderr, "error: %v\n", ferr)
+				os.Exit(1)
+			}
 		}
 		return
 	}
 
 	// Run home + app in a single program to avoid a blank flash on transition.
 	root := rootModel{home: homeUI.New(projectDir)}
-	if _, err := tea.NewProgram(root).Run(); err != nil {
+	final, err := tea.NewProgram(root).Run()
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "tui: %v\n", err)
 		os.Exit(1)
+	}
+	if r, ok := final.(rootModel); ok {
+		if ferr := r.FatalErr(); ferr != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", ferr)
+			os.Exit(1)
+		}
 	}
 }
