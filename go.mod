@@ -7,7 +7,10 @@ require (
 	charm.land/bubbletea/v2 v2.0.6
 	charm.land/glamour/v2 v2.0.0
 	charm.land/lipgloss/v2 v2.0.3
+	github.com/andybalholm/brotli v1.0.4
+	github.com/anotherhadi/ilovetui v0.1.4
 	github.com/charmbracelet/x/ansi v0.11.7
+	github.com/klauspost/compress v1.17.8
 	github.com/lqqyt2423/go-mitmproxy v1.8.11
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/pflag v1.0.10
@@ -20,7 +23,6 @@ require (
 
 require (
 	github.com/alecthomas/chroma/v2 v2.24.1 // indirect
-	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
@@ -39,7 +41,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/css v1.0.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
-	github.com/klauspost/compress v1.17.8 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
 	github.com/mattn/go-runewidth v0.0.23 // indirect

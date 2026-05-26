@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/intercept"
 	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/util"
@@ -163,14 +164,14 @@ func (m *Model) recalcSizes() {
 	if bodyInner < 0 {
 		bodyInner = 0
 	}
-	bodyVH := style.PanelContentH(bodyH)
+	bodyVH := ilovetui.ContentHeight(bodyH)
 
 	m.textarea.SetWidth(bodyInner)
 	m.textarea.SetHeight(bodyVH)
 	m.bodyViewport.SetWidth(bodyInner)
 	m.bodyViewport.SetHeight(bodyVH)
 
-	listVH := style.PanelContentH(listH) - 1 // -1 for the pager dots row
+	listVH := ilovetui.ContentHeight(listH) - 1 // -1 for the pager dots row
 	if listVH < 0 {
 		listVH = 0
 	}

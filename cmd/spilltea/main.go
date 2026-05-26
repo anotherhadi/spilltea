@@ -44,7 +44,8 @@ func main() {
 	)
 	flag.CommandLine.SetOutput(os.Stdout)
 	flag.Usage = func() {
-		fmt.Println("Usage: spilltea [flags]\n")
+		fmt.Println("Usage: spilltea [flags]")
+		fmt.Println("")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -121,7 +122,7 @@ func main() {
 		config.Global.App.UpstreamProxy = *flagUpstreamProxy
 	}
 
-	style.Init(config.Global)
+	style.Init()
 	icons.Init(config.Global)
 	keys.Init(config.Global)
 

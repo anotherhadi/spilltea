@@ -14,10 +14,10 @@ import (
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/keys"
-	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/ui/components/teapot"
 )
 
@@ -88,19 +88,18 @@ type homeDelegate struct {
 }
 
 func newHomeDelegate() homeDelegate {
-	s := style.S
 	leftBorder := lipgloss.Border{Left: "│"}
 	return homeDelegate{
-		normalTitle: lipgloss.NewStyle().Foreground(s.Text).PaddingLeft(4),
-		normalDesc:  lipgloss.NewStyle().Foreground(s.Subtle).Faint(true).PaddingLeft(4),
+		normalTitle: lipgloss.NewStyle().Foreground(ilovetui.S.Text).PaddingLeft(4),
+		normalDesc:  lipgloss.NewStyle().Foreground(ilovetui.S.Subtle).Faint(true).PaddingLeft(4),
 		selectedTitle: lipgloss.NewStyle().
 			Border(leftBorder, false, false, false, true).
-			BorderForeground(s.Primary).
-			Foreground(s.Primary).Bold(true).PaddingLeft(3),
+			BorderForeground(ilovetui.S.Primary).
+			Foreground(ilovetui.S.Primary).Bold(true).PaddingLeft(3),
 		selectedDesc: lipgloss.NewStyle().
 			Border(leftBorder, false, false, false, true).
-			BorderForeground(s.Primary).
-			Foreground(s.MutedFg).PaddingLeft(3),
+			BorderForeground(ilovetui.S.Primary).
+			Foreground(ilovetui.S.Muted).PaddingLeft(3),
 		filterMatch: lipgloss.NewStyle().Underline(true),
 	}
 }
@@ -304,14 +303,13 @@ func buildItems(projects []Project) []list.Item {
 }
 
 func (m Model) renderHelpLine() string {
-	s := style.S
 	k := keys.Keys.Home
 	fs := m.list.FilterState()
 
-	kStyle := lipgloss.NewStyle().Foreground(s.MutedFg).Inline(true)
-	dStyle := s.Faint.Inline(true)
+	kStyle := lipgloss.NewStyle().Foreground(ilovetui.S.Muted).Inline(true)
+	dStyle := ilovetui.S.Faint.Inline(true)
 
-	sep := s.Faint.Inline(true).Render(" • ")
+	sep := ilovetui.S.Faint.Inline(true).Render(" • ")
 	item := func(keyStr, desc string) string {
 		return kStyle.Render(keyStr) + " " + dStyle.Render(desc)
 	}

@@ -11,7 +11,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/glamour/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/anotherhadi/spilltea/internal/config"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
@@ -78,7 +78,7 @@ func (m *Model) recalcSizes() {
 
 	listH, bodyH := style.SplitH(m.height, m.renderStatusBar(), 0.35)
 
-	listVH := style.PanelContentH(listH) - 1 // -1 for the pager dots row
+	listVH := ilovetui.ContentHeight(listH) - 1 // -1 for the pager dots row
 	if listVH < 0 {
 		listVH = 0
 	}
@@ -89,7 +89,7 @@ func (m *Model) recalcSizes() {
 		m.pager.PerPage = 1
 	}
 
-	bodyVH := style.PanelContentH(bodyH)
+	bodyVH := ilovetui.ContentHeight(bodyH)
 	m.bodyViewport.SetWidth(inner)
 	m.bodyViewport.SetHeight(bodyVH)
 
@@ -148,7 +148,7 @@ func (m *Model) refreshBodyScroll(reset bool) {
 
 func (m *Model) renderMarkdownCached(src string, width int) string {
 	if src == "" {
-		return style.S.Faint.Render(util.CenterLines("(ㆆ _ ㆆ)", "no description"))
+		return ilovetui.S.Faint.Render(util.CenterLines("(ㆆ _ ㆆ)", "no description"))
 	}
 	tmpl, err := template.New("").Parse(src)
 	if err != nil {
@@ -164,7 +164,7 @@ func (m *Model) renderMarkdownCached(src string, width int) string {
 	// Rebuild renderer if width changed or not yet built.
 	if m.renderer == nil || m.rendererWidth != width {
 		r, err := glamour.NewTermRenderer(
-			glamour.WithStyles(style.GlamourStyleConfig(config.Global)),
+			glamour.WithStyles(ilovetui.GlamourStyleConfig()),
 			glamour.WithWordWrap(width),
 		)
 		if err == nil {

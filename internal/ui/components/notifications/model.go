@@ -7,7 +7,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/anotherhadi/spilltea/internal/style"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/charmbracelet/x/ansi"
 )
 
@@ -76,7 +76,6 @@ func (m Model) View(background string) string {
 		return background
 	}
 
-	s := style.S
 	const popupW = 34
 
 	var popups []string
@@ -89,17 +88,17 @@ func (m Model) View(background string) string {
 		var accent color.Color
 		switch n.kind {
 		case KindSuccess:
-			accent = s.Success
+			accent = ilovetui.S.Success
 		case KindWarning:
-			accent = s.Warning
+			accent = ilovetui.S.Warning
 		case KindError:
-			accent = s.Error
+			accent = ilovetui.S.Error
 		default:
-			accent = s.Primary
+			accent = ilovetui.S.Primary
 		}
 
 		titleStr := lipgloss.NewStyle().Foreground(accent).Bold(true).Render(n.title)
-		bodyStr := lipgloss.NewStyle().Foreground(s.Text).Width(popupW).Render(n.body)
+		bodyStr := lipgloss.NewStyle().Foreground(ilovetui.S.Text).Width(popupW).Render(n.body)
 
 		inner := lipgloss.JoinVertical(lipgloss.Left, titleStr, bodyStr)
 		box := lipgloss.NewStyle().

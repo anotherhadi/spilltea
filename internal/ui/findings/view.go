@@ -6,6 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/util"
@@ -27,34 +28,31 @@ func (m Model) View() tea.View {
 }
 
 func (m *Model) renderListPanel(w, h int) string {
-	s := style.S
 	var dots string
 	if len(m.findings) > 0 {
-		dots = s.Faint.Render(m.pager.View())
+		dots = ilovetui.S.Faint.Render(m.pager.View())
 	}
 	inner := lipgloss.JoinVertical(lipgloss.Left,
 		m.listViewport.View(),
 		lipgloss.PlaceHorizontal(m.listViewport.Width(), lipgloss.Center, dots),
 	)
-	return style.RenderWithTitle(s.PanelFocused, icons.I.Findings+"Findings", inner, w, h)
+	return ilovetui.RenderWithTitle(ilovetui.S.PanelFocused, icons.I.Findings+"Findings", inner, w, h)
 }
 
 func (m *Model) renderBodyPanel(h int) string {
-	s := style.S
 	title := "Description"
 	if len(m.findings) > 0 {
 		title = m.findings[m.cursor].Title
 	}
-	return style.RenderWithTitle(s.Panel, title, style.ViewportView(&m.bodyViewport), m.width, h)
+	return ilovetui.RenderWithTitle(ilovetui.S.Panel, title, style.ViewportView(&m.bodyViewport), m.width, h)
 }
 
 func (m *Model) renderList() string {
-	s := style.S
 	if len(m.findings) == 0 {
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			s.Faint.Render(util.CenterLines("(҂◡_◡) ᕤ", "no findings")),
+			ilovetui.S.Faint.Render(util.CenterLines("(҂◡_◡) ᕤ", "no findings")),
 		)
 	}
 
@@ -76,18 +74,18 @@ func (m *Model) renderList() string {
 			titleW = 0
 		}
 
-		pluginStr := s.Faint.Width(8).Render(util.Truncate(f.PluginName, 8))
+		pluginStr := ilovetui.S.Faint.Width(8).Render(util.Truncate(f.PluginName, 8))
 
 		var line string
 		if selected {
-			bg := lipgloss.NewStyle().Background(s.Selection)
+			bg := lipgloss.NewStyle().Background(ilovetui.S.Selection)
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
-				bg.Bold(true).Foreground(s.Primary).Width(2).Render(">"),
-				sevStyle.Background(s.Selection).Width(8).Render(f.Severity),
+				bg.Bold(true).Foreground(ilovetui.S.Primary).Width(2).Render(">"),
+				sevStyle.Background(ilovetui.S.Selection).Width(8).Render(f.Severity),
 				bg.Width(1).Render(""),
-				bg.Foreground(s.Subtle).Width(8).Render(util.Truncate(f.PluginName, 8)),
+				bg.Foreground(ilovetui.S.Subtle).Width(8).Render(util.Truncate(f.PluginName, 8)),
 				bg.Width(1).Render(""),
-				bg.Foreground(s.Subtle).Width(10).Render(ts),
+				bg.Foreground(ilovetui.S.Subtle).Width(10).Render(ts),
 				bg.Width(1).Render(""),
 				bg.Bold(true).Width(titleW).Render(f.Title),
 			)
@@ -98,9 +96,9 @@ func (m *Model) renderList() string {
 				" ",
 				pluginStr,
 				" ",
-				s.Faint.Width(10).Render(ts),
+				ilovetui.S.Faint.Width(10).Render(ts),
 				" ",
-				s.Bold.Render(f.Title),
+				ilovetui.S.Bold.Render(f.Title),
 			)
 		}
 		sb.WriteString(fmt.Sprintf("%s\n", line))

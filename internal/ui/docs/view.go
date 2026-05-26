@@ -9,15 +9,15 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/glamour/v2"
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/config"
-	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/charmbracelet/x/ansi"
 )
 
 func windowStyle() lipgloss.Style {
 	return lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(style.S.Subtle).
+		BorderForeground(ilovetui.S.Subtle).
 		Padding(0, 0)
 }
 
@@ -31,7 +31,7 @@ func (e Model) View() tea.View {
 			countText = fmt.Sprintf("%d/%d", e.matchIndex+1, len(e.matches))
 		}
 		count := lipgloss.NewStyle().Padding(0, 1).
-			Foreground(style.S.MutedFg).
+			Foreground(ilovetui.S.Muted).
 			Render(countText)
 		statusBar = lipgloss.JoinHorizontal(lipgloss.Top, statusBar, count)
 	}
@@ -61,7 +61,7 @@ func (m *Model) renderMarkdown() {
 
 	width := m.viewport.Width() - 2
 	renderer, _ := glamour.NewTermRenderer(
-		glamour.WithStyles(style.GlamourStyleConfig(cfg)),
+		glamour.WithStyles(ilovetui.GlamourStyleConfig()),
 		glamour.WithWordWrap(width),
 	)
 

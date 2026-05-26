@@ -3,7 +3,7 @@ package app
 import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/anotherhadi/spilltea/internal/style"
+	ilovetui "github.com/anotherhadi/ilovetui"
 )
 
 func (m Model) View() tea.View {
@@ -52,5 +52,5 @@ func (m *Model) renderActivePage() string {
 			return e.render(m)
 		}
 	}
-	return style.S.Faint.Render("Work in progress")
+	return ilovetui.S.Faint.Render("Work in progress")
 }

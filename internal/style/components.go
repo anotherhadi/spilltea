@@ -7,6 +7,7 @@ import (
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/viewport"
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 )
 
 func NewViewport() viewport.Model {
@@ -24,7 +25,7 @@ func ViewportView(vp *viewport.Model) string {
 	if len(lines) == 0 {
 		return v
 	}
-	arrow := lipgloss.NewStyle().Foreground(S.Subtle).Render("↓")
+	arrow := lipgloss.NewStyle().Foreground(ilovetui.S.Subtle).Render("↓")
 	arrowW := lipgloss.Width(arrow)
 	inner := vp.Width() - 2*arrowW
 	if inner < 0 {
@@ -51,16 +52,16 @@ func NewTextarea(showLineNumbers bool) textarea.Model {
 	ts := ta.Styles()
 	ts.Focused.Base = lipgloss.NewStyle()
 	ts.Blurred.Base = lipgloss.NewStyle()
-	ts.Focused.Text = lipgloss.NewStyle().Foreground(S.Text)
-	ts.Focused.CursorLine = lipgloss.NewStyle().Background(S.Selection).Foreground(S.Text)
-	ts.Focused.CursorLineNumber = lipgloss.NewStyle().Background(S.Selection).Foreground(S.Primary).Bold(true)
-	ts.Focused.LineNumber = lipgloss.NewStyle().Foreground(S.Subtle)
-	ts.Focused.Placeholder = lipgloss.NewStyle().Foreground(S.Subtle)
-	ts.Focused.EndOfBuffer = lipgloss.NewStyle().Foreground(S.SubtleBg)
-	ts.Blurred.Text = lipgloss.NewStyle().Foreground(S.MutedFg)
-	ts.Blurred.LineNumber = lipgloss.NewStyle().Foreground(S.SubtleBg)
-	ts.Blurred.Placeholder = lipgloss.NewStyle().Foreground(S.Subtle)
-	ts.Blurred.EndOfBuffer = lipgloss.NewStyle().Foreground(S.SubtleBg)
+	ts.Focused.Text = lipgloss.NewStyle().Foreground(ilovetui.S.Text)
+	ts.Focused.CursorLine = lipgloss.NewStyle().Background(ilovetui.S.Selection).Foreground(ilovetui.S.Text)
+	ts.Focused.CursorLineNumber = lipgloss.NewStyle().Background(ilovetui.S.Selection).Foreground(ilovetui.S.Primary).Bold(true)
+	ts.Focused.LineNumber = lipgloss.NewStyle().Foreground(ilovetui.S.Subtle)
+	ts.Focused.Placeholder = lipgloss.NewStyle().Foreground(ilovetui.S.Subtle)
+	ts.Focused.EndOfBuffer = lipgloss.NewStyle().Foreground(ilovetui.S.SubtleBg)
+	ts.Blurred.Text = lipgloss.NewStyle().Foreground(ilovetui.S.Muted)
+	ts.Blurred.LineNumber = lipgloss.NewStyle().Foreground(ilovetui.S.SubtleBg)
+	ts.Blurred.Placeholder = lipgloss.NewStyle().Foreground(ilovetui.S.Subtle)
+	ts.Blurred.EndOfBuffer = lipgloss.NewStyle().Foreground(ilovetui.S.SubtleBg)
 	ta.SetStyles(ts)
 	return ta
 }
@@ -69,15 +70,15 @@ func SeverityStyle(sev string) lipgloss.Style {
 	base := lipgloss.NewStyle().Bold(true)
 	switch sev {
 	case "critical":
-		return base.Foreground(S.Error)
+		return base.Foreground(ilovetui.S.Error)
 	case "high":
-		return base.Foreground(S.Warning)
+		return base.Foreground(ilovetui.S.Warning)
 	case "medium":
-		return base.Foreground(S.Primary)
+		return base.Foreground(ilovetui.S.Primary)
 	case "low":
-		return base.Foreground(S.Success)
+		return base.Foreground(ilovetui.S.Success)
 	default:
-		return base.Foreground(S.Subtle)
+		return base.Foreground(ilovetui.S.Subtle)
 	}
 }
 
@@ -85,13 +86,13 @@ func StatusStyle(code, width int) lipgloss.Style {
 	base := lipgloss.NewStyle().Bold(true).Width(width)
 	switch {
 	case code >= 500:
-		return base.Foreground(S.Error)
+		return base.Foreground(ilovetui.S.Error)
 	case code >= 400:
-		return base.Foreground(S.Warning)
+		return base.Foreground(ilovetui.S.Warning)
 	case code >= 300:
-		return base.Foreground(S.Primary)
+		return base.Foreground(ilovetui.S.Primary)
 	default:
-		return base.Foreground(S.Success)
+		return base.Foreground(ilovetui.S.Success)
 	}
 }
 

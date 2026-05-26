@@ -9,6 +9,7 @@ import (
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
@@ -155,7 +156,7 @@ func (m *Model) recalcSizes() {
 	if listInner < 0 {
 		listInner = 0
 	}
-	listVH := style.PanelContentH(listH) - 1 // -1 for the pager dots row
+	listVH := ilovetui.ContentHeight(listH) - 1 // -1 for the pager dots row
 	if listVH < 0 {
 		listVH = 0
 	}
@@ -175,7 +176,7 @@ func (m *Model) recalcSizes() {
 	if rightInner < 0 {
 		rightInner = 0
 	}
-	bodyVH := style.PanelContentH(bodyH)
+	bodyVH := ilovetui.ContentHeight(bodyH)
 
 	m.requestViewport.SetWidth(leftInner)
 	m.requestViewport.SetHeight(bodyVH)

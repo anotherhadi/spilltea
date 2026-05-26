@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
-	"github.com/anotherhadi/spilltea/internal/style"
+	ilovetui "github.com/anotherhadi/ilovetui"
 )
 
 type sidebarState string
@@ -42,7 +42,6 @@ func (m *Model) renderSidebar() string {
 	if m.sidebarState == sidebarHidden {
 		return ""
 	}
-	s := style.S
 	// content width inside bordered panel
 	inner := m.getSidebarWidth() - 2
 
@@ -50,18 +49,18 @@ func (m *Model) renderSidebar() string {
 	if m.sidebarState == sidebarCollapsed {
 		titleText = "SPLT"
 	}
-	title := lipgloss.NewStyle().Width(inner).Bold(true).Foreground(s.Primary).Padding(0, 1).Render(titleText)
+	title := lipgloss.NewStyle().Width(inner).Bold(true).Foreground(ilovetui.S.Primary).Padding(0, 1).Render(titleText)
 
 	divider := strings.Repeat("─", inner)
 
-	badgeSelected := lipgloss.NewStyle().Foreground(s.Primary).Bold(true)
-	badgeNormal := lipgloss.NewStyle().Foreground(s.Subtle)
-	textSelected := lipgloss.NewStyle().Foreground(s.Primary)
-	textNormal := lipgloss.NewStyle().Foreground(s.Text)
+	badgeSelected := lipgloss.NewStyle().Foreground(ilovetui.S.Primary).Bold(true)
+	badgeNormal := lipgloss.NewStyle().Foreground(ilovetui.S.Subtle)
+	textSelected := lipgloss.NewStyle().Foreground(ilovetui.S.Primary)
+	textNormal := lipgloss.NewStyle().Foreground(ilovetui.S.Text)
 	lineStyle := lipgloss.NewStyle().Width(inner).Padding(0, 1)
 
 	var items strings.Builder
-	badgeUnread := lipgloss.NewStyle().Foreground(s.Warning).Bold(true)
+	badgeUnread := lipgloss.NewStyle().Foreground(ilovetui.S.Warning).Bold(true)
 
 	for i, entry := range sidebarEntries {
 		selected := entry.id == m.page
@@ -95,13 +94,13 @@ func (m *Model) renderSidebar() string {
 	}
 	parts := []string{
 		title,
-		lipgloss.NewStyle().Width(inner).Foreground(s.Subtle).Padding(0, 1).Render(name),
+		lipgloss.NewStyle().Width(inner).Foreground(ilovetui.S.Subtle).Padding(0, 1).Render(name),
 	}
 	parts = append(parts,
-		lipgloss.NewStyle().Foreground(s.Subtle).Render(divider),
+		lipgloss.NewStyle().Foreground(ilovetui.S.Subtle).Render(divider),
 		items.String(),
 	)
 	body := lipgloss.JoinVertical(lipgloss.Left, parts...)
 
-	return s.Panel.Width(m.getSidebarWidth()).Height(m.height).Render(body)
+	return ilovetui.S.Panel.Width(m.getSidebarWidth()).Height(m.height).Render(body)
 }

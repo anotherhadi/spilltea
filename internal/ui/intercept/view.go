@@ -6,6 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/util"
@@ -38,17 +39,15 @@ func (m Model) View() tea.View {
 }
 
 func (m *Model) renderListPanel(w, h int) string {
-	s := style.S
-
 	focused := !m.editing && (!m.captureResponse || m.focusedPanel == panelRequests)
-	border := s.Panel
+	border := ilovetui.S.Panel
 	if focused {
-		border = s.PanelFocused
+		border = ilovetui.S.PanelFocused
 	}
 
 	var dots string
 	if len(m.queue) > 0 {
-		dots = s.Faint.Render(m.pager.View())
+		dots = ilovetui.S.Faint.Render(m.pager.View())
 	}
 	inner := lipgloss.JoinVertical(lipgloss.Left,
 		m.listViewport.View(),
@@ -57,32 +56,28 @@ func (m *Model) renderListPanel(w, h int) string {
 
 	title := icons.I.Request + "Requests"
 	if !m.interceptEnabled {
-		title += " " + lipgloss.NewStyle().Foreground(style.S.Error).Render("[intercept off]")
+		title += " " + lipgloss.NewStyle().Foreground(ilovetui.S.Error).Render("[intercept off]")
 	}
-	return style.RenderWithTitle(border, title, inner, w, h)
+	return ilovetui.RenderWithTitle(border, title, inner, w, h)
 }
 
 func (m *Model) renderResponseListPanel(w, h int) string {
-	s := style.S
-
 	focused := !m.editing && m.focusedPanel == panelResponses
-	border := s.Panel
+	border := ilovetui.S.Panel
 	if focused {
-		border = s.PanelFocused
+		border = ilovetui.S.PanelFocused
 	}
 
-	dots := s.Faint.Render(m.responsePager.View())
+	dots := ilovetui.S.Faint.Render(m.responsePager.View())
 	inner := lipgloss.JoinVertical(lipgloss.Left,
 		m.responseViewport.View(),
 		lipgloss.PlaceHorizontal(m.responseViewport.Width(), lipgloss.Center, dots),
 	)
 
-	return style.RenderWithTitle(border, icons.I.Response+"Responses", inner, w, h)
+	return ilovetui.RenderWithTitle(border, icons.I.Response+"Responses", inner, w, h)
 }
 
 func (m *Model) renderBodyPanel(h int) string {
-	s := style.S
-
 	var body string
 	if m.editing {
 		body = m.textarea.View()
@@ -90,13 +85,13 @@ func (m *Model) renderBodyPanel(h int) string {
 		body = style.ViewportView(&m.bodyViewport)
 	}
 
-	border := s.Panel
+	border := ilovetui.S.Panel
 	if m.editing {
-		border = s.PanelFocused
+		border = ilovetui.S.PanelFocused
 	}
 
 	title := icons.I.Detail + "Details"
-	return style.RenderWithTitle(border, title, body, m.width, h)
+	return ilovetui.RenderWithTitle(border, title, body, m.width, h)
 }
 
 func (m *Model) renderStatusBar() string {
@@ -105,10 +100,9 @@ func (m *Model) renderStatusBar() string {
 
 func (m *Model) renderList() string {
 	if len(m.queue) == 0 {
-		return lipgloss.Place(m.listViewport.Width(), m.listViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(｡◕‿‿◕｡)", "waiting for a request")))
+		return lipgloss.Place(m.listViewport.Width(), m.listViewport.Height(), lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("(｡◕‿‿◕｡)", "waiting for a request")))
 	}
 
-	s := style.S
 	start, end := util.PageBounds(m.pager, len(m.queue))
 
 	var sb strings.Builder
@@ -121,7 +115,7 @@ func (m *Model) renderList() string {
 		}
 
 		selected := globalIdx == m.cursor
-		selBg := s.Selection
+		selBg := ilovetui.S.Selection
 
 		w := m.listViewport.Width()
 		const fixedW = 2 + 7 + 2
@@ -134,18 +128,18 @@ func (m *Model) renderList() string {
 		if selected {
 			bg := lipgloss.NewStyle().Background(selBg)
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
-				bg.Bold(true).Foreground(s.Primary).Width(2).Render(">"),
-				s.Method(r.Method).Background(selBg).Render(r.Method),
+				bg.Bold(true).Foreground(ilovetui.S.Primary).Width(2).Render(">"),
+				style.S.Method(r.Method).Background(selBg).Render(r.Method),
 				bg.Width(2).Render(""),
 				bg.Bold(true).Width(hostPathW).Render(r.URL.Host+path),
 			)
 		} else {
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				"  ",
-				s.Method(r.Method).Render(r.Method),
-				s.Faint.Render("  "),
-				s.Bold.Render(r.URL.Host),
-				s.Faint.Render(path),
+				style.S.Method(r.Method).Render(r.Method),
+				ilovetui.S.Faint.Render("  "),
+				ilovetui.S.Bold.Render(r.URL.Host),
+				ilovetui.S.Faint.Render(path),
 			)
 		}
 		sb.WriteString(line + "\n")
@@ -155,10 +149,9 @@ func (m *Model) renderList() string {
 
 func (m *Model) renderResponseList() string {
 	if len(m.responseQueue) == 0 {
-		return lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(҂◡_◡)", "no response yet")))
+		return lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("(҂◡_◡)", "no response yet")))
 	}
 
-	s := style.S
 	start, end := util.PageBounds(m.responsePager, len(m.responseQueue))
 
 	var sb strings.Builder
@@ -177,7 +170,7 @@ func (m *Model) renderResponseList() string {
 		statusStr := fmt.Sprintf("%d", code)
 
 		selected := globalIdx == m.responseCursor
-		selBg := s.Selection
+		selBg := ilovetui.S.Selection
 
 		statusSt := style.StatusStyle(code, 7)
 
@@ -192,7 +185,7 @@ func (m *Model) renderResponseList() string {
 		if selected {
 			bg := lipgloss.NewStyle().Background(selBg)
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
-				bg.Bold(true).Foreground(s.Primary).Width(2).Render(">"),
+				bg.Bold(true).Foreground(ilovetui.S.Primary).Width(2).Render(">"),
 				statusSt.Background(selBg).Render(statusStr),
 				bg.Width(2).Render(""),
 				bg.Bold(true).Width(hostPathW).Render(f.Request.URL.Host+path),
@@ -201,9 +194,9 @@ func (m *Model) renderResponseList() string {
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				"  ",
 				statusSt.Render(statusStr),
-				s.Faint.Render("  "),
-				s.Bold.Render(f.Request.URL.Host),
-				s.Faint.Render(path),
+				ilovetui.S.Faint.Render("  "),
+				ilovetui.S.Bold.Render(f.Request.URL.Host),
+				ilovetui.S.Faint.Render(path),
 			)
 		}
 		sb.WriteString(line + "\n")

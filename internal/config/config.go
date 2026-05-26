@@ -31,7 +31,6 @@ type Config struct {
 	} `mapstructure:"app"`
 
 	TUI struct {
-		Colors              Colors `mapstructure:"colors"`
 		UseNerdfontIcons    bool   `mapstructure:"use_nerdfont_icons"`
 		DefaultSidebarState string `mapstructure:"default_sidebar_state"`
 		PrettyPrintBody     bool   `mapstructure:"pretty_print_body"`

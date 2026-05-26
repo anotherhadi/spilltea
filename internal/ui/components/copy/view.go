@@ -2,14 +2,12 @@ package copy
 
 import (
 	"charm.land/lipgloss/v2"
-	"github.com/anotherhadi/spilltea/internal/style"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	copyasUI "github.com/anotherhadi/spilltea/internal/ui/components/copyas"
 )
 
 func (m *Model) View(background string) string {
-	s := style.S
-
-	hint := lipgloss.NewStyle().Foreground(s.Subtle).
+	hint := lipgloss.NewStyle().Foreground(ilovetui.S.Subtle).
 		Render("  enter: copy  •  /: filter  •  esc: cancel")
 
 	inner := lipgloss.JoinVertical(lipgloss.Left,
@@ -19,10 +17,10 @@ func (m *Model) View(background string) string {
 
 	border := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(s.Primary)
+		BorderForeground(ilovetui.S.Primary)
 
 	popupH := m.popupHeight()
-	popup := style.RenderWithTitle(border, "Copy", inner, m.popupInnerWidth()+2, popupH)
+	popup := ilovetui.RenderWithTitle(border, "Copy", inner, m.popupInnerWidth()+2, popupH)
 
 	return copyasUI.OverlayCenter(background, popup, m.width, m.height)
 }

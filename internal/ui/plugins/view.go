@@ -7,7 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/glamour/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/anotherhadi/spilltea/internal/config"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
@@ -16,7 +16,7 @@ import (
 
 func (m Model) View() tea.View {
 	if m.width == 0 || m.manager == nil {
-		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(._.)~*.'", "no plugins loaded"))))
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("(._.)~*.'", "no plugins loaded"))))
 	}
 
 	listH, detailH := style.SplitH(m.height, m.renderStatusBar(), 0.4)
@@ -30,36 +30,34 @@ func (m Model) View() tea.View {
 }
 
 func (m *Model) renderListPanel(w, h int) string {
-	s := style.S
-	panelStyle := s.PanelFocused
+	panelStyle := ilovetui.S.PanelFocused
 	if m.editing {
-		panelStyle = s.Panel
+		panelStyle = ilovetui.S.Panel
 	}
 	var dots string
 	if len(m.filtered) > 0 {
-		dots = s.Faint.Render(m.pager.View())
+		dots = ilovetui.S.Faint.Render(m.pager.View())
 	}
 	inner := lipgloss.JoinVertical(lipgloss.Left,
 		m.listViewport.View(),
 		lipgloss.PlaceHorizontal(m.listViewport.Width(), lipgloss.Center, dots),
 	)
-	return style.RenderWithTitle(panelStyle, icons.I.Plugin+"Plugins", inner, w, h)
+	return ilovetui.RenderWithTitle(panelStyle, icons.I.Plugin+"Plugins", inner, w, h)
 }
 
 func (m *Model) renderDetailPanel(h int) string {
-	s := style.S
-	panelStyle := s.Panel
+	panelStyle := ilovetui.S.Panel
 	if m.editing {
-		panelStyle = s.PanelFocused
+		panelStyle = ilovetui.S.PanelFocused
 	}
 	info, ok := m.selected()
 	if !ok {
-		return style.RenderWithTitle(panelStyle, icons.I.Detail+"Detail", "", m.width, h)
+		return ilovetui.RenderWithTitle(panelStyle, icons.I.Detail+"Detail", "", m.width, h)
 	}
 
-	statusSt := lipgloss.NewStyle().Foreground(s.Error)
+	statusSt := lipgloss.NewStyle().Foreground(ilovetui.S.Error)
 	if info.Enabled {
-		statusSt = lipgloss.NewStyle().Foreground(s.Success)
+		statusSt = lipgloss.NewStyle().Foreground(ilovetui.S.Success)
 	}
 	status := "disabled"
 	if info.Enabled {
@@ -69,8 +67,8 @@ func (m *Model) renderDetailPanel(h int) string {
 	pad := lipgloss.NewStyle().Padding(0, 1)
 
 	header := pad.Render(
-		s.Bold.Render(info.Name) + "  " + statusSt.Render(status) + "\n" +
-			s.Faint.Render(filepath.Base(info.FilePath)),
+		ilovetui.S.Bold.Render(info.Name) + "  " + statusSt.Render(status) + "\n" +
+			ilovetui.S.Faint.Render(filepath.Base(info.FilePath)),
 	)
 
 	parts := []string{header, style.ViewportView(&m.detailViewport)}
@@ -79,16 +77,16 @@ func (m *Model) renderDetailPanel(h int) string {
 		var configLabel string
 		if m.editing {
 			escKey := keys.Keys.Global.Escape.Help().Key
-			configLabel = pad.Render(s.Faint.Render("editing config (" + escKey + " to save):"))
+			configLabel = pad.Render(ilovetui.S.Faint.Render("editing config (" + escKey + " to save):"))
 		} else {
 			editKey := keys.Keys.Plugins.EditConfig.Help().Key
-			configLabel = pad.Render(s.Faint.Render("config (" + editKey + " to edit):"))
+			configLabel = pad.Render(ilovetui.S.Faint.Render("config (" + editKey + " to edit):"))
 		}
 		parts = append(parts, "", configLabel, pad.Render(m.textarea.View()))
 	}
 
 	inner := lipgloss.JoinVertical(lipgloss.Left, parts...)
-	return style.RenderWithTitle(panelStyle, icons.I.Detail+"Detail", inner, m.width, h)
+	return ilovetui.RenderWithTitle(panelStyle, icons.I.Detail+"Detail", inner, m.width, h)
 }
 
 func renderPluginDescription(desc string, width int) string {
@@ -100,7 +98,7 @@ func renderPluginDescription(desc string, width int) string {
 	desc = strings.Join(lines, "\n")
 
 	r, err := glamour.NewTermRenderer(
-		glamour.WithStyles(style.GlamourStyleConfig(config.Global)),
+		glamour.WithStyles(ilovetui.GlamourStyleConfig()),
 		glamour.WithWordWrap(width),
 	)
 	if err != nil {
@@ -114,23 +112,21 @@ func renderPluginDescription(desc string, width int) string {
 }
 
 func (m *Model) renderStatusBar() string {
-	s := style.S
 	pad := lipgloss.NewStyle().Padding(0, 1)
 	filterKey := keys.Keys.Plugins.Filter.Help().Key
 	if m.filtering {
-		return pad.Render(s.Faint.Render(filterKey) + " " + m.filterInput.View())
+		return pad.Render(ilovetui.S.Faint.Render(filterKey) + " " + m.filterInput.View())
 	}
 	if m.filter != "" {
 		escKey := keys.Keys.Global.Escape.Help().Key
-		accent := lipgloss.NewStyle().Foreground(s.Primary)
-		filterLine := pad.Render(accent.Render(filterKey) + " " + s.Bold.Render(m.filter) + s.Faint.Render("  "+escKey+" to clear"))
+		accent := lipgloss.NewStyle().Foreground(ilovetui.S.Primary)
+		filterLine := pad.Render(accent.Render(filterKey) + " " + ilovetui.S.Bold.Render(m.filter) + ilovetui.S.Faint.Render("  "+escKey+" to clear"))
 		return lipgloss.JoinVertical(lipgloss.Left, filterLine, pad.Render(m.help.View(pluginsKeyMap{editing: m.editing, hasConfig: m.hasConfig(), width: m.width})))
 	}
 	return pad.Render(m.help.View(pluginsKeyMap{editing: m.editing, hasConfig: m.hasConfig(), width: m.width}))
 }
 
 func (m *Model) renderList() string {
-	s := style.S
 	if len(m.filtered) == 0 {
 		msg := util.CenterLines("(ง •̀_•́)ง", "no plugins", "", "spilltea --add-default-plugins")
 		if m.filter != "" {
@@ -139,7 +135,7 @@ func (m *Model) renderList() string {
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			s.Faint.Render(msg),
+			ilovetui.S.Faint.Render(msg),
 		)
 	}
 
@@ -150,10 +146,10 @@ func (m *Model) renderList() string {
 		globalIdx := start + i
 		selected := globalIdx == m.cursor
 
-		enabledSt := lipgloss.NewStyle().Foreground(s.Error)
+		enabledSt := lipgloss.NewStyle().Foreground(ilovetui.S.Error)
 		enabledStr := "off"
 		if p.Enabled {
-			enabledSt = lipgloss.NewStyle().Foreground(s.Success)
+			enabledSt = lipgloss.NewStyle().Foreground(ilovetui.S.Success)
 			enabledStr = "on "
 		}
 
@@ -166,10 +162,10 @@ func (m *Model) renderList() string {
 
 		var line string
 		if selected {
-			bg := lipgloss.NewStyle().Background(s.Selection)
+			bg := lipgloss.NewStyle().Background(ilovetui.S.Selection)
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
-				bg.Bold(true).Foreground(s.Primary).Width(2).Render(">"),
-				enabledSt.Background(s.Selection).Width(3).Render(enabledStr),
+				bg.Bold(true).Foreground(ilovetui.S.Primary).Width(2).Render(">"),
+				enabledSt.Background(ilovetui.S.Selection).Width(3).Render(enabledStr),
 				bg.Width(1).Render(""),
 				bg.Bold(true).Width(nameW).Render(p.Name),
 			)
@@ -178,7 +174,7 @@ func (m *Model) renderList() string {
 				"  ",
 				enabledSt.Width(3).Render(enabledStr),
 				" ",
-				s.Bold.Render(p.Name),
+				ilovetui.S.Bold.Render(p.Name),
 			)
 		}
 		sb.WriteString(line + "\n")

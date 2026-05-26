@@ -27,23 +27,6 @@ tui:
   use_nerdfont_icons: false
   default_sidebar_state: "expanded" # hidden, collapsed, expanded
   pretty_print_body: true # auto-indent JSON and HTML response bodies
-  colors:
-    base00: "110F12" # Default Background
-    base01: "1C1920" # Lighter Background (status bars, line numbers)
-    base02: "1D1A26" # Selection Background
-    base03: "514D63" # Comments, Invisibles, faint text
-    base04: "8E8AA0" # Dark Foreground (status bars)
-    base05: "C2BED6" # Default Foreground, Caret, Delimiters
-    base06: "D8D5EA" # Light Foreground (rarely used)
-    base07: "EAE7F7" # Light Background (rarely used)
-    base08: "E07080" # Red: errors, diff deleted
-    base09: "D49070" # Orange: integers, constants, warnings
-    base0a: "C4B060" # Yellow: classes, search highlight
-    base0b: "80B880" # Green: strings, diff inserted, success
-    base0c: "70B8C0" # Cyan: support, regex, escape chars
-    base0d: "9E97F8" # Blue/Accent: functions, headings, primary
-    base0e: "C090E8" # Purple: keywords, storage
-    base0f: "D080A0" # Pink: deprecated, embedded language tags
 
 keybindings:
   global:

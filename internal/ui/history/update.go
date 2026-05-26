@@ -7,6 +7,7 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
@@ -345,7 +346,7 @@ func (m *Model) refreshBody() {
 	}
 	if raw == "" {
 		w, h := m.bodyViewport.Width(), m.bodyViewport.Height()
-		m.bodyViewport.SetContent(lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(˘･_･˘)", "no response stored"))))
+		m.bodyViewport.SetContent(lipgloss.Place(w, h, lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("(˘･_･˘)", "no response stored"))))
 		return
 	}
 	m.bodyViewport.SetContent(style.HighlightHTTP(raw))

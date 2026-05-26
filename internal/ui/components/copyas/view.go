@@ -4,14 +4,12 @@ import (
 	"strings"
 
 	"charm.land/lipgloss/v2"
-	"github.com/anotherhadi/spilltea/internal/style"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/charmbracelet/x/ansi"
 )
 
 func (m *Model) View(background string) string {
-	s := style.S
-
-	hint := lipgloss.NewStyle().Foreground(s.Subtle).
+	hint := lipgloss.NewStyle().Foreground(ilovetui.S.Subtle).
 		Render("  enter: copy  •  /: filter  •  esc: cancel")
 
 	inner := lipgloss.JoinVertical(lipgloss.Left,
@@ -21,17 +19,15 @@ func (m *Model) View(background string) string {
 
 	border := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(s.Primary)
+		BorderForeground(ilovetui.S.Primary)
 
 	popupH := m.popupHeight()
-	popup := style.RenderWithTitle(border, "Copy as", inner, m.popupInnerWidth()+2, popupH)
+	popup := ilovetui.RenderWithTitle(border, "Copy as", inner, m.popupInnerWidth()+2, popupH)
 
 	return OverlayCenter(background, popup, m.width, m.height)
 }
 
 func OverlayCenter(bg, popup string, w, h int) string {
-	s := style.S
-
 	stripped := ansi.Strip(bg)
 	rawLines := strings.Split(stripped, "\n")
 	bgRunes := make([][]rune, h)
@@ -67,7 +63,7 @@ func OverlayCenter(bg, popup string, w, h int) string {
 		startX = 0
 	}
 
-	dim := lipgloss.NewStyle().Foreground(s.Subtle).Faint(true)
+	dim := lipgloss.NewStyle().Foreground(ilovetui.S.Subtle).Faint(true)
 
 	result := make([]string, h)
 	for y := 0; y < h; y++ {

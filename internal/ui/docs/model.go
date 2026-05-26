@@ -14,6 +14,7 @@ import (
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
 )
@@ -58,7 +59,7 @@ func New() Model {
 	ti := textinput.New()
 	ti.Prompt = "/"
 	s := ti.Styles()
-	s.Focused.Prompt = lipgloss.NewStyle().Foreground(style.S.Primary)
+	s.Focused.Prompt = lipgloss.NewStyle().Foreground(ilovetui.S.Primary)
 	ti.SetStyles(s)
 
 	return Model{
@@ -182,8 +183,8 @@ func injectHighlightsInLine(ansiLine string, intervals [][]int, currentIdx int) 
 		return ansiLine
 	}
 
-	normalOpen, normalClose := lipglossAnsiCodes(lipgloss.NewStyle().Background(style.S.SubtleBg))
-	currentOpen, currentClose := lipglossAnsiCodes(lipgloss.NewStyle().Background(style.S.Primary).Foreground(style.S.Text))
+	normalOpen, normalClose := lipglossAnsiCodes(lipgloss.NewStyle().Background(ilovetui.S.SubtleBg))
+	currentOpen, currentClose := lipglossAnsiCodes(lipgloss.NewStyle().Background(ilovetui.S.Primary).Foreground(ilovetui.S.Text))
 
 	type injection struct {
 		visPos   int

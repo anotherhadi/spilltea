@@ -16,6 +16,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/andybalholm/brotli"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/config"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
@@ -350,11 +351,11 @@ func (m *Model) refreshBody() {
 	m.requestViewport.SetXOffset(0)
 
 	if e.Sending {
-		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("(ﾉ◕ヮ◕)ﾉ*:･ﾟ", "sending..."))))
+		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("(ﾉ◕ヮ◕)ﾉ*:･ﾟ", "sending..."))))
 	} else if e.ResponseRaw != "" {
 		m.responseViewport.SetContent(style.HighlightHTTP(e.ResponseRaw))
 	} else {
-		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, style.S.Faint.Render(util.CenterLines("( •_•)>⌐■", "press send to fire"))))
+		m.responseViewport.SetContent(lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("( •_•)>⌐■", "press send to fire"))))
 	}
 	m.responseViewport.SetYOffset(0)
 	m.responseViewport.SetXOffset(0)

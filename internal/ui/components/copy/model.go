@@ -6,7 +6,7 @@ import (
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/anotherhadi/spilltea/internal/style"
+	ilovetui "github.com/anotherhadi/ilovetui"
 )
 
 const (
@@ -47,20 +47,18 @@ type Model struct {
 }
 
 func New() Model {
-	s := style.S
-
 	delegate := list.NewDefaultDelegate()
 	delegate.SetSpacing(0)
-	delegate.Styles.NormalTitle = lipgloss.NewStyle().Foreground(s.Text).PaddingLeft(2)
-	delegate.Styles.NormalDesc = lipgloss.NewStyle().Foreground(s.Subtle).PaddingLeft(2)
+	delegate.Styles.NormalTitle = lipgloss.NewStyle().Foreground(ilovetui.S.Text).PaddingLeft(2)
+	delegate.Styles.NormalDesc = lipgloss.NewStyle().Foreground(ilovetui.S.Subtle).PaddingLeft(2)
 	delegate.Styles.SelectedTitle = lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder(), false, false, false, true).
-		BorderForeground(s.Primary).
-		Foreground(s.Primary).Bold(true).PaddingLeft(1)
+		BorderForeground(ilovetui.S.Primary).
+		Foreground(ilovetui.S.Primary).Bold(true).PaddingLeft(1)
 	delegate.Styles.SelectedDesc = lipgloss.NewStyle().
 		Border(lipgloss.NormalBorder(), false, false, false, true).
-		BorderForeground(s.Primary).
-		Foreground(s.MutedFg).PaddingLeft(1)
+		BorderForeground(ilovetui.S.Primary).
+		Foreground(ilovetui.S.Muted).PaddingLeft(1)
 
 	l := list.New(allItems, delegate, popupW, 8)
 	l.SetShowTitle(false)
@@ -125,7 +123,7 @@ func (m Model) popupHeight() int {
 }
 
 func (m Model) listHeight() int {
-	return style.PanelContentH(m.popupHeight()) - 1
+	return ilovetui.ContentHeight(m.popupHeight()) - 1
 }
 
 func (m Model) extract(id string) string {

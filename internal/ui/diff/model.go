@@ -8,6 +8,7 @@ import (
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/util"
@@ -85,10 +86,9 @@ func wordDiff(leftLine, rightLine string) (leftRendered, rightRendered string) {
 		segs[lo], segs[hi] = segs[hi], segs[lo]
 	}
 
-	s := style.S
-	boldErr := lipgloss.NewStyle().Foreground(s.Error).Bold(true)
-	boldOk := lipgloss.NewStyle().Foreground(s.Success).Bold(true)
-	dim := lipgloss.NewStyle().Foreground(s.Subtle)
+	boldErr := lipgloss.NewStyle().Foreground(ilovetui.S.Error).Bold(true)
+	boldOk := lipgloss.NewStyle().Foreground(ilovetui.S.Success).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(ilovetui.S.Subtle)
 
 	var lb, rb strings.Builder
 	for _, seg := range segs {
@@ -255,7 +255,7 @@ func (m *Model) recalcSizes() {
 		rightInner = 0
 	}
 
-	viewportH := style.PanelContentH(panelH)
+	viewportH := ilovetui.ContentHeight(panelH)
 
 	m.leftViewport.SetWidth(leftInner)
 	m.leftViewport.SetHeight(viewportH)
@@ -296,13 +296,11 @@ func hlLines(raw string) []string {
 }
 
 func (m *Model) refreshViewports() {
-	s := style.S
-
 	if m.left.raw == "" {
 		placeholder := lipgloss.Place(
 			m.leftViewport.Width(), m.leftViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			s.Faint.Render(util.CenterLines("<(^_^)>", "send two entries here to compare")),
+			ilovetui.S.Faint.Render(util.CenterLines("<(^_^)>", "send two entries here to compare")),
 		)
 		m.leftViewport.SetContent(placeholder)
 		m.rightViewport.SetContent("")
@@ -314,7 +312,7 @@ func (m *Model) refreshViewports() {
 		placeholder := lipgloss.Place(
 			m.rightViewport.Width(), m.rightViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			s.Faint.Render(util.CenterLines("(・3・)", "waiting for second entry…")),
+			ilovetui.S.Faint.Render(util.CenterLines("(・3・)", "waiting for second entry…")),
 		)
 		m.rightViewport.SetContent(placeholder)
 		return

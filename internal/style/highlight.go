@@ -3,12 +3,13 @@ package style
 import (
 	"bytes"
 	"encoding/json"
-	"image/color"
 	"strings"
 
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/config"
 	"golang.org/x/net/html"
+	"image/color"
 )
 
 func Paint(c color.Color, s string) string {
@@ -75,8 +76,8 @@ func highlightHeaders(raw string) string {
 		} else if trimmed == "" {
 			out.WriteString(line)
 		} else if idx := strings.Index(trimmed, ": "); idx != -1 {
-			out.WriteString(Paint(S.Subtle, trimmed[:idx+2]))
-			out.WriteString(Paint(S.Text, trimmed[idx+2:]))
+			out.WriteString(Paint(ilovetui.S.Subtle, trimmed[:idx+2]))
+			out.WriteString(Paint(ilovetui.S.Text, trimmed[idx+2:]))
 		} else {
 			out.WriteString(line)
 		}
@@ -95,16 +96,16 @@ func highlightStatusLine(line string) string {
 	switch parts[0] {
 	case "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS", "CONNECT", "TRACE":
 		result := S.Method(parts[0]).Width(0).Render(parts[0]) + " "
-		result += Paint(S.Primary, parts[1])
+		result += Paint(ilovetui.S.Primary, parts[1])
 		if len(parts) == 3 {
-			result += " " + Paint(S.Subtle, parts[2])
+			result += " " + Paint(ilovetui.S.Subtle, parts[2])
 		}
 		return result
 	}
-	result := Paint(S.Subtle, parts[0]) + " "
-	result += Paint(S.Warning, parts[1])
+	result := Paint(ilovetui.S.Subtle, parts[0]) + " "
+	result += Paint(ilovetui.S.Warning, parts[1])
 	if len(parts) == 3 {
-		result += " " + Paint(S.MutedFg, parts[2])
+		result += " " + Paint(ilovetui.S.Muted, parts[2])
 	}
 	return result
 }
@@ -134,9 +135,9 @@ func highlightJSON(s string) string {
 				k++
 			}
 			if k < n && s[k] == ':' {
-				out.WriteString(Paint(S.Primary, str))
+				out.WriteString(Paint(ilovetui.S.Primary, str))
 			} else {
-				out.WriteString(Paint(S.Success, str))
+				out.WriteString(Paint(ilovetui.S.Success, str))
 			}
 			i = j
 		case (ch >= '0' && ch <= '9') || (ch == '-' && i+1 < n && s[i+1] >= '0' && s[i+1] <= '9'):
@@ -147,19 +148,19 @@ func highlightJSON(s string) string {
 			for j < n && ((s[j] >= '0' && s[j] <= '9') || s[j] == '.' || s[j] == 'e' || s[j] == 'E' || s[j] == '+' || s[j] == '-') {
 				j++
 			}
-			out.WriteString(Paint(S.Warning, s[i:j]))
+			out.WriteString(Paint(ilovetui.S.Warning, s[i:j]))
 			i = j
 		case i+4 <= n && s[i:i+4] == "true":
-			out.WriteString(Paint(S.Error, "true"))
+			out.WriteString(Paint(ilovetui.S.Error, "true"))
 			i += 4
 		case i+5 <= n && s[i:i+5] == "false":
-			out.WriteString(Paint(S.Error, "false"))
+			out.WriteString(Paint(ilovetui.S.Error, "false"))
 			i += 5
 		case i+4 <= n && s[i:i+4] == "null":
-			out.WriteString(Paint(S.Error, "null"))
+			out.WriteString(Paint(ilovetui.S.Error, "null"))
 			i += 4
 		case ch == '{' || ch == '}' || ch == '[' || ch == ']' || ch == ':' || ch == ',':
-			out.WriteString(Paint(S.Subtle, string(ch)))
+			out.WriteString(Paint(ilovetui.S.Subtle, string(ch)))
 			i++
 		default:
 			out.WriteByte(ch)
@@ -265,11 +266,11 @@ func highlightHTML(s string) string {
 		if i+4 <= n && s[i:i+4] == "<!--" {
 			end := strings.Index(s[i:], "-->")
 			if end == -1 {
-				out.WriteString(Paint(S.Subtle, s[i:]))
+				out.WriteString(Paint(ilovetui.S.Subtle, s[i:]))
 				break
 			}
 			end = i + end + 3
-			out.WriteString(Paint(S.Subtle, s[i:end]))
+			out.WriteString(Paint(ilovetui.S.Subtle, s[i:end]))
 			i = end
 			continue
 		}
@@ -278,10 +279,10 @@ func highlightHTML(s string) string {
 			i++
 			continue
 		}
-		out.WriteString(Paint(S.Subtle, "<"))
+		out.WriteString(Paint(ilovetui.S.Subtle, "<"))
 		i++
 		if i < n && (s[i] == '/' || s[i] == '!') {
-			out.WriteString(Paint(S.Subtle, string(s[i])))
+			out.WriteString(Paint(ilovetui.S.Subtle, string(s[i])))
 			i++
 		}
 		j := i
@@ -289,7 +290,7 @@ func highlightHTML(s string) string {
 			j++
 		}
 		if j > i {
-			out.WriteString(Paint(S.Primary, s[i:j]))
+			out.WriteString(Paint(ilovetui.S.Primary, s[i:j]))
 			i = j
 		}
 		for i < n && s[i] != '>' {
@@ -299,10 +300,10 @@ func highlightHTML(s string) string {
 				out.WriteByte(ch)
 				i++
 			case ch == '/':
-				out.WriteString(Paint(S.Subtle, "/"))
+				out.WriteString(Paint(ilovetui.S.Subtle, "/"))
 				i++
 			case ch == '=':
-				out.WriteString(Paint(S.Subtle, "="))
+				out.WriteString(Paint(ilovetui.S.Subtle, "="))
 				i++
 			case ch == '"' || ch == '\'':
 				q := ch
@@ -313,19 +314,19 @@ func highlightHTML(s string) string {
 				if j < n {
 					j++
 				}
-				out.WriteString(Paint(S.Success, s[i:j]))
+				out.WriteString(Paint(ilovetui.S.Success, s[i:j]))
 				i = j
 			default:
 				j = i
 				for j < n && s[j] != '=' && s[j] != ' ' && s[j] != '>' && s[j] != '/' && s[j] != '\t' && s[j] != '\n' {
 					j++
 				}
-				out.WriteString(Paint(S.Warning, s[i:j]))
+				out.WriteString(Paint(ilovetui.S.Warning, s[i:j]))
 				i = j
 			}
 		}
 		if i < n && s[i] == '>' {
-			out.WriteString(Paint(S.Subtle, ">"))
+			out.WriteString(Paint(ilovetui.S.Subtle, ">"))
 			i++
 		}
 	}

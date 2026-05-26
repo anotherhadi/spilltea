@@ -5,29 +5,28 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"github.com/anotherhadi/spilltea/internal/style"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/ui/components/teapot"
 )
 
 const inputPanelMaxW = 44
 
 func (m Model) View() tea.View {
-	s := style.S
 	iw := m.innerW()
 
 	var sb strings.Builder
 	sb.WriteString("\n")
 	if m.height > teapotMinH {
 		frames := teapot.TeapotFrames()
-		frame := lipgloss.NewStyle().Foreground(s.Primary).Render(frames[m.teapotFrame])
+		frame := lipgloss.NewStyle().Foreground(ilovetui.S.Primary).Render(frames[m.teapotFrame])
 		sb.WriteString(center(iw, frame))
 		sb.WriteString("\n\n")
 	} else {
 		sb.WriteString("\n")
 	}
-	sb.WriteString(center(iw, lipgloss.NewStyle().Bold(true).Foreground(s.Primary).Render("SPILLTEA")))
+	sb.WriteString(center(iw, lipgloss.NewStyle().Bold(true).Foreground(ilovetui.S.Primary).Render("SPILLTEA")))
 	sb.WriteString("\n")
-	sb.WriteString(center(iw, s.Faint.Render("choose a project to get started")))
+	sb.WriteString(center(iw, ilovetui.S.Faint.Render("choose a project to get started")))
 	sb.WriteString("\n\n")
 
 	if m.mode == modeNaming {
@@ -50,7 +49,6 @@ func (m Model) View() tea.View {
 }
 
 func (m Model) renderNamingPanel() string {
-	s := style.S
 	iw := m.innerW()
 
 	panelW := inputPanelMaxW
@@ -63,15 +61,15 @@ func (m Model) renderNamingPanel() string {
 	innerW := inputPanelInnerW(iw)
 	inputLine := lipgloss.NewStyle().Width(innerW).Render(m.nameInput.View())
 
-	label := lipgloss.NewStyle().Foreground(s.MutedFg).Render("Project name")
+	label := lipgloss.NewStyle().Foreground(ilovetui.S.Muted).Render("Project name")
 	panel := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
-		BorderForeground(s.Primary).
+		BorderForeground(ilovetui.S.Primary).
 		Padding(1, 2).
 		Width(panelW).
 		Render(label + "\n" + inputLine)
 
-	hint := s.Faint.Render("[enter] confirm  [esc] cancel")
+	hint := ilovetui.S.Faint.Render("[enter] confirm  [esc] cancel")
 
 	var sb strings.Builder
 	sb.WriteString(center(iw, panel))

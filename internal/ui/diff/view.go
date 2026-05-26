@@ -5,6 +5,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/charmbracelet/x/ansi"
@@ -26,8 +27,6 @@ func (m Model) View() tea.View {
 }
 
 func (m *Model) renderPanels(panelH int) string {
-	s := style.S
-
 	leftW := m.width / 2
 	rightW := m.width - leftW
 
@@ -46,20 +45,20 @@ func (m *Model) renderPanels(panelH int) string {
 		rightTitle = ansi.Truncate(rightTitle, maxW, "…")
 	}
 
-	leftBorder := s.Panel
-	rightBorder := s.Panel
+	leftBorder := ilovetui.S.Panel
+	rightBorder := ilovetui.S.Panel
 	switch m.focus {
 	case bothSlots:
-		leftBorder = s.PanelFocused
-		rightBorder = s.PanelFocused
+		leftBorder = ilovetui.S.PanelFocused
+		rightBorder = ilovetui.S.PanelFocused
 	case leftSlot:
-		leftBorder = s.PanelFocused
+		leftBorder = ilovetui.S.PanelFocused
 	case rightSlot:
-		rightBorder = s.PanelFocused
+		rightBorder = ilovetui.S.PanelFocused
 	}
 
-	left := style.RenderWithTitle(leftBorder, leftTitle, style.ViewportView(&m.leftViewport), leftW, panelH)
-	right := style.RenderWithTitle(rightBorder, rightTitle, style.ViewportView(&m.rightViewport), rightW, panelH)
+	left := ilovetui.RenderWithTitle(leftBorder, leftTitle, style.ViewportView(&m.leftViewport), leftW, panelH)
+	right := ilovetui.RenderWithTitle(rightBorder, rightTitle, style.ViewportView(&m.rightViewport), rightW, panelH)
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, left, right)
 }
@@ -69,12 +68,11 @@ func (m *Model) renderStatusBar() string {
 }
 
 func renderLeftLines(lines []diffLine) string {
-	s := style.S
 	var sb strings.Builder
 	for _, l := range lines {
 		switch l.kind {
 		case lineRemoved:
-			sb.WriteString(style.Paint(s.Error, "- ") + l.text + "\n")
+			sb.WriteString(style.Paint(ilovetui.S.Error, "- ") + l.text + "\n")
 		case lineAdded:
 			sb.WriteString("\n")
 		default:
@@ -85,12 +83,11 @@ func renderLeftLines(lines []diffLine) string {
 }
 
 func renderRightLines(lines []diffLine) string {
-	s := style.S
 	var sb strings.Builder
 	for _, l := range lines {
 		switch l.kind {
 		case lineAdded:
-			sb.WriteString(style.Paint(s.Success, "+ ") + l.text + "\n")
+			sb.WriteString(style.Paint(ilovetui.S.Success, "+ ") + l.text + "\n")
 		case lineRemoved:
 			sb.WriteString("\n")
 		default:
