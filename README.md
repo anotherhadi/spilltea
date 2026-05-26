@@ -25,6 +25,7 @@
 - [Configuration](#configuration)
 - [CLI Flags](#cli-flags)
 - [Plugin System](#plugin-system)
+- [Vim / Neovim Integration](#vim--neovim-integration)
 - [Deployment](#deployment)
 - [Tech Stack](#tech-stack)
 
@@ -136,6 +137,15 @@ Usage: spilltea [flags]
 
 Spilltea supports plugins written in **Lua**. Plugins are loaded from `~/.config/spilltea/plugins/` by default and do not require recompilation or access to the source code.
 For a full reference and examples, see the [plugin documentation](./docs/plugins.md) or [plugin examples](./plugins/).
+
+## Vim / Neovim Integration
+
+Spilltea pairs naturally with Neovim. If you live in your editor, these plugins let you inspect and transform captured traffic without switching context:
+
+- **[sttr.nvim](https://github.com/anotherhadi/sttr.nvim)**: Run string transformations (base64, URL encode/decode, hex, hashing, and more) on any selected text directly from Neovim. Handy for decoding values spotted in the proxy history.
+- **[jwt-tui.nvim](https://github.com/anotherhadi/jwt-tui.nvim)**: Decode and inspect JWT tokens in a floating TUI window. Great for quickly reading tokens intercepted through the proxy.
+
+Both plugins are built to feel native in a terminal workflow, just like Spilltea.
 
 ## Deployment
 
