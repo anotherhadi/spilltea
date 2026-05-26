@@ -16,7 +16,6 @@ import (
 	"charm.land/lipgloss/v2"
 	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/keys"
-	"github.com/anotherhadi/spilltea/internal/style"
 )
 
 func readDoc(name string) string {
@@ -64,7 +63,7 @@ func New() Model {
 
 	return Model{
 		viewport:    viewport.New(),
-		help:        style.NewHelp(),
+		help:        ilovetui.NewHelp(),
 		searchInput: ti,
 	}
 }

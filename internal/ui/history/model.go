@@ -10,7 +10,6 @@ import (
 	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
-	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/util"
 )
 
@@ -45,10 +44,10 @@ func New() Model {
 	ti := textinput.New()
 	ti.Prompt = ""
 	return Model{
-		listViewport: style.NewViewport(),
-		bodyViewport: style.NewViewport(),
-		pager:        style.NewPaginator(),
-		help:         style.NewHelp(),
+		listViewport: ilovetui.NewViewport(),
+		bodyViewport: ilovetui.NewViewport(),
+		pager:        ilovetui.NewPaginator(),
+		help:         ilovetui.NewHelp(),
 		searchInput:  ti,
 	}
 }
@@ -125,7 +124,7 @@ func (m *Model) recalcSizes() {
 	// 2 (padding) + 2 (prefix char + space)
 	m.searchInput.SetWidth(m.width - 4)
 
-	listH, bodyH := style.SplitH(m.height, m.renderStatusBar(), 0.35)
+	listH, bodyH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.35)
 
 	inner := m.width - 2
 	if inner < 0 {

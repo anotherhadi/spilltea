@@ -212,9 +212,9 @@ type Model struct {
 
 func New() Model {
 	return Model{
-		leftViewport:  style.NewViewport(),
-		rightViewport: style.NewViewport(),
-		help:          style.NewHelp(),
+		leftViewport:  ilovetui.NewViewport(),
+		rightViewport: ilovetui.NewViewport(),
+		help:          ilovetui.NewHelp(),
 	}
 }
 

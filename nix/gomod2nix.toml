@@ -26,8 +26,8 @@ schema = 3
     hash = 'sha256-gAnPRdGP4yna4hiRIEDyBtDOVJqd7RU27wlPu96Rdf8='
 
   [mod.'github.com/anotherhadi/ilovetui']
-    version = 'v0.1.4'
-    hash = 'sha256-WOwCI4gqNnQvnQG2Miadx+St02IiImAX3B7ne7DdblA='
+    version = 'v0.1.6'
+    hash = 'sha256-7E+7UFks5vM3XWCvX2joFmHGcW7qqnoox6ZPFglaLO4='
 
   [mod.'github.com/atotto/clipboard']
     version = 'v0.1.4'

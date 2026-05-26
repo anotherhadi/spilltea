@@ -13,7 +13,6 @@ import (
 	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/plugins"
-	"github.com/anotherhadi/spilltea/internal/style"
 )
 
 type Model struct {
@@ -37,7 +36,7 @@ type Model struct {
 }
 
 func New(mgr *plugins.Manager) Model {
-	ta := style.NewTextarea(true)
+	ta := ilovetui.NewTextarea(true)
 	ta.Placeholder = "plugin configuration..."
 	ta.Blur()
 
@@ -46,12 +45,12 @@ func New(mgr *plugins.Manager) Model {
 
 	return Model{
 		manager:        mgr,
-		listViewport:   style.NewViewport(),
-		detailViewport: style.NewViewport(),
+		listViewport:   ilovetui.NewViewport(),
+		detailViewport: ilovetui.NewViewport(),
 		textarea:       ta,
 		filterInput:    fi,
-		pager:          style.NewPaginator(),
-		help:           style.NewHelp(),
+		pager:          ilovetui.NewPaginator(),
+		help:           ilovetui.NewHelp(),
 	}
 }
 
@@ -71,7 +70,7 @@ func (m *Model) recalcSizes() {
 	}
 	m.help.SetWidth(m.width - 2)
 
-	listH, detailH := style.SplitH(m.height, m.renderStatusBar(), 0.4)
+	listH, detailH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.4)
 
 	inner := m.width - 2
 	if inner < 0 {

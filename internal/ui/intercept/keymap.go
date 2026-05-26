@@ -1,14 +1,10 @@
 package intercept
 
 import (
-	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/keys"
-	"github.com/anotherhadi/spilltea/internal/style"
 )
-
-func newHelp() help.Model { return style.NewHelp() }
 
 type interceptKeyMap struct{ width int }
 

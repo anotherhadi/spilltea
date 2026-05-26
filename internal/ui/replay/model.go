@@ -12,7 +12,6 @@ import (
 	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
-	"github.com/anotherhadi/spilltea/internal/style"
 )
 
 type SendToReplayMsg struct {
@@ -62,15 +61,15 @@ type Model struct {
 }
 
 func New() Model {
-	ta := style.NewTextarea(false)
+	ta := ilovetui.NewTextarea(false)
 	ta.Blur()
 	return Model{
-		listViewport:     style.NewViewport(),
-		requestViewport:  style.NewViewport(),
-		responseViewport: style.NewViewport(),
+		listViewport:     ilovetui.NewViewport(),
+		requestViewport:  ilovetui.NewViewport(),
+		responseViewport: ilovetui.NewViewport(),
 		textarea:         ta,
-		pager:            style.NewPaginator(),
-		help:             style.NewHelp(),
+		pager:            ilovetui.NewPaginator(),
+		help:             ilovetui.NewHelp(),
 	}
 }
 
@@ -150,7 +149,7 @@ func (m *Model) SetSize(w, h int) {
 func (m *Model) recalcSizes() {
 	m.help.SetWidth(m.width - 2)
 
-	listH, bodyH := style.SplitH(m.height, m.renderStatusBar(), 0.35)
+	listH, bodyH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.35)
 
 	listInner := m.width - 2
 	if listInner < 0 {

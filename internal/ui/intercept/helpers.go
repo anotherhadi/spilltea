@@ -158,7 +158,7 @@ func (m *Model) listHalfWidths() (leftW, rightW int) {
 func (m *Model) recalcSizes() {
 	m.help.SetWidth(m.width - 2)
 
-	listH, bodyH := style.SplitH(m.height, m.renderStatusBar(), 0.35)
+	listH, bodyH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.35)
 
 	bodyInner := m.width - 2
 	if bodyInner < 0 {

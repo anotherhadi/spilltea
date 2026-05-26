@@ -17,7 +17,7 @@ func (m Model) View() tea.View {
 		return tea.NewView("Loading...")
 	}
 
-	listH, bodyH := style.SplitH(m.height, m.renderStatusBar(), 0.35)
+	listH, bodyH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.35)
 	leftW, rightW := m.bodyHalfWidths()
 
 	bodyRow := lipgloss.JoinHorizontal(lipgloss.Top,
@@ -56,7 +56,7 @@ func (m *Model) renderRequestPanel(w, h int) string {
 		body = m.textarea.View()
 		border = ilovetui.S.PanelFocused
 	} else {
-		body = style.ViewportView(&m.requestViewport)
+		body = ilovetui.ViewportView(&m.requestViewport)
 		if m.focusedPanel == panelRequest {
 			border = ilovetui.S.PanelFocused
 		}
@@ -69,7 +69,7 @@ func (m *Model) renderResponsePanel(w, h int) string {
 	if !m.editing && m.focusedPanel == panelResponse {
 		border = ilovetui.S.PanelFocused
 	}
-	return ilovetui.RenderWithTitle(border, icons.I.Response+"Response", style.ViewportView(&m.responseViewport), w, h)
+	return ilovetui.RenderWithTitle(border, icons.I.Response+"Response", ilovetui.ViewportView(&m.responseViewport), w, h)
 }
 
 func (m *Model) renderStatusBar() string {

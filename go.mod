@@ -8,7 +8,7 @@ require (
 	charm.land/glamour/v2 v2.0.0
 	charm.land/lipgloss/v2 v2.0.3
 	github.com/andybalholm/brotli v1.0.4
-	github.com/anotherhadi/ilovetui v0.1.4
+	github.com/anotherhadi/ilovetui v0.1.6
 	github.com/charmbracelet/x/ansi v0.11.7
 	github.com/klauspost/compress v1.17.8
 	github.com/lqqyt2423/go-mitmproxy v1.8.11

@@ -57,8 +57,8 @@ func (m *Model) renderPanels(panelH int) string {
 		rightBorder = ilovetui.S.PanelFocused
 	}
 
-	left := ilovetui.RenderWithTitle(leftBorder, leftTitle, style.ViewportView(&m.leftViewport), leftW, panelH)
-	right := ilovetui.RenderWithTitle(rightBorder, rightTitle, style.ViewportView(&m.rightViewport), rightW, panelH)
+	left := ilovetui.RenderWithTitle(leftBorder, leftTitle, ilovetui.ViewportView(&m.leftViewport), leftW, panelH)
+	right := ilovetui.RenderWithTitle(rightBorder, rightTitle, ilovetui.ViewportView(&m.rightViewport), rightW, panelH)
 
 	return lipgloss.JoinHorizontal(lipgloss.Top, left, right)
 }

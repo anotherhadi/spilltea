@@ -14,7 +14,6 @@ import (
 	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/db"
 	"github.com/anotherhadi/spilltea/internal/keys"
-	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/util"
 )
 
@@ -39,10 +38,10 @@ type Model struct {
 
 func New() Model {
 	return Model{
-		listViewport: style.NewViewport(),
-		bodyViewport: style.NewViewport(),
-		pager:        style.NewPaginator(),
-		help:         style.NewHelp(),
+		listViewport: ilovetui.NewViewport(),
+		bodyViewport: ilovetui.NewViewport(),
+		pager:        ilovetui.NewPaginator(),
+		help:         ilovetui.NewHelp(),
 	}
 }
 
@@ -76,7 +75,7 @@ func (m *Model) recalcSizes() {
 	m.help.SetWidth(m.width - 2)
 	inner := m.width - 2
 
-	listH, bodyH := style.SplitH(m.height, m.renderStatusBar(), 0.35)
+	listH, bodyH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.35)
 
 	listVH := ilovetui.ContentHeight(listH) - 1 // -1 for the pager dots row
 	if listVH < 0 {

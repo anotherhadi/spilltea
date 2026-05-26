@@ -18,7 +18,7 @@ func (m Model) View() tea.View {
 		return tea.NewView("Loading...")
 	}
 
-	listH, bodyH := style.SplitH(m.height, m.renderStatusBar(), 0.35)
+	listH, bodyH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.35)
 
 	content := lipgloss.JoinVertical(lipgloss.Left,
 		m.renderListPanel(m.width, listH),
@@ -45,7 +45,7 @@ func (m *Model) renderBodyPanel(h int) string {
 	if m.focusedPanel == panelResponse {
 		title = icons.I.Response + "Response"
 	}
-	return ilovetui.RenderWithTitle(ilovetui.S.Panel, title, style.ViewportView(&m.bodyViewport), m.width, h)
+	return ilovetui.RenderWithTitle(ilovetui.S.Panel, title, ilovetui.ViewportView(&m.bodyViewport), m.width, h)
 }
 
 func (m *Model) renderStatusBar() string {

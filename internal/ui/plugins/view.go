@@ -10,7 +10,6 @@ import (
 	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/keys"
-	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/util"
 )
 
@@ -19,7 +18,7 @@ func (m Model) View() tea.View {
 		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("(._.)~*.'", "no plugins loaded"))))
 	}
 
-	listH, detailH := style.SplitH(m.height, m.renderStatusBar(), 0.4)
+	listH, detailH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.4)
 
 	content := lipgloss.JoinVertical(lipgloss.Left,
 		m.renderListPanel(m.width, listH),
@@ -71,7 +70,7 @@ func (m *Model) renderDetailPanel(h int) string {
 			ilovetui.S.Faint.Render(filepath.Base(info.FilePath)),
 	)
 
-	parts := []string{header, style.ViewportView(&m.detailViewport)}
+	parts := []string{header, ilovetui.ViewportView(&m.detailViewport)}
 
 	if m.hasConfig() {
 		var configLabel string

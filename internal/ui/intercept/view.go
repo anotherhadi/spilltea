@@ -17,7 +17,7 @@ func (m Model) View() tea.View {
 		return tea.NewView("Loading...")
 	}
 
-	listH, bodyH := style.SplitH(m.height, m.renderStatusBar(), 0.35)
+	listH, bodyH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.35)
 
 	var listRow string
 	if m.captureResponse {
@@ -82,7 +82,7 @@ func (m *Model) renderBodyPanel(h int) string {
 	if m.editing {
 		body = m.textarea.View()
 	} else {
-		body = style.ViewportView(&m.bodyViewport)
+		body = ilovetui.ViewportView(&m.bodyViewport)
 	}
 
 	border := ilovetui.S.Panel

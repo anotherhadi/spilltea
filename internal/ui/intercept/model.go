@@ -6,9 +6,9 @@ import (
 	"charm.land/bubbles/v2/textarea"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
+	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/config"
 	"github.com/anotherhadi/spilltea/internal/intercept"
-	"github.com/anotherhadi/spilltea/internal/style"
 )
 
 type panel int
@@ -48,14 +48,14 @@ type Model struct {
 
 func New(broker *intercept.Broker) Model {
 	cfg := config.Global
-	ta := style.NewTextarea(false)
+	ta := ilovetui.NewTextarea(false)
 	ta.Blur()
 
-	lv := style.NewViewport()
-	rv := style.NewViewport()
-	bv := style.NewViewport()
-	p := style.NewPaginator()
-	rp := style.NewPaginator()
+	lv := ilovetui.NewViewport()
+	rv := ilovetui.NewViewport()
+	bv := ilovetui.NewViewport()
+	p := ilovetui.NewPaginator()
+	rp := ilovetui.NewPaginator()
 
 	broker.SetCaptureResponse(cfg.Intercept.DefaultCaptureResponse)
 
@@ -69,7 +69,7 @@ func New(broker *intercept.Broker) Model {
 		textarea:             ta,
 		pager:                p,
 		responsePager:        rp,
-		help:                 newHelp(),
+		help:                 ilovetui.NewHelp(),
 		pendingEdits:         make(map[*intercept.PendingRequest]string),
 		pendingResponseEdits: make(map[*intercept.PendingResponse]string),
 	}
