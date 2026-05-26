@@ -13,6 +13,8 @@ On startup, you choose:
 Spilltea is fully configured via a YAML file at `~/.config/spilltea/config.yaml`.
 Check the default configuration with all the options [here](./internal/config/default_config.yaml)
 
+Colors and styles can be customized using [ilovetui](https://github.com/anotherhadi/ilovetui), which applies theme changes across all compatible TUI applications at once.
+
 ## CLI Flags
 
 <!-- exec: echo '```' && go run ./cmd/spilltea -h && echo '```' -->
