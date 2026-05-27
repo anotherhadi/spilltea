@@ -12,7 +12,7 @@
 ![GitHub Stars](https://www.shieldcn.dev/github/stars/anotherhadi/spilltea.svg?variant=outline&theme=violet)
 ![Release](https://www.shieldcn.dev/github/release/anotherhadi/spilltea.svg?variant=outline&theme=violet)
 ![CI](https://www.shieldcn.dev/github/ci/anotherhadi/spilltea.svg?variant=outline&theme=violet)
-![Ko-fi](https://www.shieldcn.dev/badge/Ko--fi-sponsor-FF5E5B.svg?logo=kofi&variant=secondary&theme=violet)
+[![Ko-fi](https://www.shieldcn.dev/badge/Ko--fi-sponsor-FF5E5B.svg?logo=kofi&variant=secondary&theme=violet)](https://ko-fi.com/anotherhadi)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
