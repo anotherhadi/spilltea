@@ -9,10 +9,10 @@
 > A minimal, terminal-based HTTP(S) proxy for pentesters and CTF players.  
 > Think Burp Suite or Caido, but entirely in your terminal.
 
-[![Go Version](https://img.shields.io/github/go-mod/go-version/anotherhadi/spilltea)](go.mod)
-[![Release](https://img.shields.io/github/v/release/anotherhadi/spilltea)](https://github.com/anotherhadi/spilltea/releases)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Go Report Card](https://goreportcard.com/badge/github.com/anotherhadi/spilltea)](https://goreportcard.com/report/github.com/anotherhadi/spilltea)
+![GitHub Stars](https://www.shieldcn.dev/github/stars/anotherhadi/spilltea.svg?variant=outline&theme=violet)
+![Release](https://www.shieldcn.dev/github/release/anotherhadi/spilltea.svg?variant=outline&theme=violet)
+![CI](https://www.shieldcn.dev/github/ci/anotherhadi/spilltea.svg?variant=outline&theme=violet)
+![Ko-fi](https://www.shieldcn.dev/badge/Ko--fi-sponsor-FF5E5B.svg?logo=kofi&variant=secondary&theme=violet)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -40,6 +40,7 @@ It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, key
 <img alt="demo" src="./.github/assets/demo.gif" width="700" />
 
  <!-- exec: cat ./docs/legal-disclaimer.md -->
+
 ## Legal Disclaimer
 
 **This tool is provided for educational purposes and authorized security testing only.**
@@ -47,6 +48,7 @@ It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, key
 Use Spilltea only on systems and networks you own or have explicit written permission to test. Intercepting network traffic without authorization may violate local laws (such as the Computer Fraud and Abuse Act, GDPR, or equivalent legislation in your jurisdiction).
 
 The author(s) and contributors are not responsible for any misuse, damage, or legal consequences resulting from the use of this software. By using Spilltea, you agree that you are solely responsible for ensuring your usage is lawful and authorized.
+
 <!-- endexec -->
 
 ## Features
@@ -101,6 +103,7 @@ environment.systemPackages = [ inputs.spilltea.packages.${pkgs.system}.default ]
 </details>
 
  <!-- exec: cat ./docs/basics.md -->
+
 ## Project Management
 
 Spilltea organizes work into **projects**. Each project maps to a SQLite database file that stores all intercepted traffic for that session & a log files.
@@ -133,6 +136,7 @@ Usage: spilltea [flags]
       --upstream-proxy string   upstream proxy URL, e.g. http://user:pass@host:8888 (overrides config)
   -v, --version                 print version
 ```
+
 <!-- endexec -->
 
 ## Plugin System
