@@ -52,6 +52,7 @@ in
     packages = with pkgs;
       [
         go
+        gosec
         python3
         doctoc
         stylua
