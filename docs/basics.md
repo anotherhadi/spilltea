@@ -19,16 +19,21 @@ Colors and styles can be customized using [ilovetui](https://github.com/anotherh
 
 <!-- exec: echo '```' && go run ./cmd/spilltea -h && echo '```' -->
 ```
-Usage: spilltea [flags]
+A minimal, terminal-based HTTP(S) proxy for pentesters and CTF players.
 
+Usage:
+  spilltea [flags]
+
+Flags:
       --add-default-config      copy the default config file to the config path and exit
       --add-default-plugins     copy built-in example plugins into the plugins dir and exit
   -c, --config string           path to config file
+  -h, --help                    help for spilltea
       --host string             proxy host (overrides config)
       --plugins-dir string      path to plugins dir (overrides config)
   -p, --port int                proxy port (overrides config)
   -P, --project string          project name to open directly, or "tmp" for a temporary session
       --upstream-proxy string   upstream proxy URL, e.g. http://user:pass@host:8888 (overrides config)
-  -v, --version                 print version
+  -v, --version                 version for spilltea
 ```
 <!-- endexec -->

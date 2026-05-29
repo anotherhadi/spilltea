@@ -40,7 +40,6 @@ It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, key
 <img alt="demo" src="./.github/assets/demo.gif" width="700" />
 
  <!-- exec: cat ./docs/legal-disclaimer.md -->
-
 ## Legal Disclaimer
 
 **This tool is provided for educational purposes and authorized security testing only.**
@@ -48,7 +47,6 @@ It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, key
 Use Spilltea only on systems and networks you own or have explicit written permission to test. Intercepting network traffic without authorization may violate local laws (such as the Computer Fraud and Abuse Act, GDPR, or equivalent legislation in your jurisdiction).
 
 The author(s) and contributors are not responsible for any misuse, damage, or legal consequences resulting from the use of this software. By using Spilltea, you agree that you are solely responsible for ensuring your usage is lawful and authorized.
-
 <!-- endexec -->
 
 ## Features
@@ -103,7 +101,6 @@ environment.systemPackages = [ inputs.spilltea.packages.${pkgs.system}.default ]
 </details>
 
  <!-- exec: cat ./docs/basics.md -->
-
 ## Project Management
 
 Spilltea organizes work into **projects**. Each project maps to a SQLite database file that stores all intercepted traffic for that session & a log files.
@@ -124,19 +121,23 @@ Colors and styles can be customized using [ilovetui](https://github.com/anotherh
 ## CLI Flags
 
 ```
-Usage: spilltea [flags]
+A minimal, terminal-based HTTP(S) proxy for pentesters and CTF players.
 
+Usage:
+  spilltea [flags]
+
+Flags:
       --add-default-config      copy the default config file to the config path and exit
       --add-default-plugins     copy built-in example plugins into the plugins dir and exit
   -c, --config string           path to config file
+  -h, --help                    help for spilltea
       --host string             proxy host (overrides config)
       --plugins-dir string      path to plugins dir (overrides config)
   -p, --port int                proxy port (overrides config)
   -P, --project string          project name to open directly, or "tmp" for a temporary session
       --upstream-proxy string   upstream proxy URL, e.g. http://user:pass@host:8888 (overrides config)
-  -v, --version                 print version
+  -v, --version                 version for spilltea
 ```
-
 <!-- endexec -->
 
 ## Plugin System
