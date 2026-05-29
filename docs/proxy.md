@@ -1,6 +1,12 @@
 ## Configuring your browser's proxy settings
 
-We recommend installing **FoxyProxy** to manage your browser's proxies.
+**If you use Nix**, you can launch a pre-configured browser (LibreWolf) with the proxy and certificate already set up:
+
+```sh
+nix run github:anotherhadi/spilltea#browser{{if or (ne .Cfg.App.Host "127.0.0.1") (ne .Cfg.App.Port 8080) (ne .Cfg.App.CertDir "~/.local/share/spilltea")}} --{{end}}{{if ne .Cfg.App.Host "127.0.0.1"}} --host {{.Cfg.App.Host}}{{end}}{{if ne .Cfg.App.Port 8080}} --port {{.Cfg.App.Port}}{{end}}{{if ne .Cfg.App.CertDir "~/.local/share/spilltea"}} --cert-dir {{.Cfg.App.CertDir}}{{end}}
+```
+
+Otherwise, we recommend installing **FoxyProxy** to manage your browser's proxies.
 You can install it from the [Google Chrome extension store](https://chromewebstore.google.com/) or from the [Firefox extension store](https://addons.mozilla.org/en-US/firefox/extensions)
 
 1. Open FoxyProxy's options, then click on `Add New Proxy` button.

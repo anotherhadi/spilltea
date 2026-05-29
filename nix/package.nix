@@ -2,6 +2,7 @@
   pkgs,
   buildGoApplication,
 }: let
+  browser = import ./browser.nix {inherit pkgs;};
   pname = "spilltea";
   version = "0.0.6";
   ldflags = ["-s" "-w" "-X main.version=${version}"];
@@ -9,7 +10,7 @@
     inherit pname version ldflags;
     src = ../.;
     modules = ./gomod2nix.toml;
-    nativeBuildInputs = [ pkgs.installShellFiles ];
+    nativeBuildInputs = [pkgs.installShellFiles];
     env.GOTOOLCHAIN = "local";
     postInstall = ''
       installShellCompletion --cmd spilltea \
@@ -26,4 +27,5 @@
 in {
   "${pname}" = pkg;
   default = pkg;
+  browser = browser;
 }
