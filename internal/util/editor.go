@@ -35,8 +35,10 @@ func openWithEditor(content string, callback func(string, error) tea.Msg) tea.Cm
 	if _, err := f.WriteString(content); err != nil {
 		log.Printf("editor: writing temp file: %v", err)
 	}
-	f.Close()
-	return tea.ExecProcess(exec.Command(resolveEditor(), tmpPath), func(err error) tea.Msg {
+	if err := f.Close(); err != nil {
+		log.Printf("editor: closing temp file: %v", err)
+	}
+	return tea.ExecProcess(exec.Command(resolveEditor(), tmpPath), func(err error) tea.Msg { // #nosec G204 -- editor from trusted config/$EDITOR, tmpPath from os.CreateTemp
 		defer os.Remove(tmpPath)
 		return callback(tmpPath, err)
 	})
@@ -47,7 +49,7 @@ func OpenExternalEditor(content string) tea.Cmd {
 		if err != nil {
 			return EditorFinishedMsg{Err: err}
 		}
-		data, readErr := os.ReadFile(tmpPath)
+		data, readErr := os.ReadFile(tmpPath) // #nosec G304 -- tmpPath is from os.CreateTemp, controlled by this process
 		if readErr != nil {
 			return EditorFinishedMsg{Err: readErr}
 		}

@@ -7,6 +7,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -79,7 +80,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				e.ResponseRaw = "Error: " + msg.err.Error()
 			}
 			if m.database != nil && e.DBID != 0 {
-				m.database.UpdateReplayEntry(entryToDB(*e))
+				if err := m.database.UpdateReplayEntry(entryToDB(*e)); err != nil {
+					log.Printf("replay: update entry: %v", err)
+				}
 			}
 		}
 		m.refreshListViewport()
@@ -216,7 +219,9 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		if len(m.entries) > 0 {
 			e := m.entries[m.cursor]
 			if m.database != nil && e.DBID != 0 {
-				m.database.DeleteReplayEntry(e.DBID)
+				if err := m.database.DeleteReplayEntry(e.DBID); err != nil {
+					log.Printf("replay: delete entry: %v", err)
+				}
 			}
 			m.entries = append(m.entries[:m.cursor], m.entries[m.cursor+1:]...)
 			if m.cursor >= len(m.entries) && m.cursor > 0 {
@@ -229,7 +234,9 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, r.DeleteAll):
 		if m.database != nil {
-			m.database.DeleteAllReplayEntries()
+			if err := m.database.DeleteAllReplayEntries(); err != nil {
+				log.Printf("replay: delete all entries: %v", err)
+			}
 		}
 		m.entries = nil
 		m.cursor = 0
@@ -399,7 +406,7 @@ func doSend(entry Entry) (responseRaw string, statusCode int, err error) {
 	client := &http.Client{
 		Timeout: 30 * time.Second,
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // #nosec G402 -- intentional for replay feature
 		},
 		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 			return http.ErrUseLastResponse

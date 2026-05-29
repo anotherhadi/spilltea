@@ -178,7 +178,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				editor = "vi"
 			}
 			logPath := filepath.Join(filepath.Dir(m.projectPath), "logs.log")
-			return m, tea.ExecProcess(exec.Command(editor, logPath), nil)
+			return m, tea.ExecProcess(exec.Command(editor, logPath), nil) // #nosec G204 G702 -- editor from trusted $EDITOR env var, logPath is a fixed path
 		}
 
 		if !m.activeIsEditing() {

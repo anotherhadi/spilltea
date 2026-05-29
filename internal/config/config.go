@@ -86,7 +86,7 @@ func Load(path string) error {
 }
 
 func WriteDefaultConfig(path string) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
 		return fmt.Errorf("create config dir: %w", err)
 	}
 	if err := os.WriteFile(path, defaultConfig, 0o600); err != nil {

@@ -281,7 +281,7 @@ func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
-		c := exec.CommandContext(ctx, "sh", "-c", cmd)
+		c := exec.CommandContext(ctx, "sh", "-c", cmd) // #nosec G204 -- intentional: shell_pipe is a Lua plugin API for user-written scripts
 		c.Stdin = strings.NewReader(input)
 
 		var stdout, stderr bytes.Buffer

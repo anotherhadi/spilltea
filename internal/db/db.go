@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"log"
 	"sync"
 
 	_ "modernc.org/sqlite"
@@ -25,17 +26,25 @@ func Open(path string) (*DB, error) {
 	conn.SetMaxOpenConns(1)
 	d := &DB{conn: conn, path: path}
 	if err := d.migrate(); err != nil {
-		conn.Close()
+		if cerr := conn.Close(); cerr != nil {
+			log.Printf("db: close conn: %v", cerr)
+		}
 		return nil, err
 	}
 	roConn, err := sql.Open("sqlite", path)
 	if err != nil {
-		conn.Close()
+		if cerr := conn.Close(); cerr != nil {
+			log.Printf("db: close conn: %v", cerr)
+		}
 		return nil, err
 	}
 	if _, err := roConn.Exec("PRAGMA query_only=ON"); err != nil {
-		conn.Close()
-		roConn.Close()
+		if cerr := conn.Close(); cerr != nil {
+			log.Printf("db: close conn: %v", cerr)
+		}
+		if cerr := roConn.Close(); cerr != nil {
+			log.Printf("db: close roConn: %v", cerr)
+		}
 		return nil, err
 	}
 	d.roConn = roConn
@@ -114,6 +123,8 @@ func CountEntriesAt(path string) int {
 	}
 	defer conn.Close()
 	var n int
-	conn.QueryRow(`SELECT COUNT(*) FROM entries`).Scan(&n)
+	if err := conn.QueryRow(`SELECT COUNT(*) FROM entries`).Scan(&n); err != nil {
+		log.Printf("db: count entries: %v", err)
+	}
 	return n
 }

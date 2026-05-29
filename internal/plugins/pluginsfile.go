@@ -27,7 +27,7 @@ func OpenPluginsFile(dbPath string) (*PluginsFile, error) {
 		path: path,
 		data: pluginsFileData{Plugins: make(map[string]pluginFileEntry)},
 	}
-	raw, err := os.ReadFile(path)
+	raw, err := os.ReadFile(path) // #nosec G304 -- path is filepath.Join(dbDir, "plugins.yaml"), hardcoded filename
 	if os.IsNotExist(err) {
 		return pf, nil
 	}

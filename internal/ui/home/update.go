@@ -3,6 +3,7 @@ package home
 import (
 	crypto "crypto/rand"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -72,7 +73,7 @@ func (m Model) handleSelection() (tea.Model, tea.Cmd) {
 		return m, m.nameInput.Focus()
 	case kindTemp:
 		dir := tempDir()
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
 			return m, nil
 		}
 		initProjectFiles(dir)
@@ -90,7 +91,9 @@ func (m Model) deleteSelected() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 	dir := filepath.Dir(item.path) // parent dir of data.db
-	os.RemoveAll(dir)
+	if err := os.RemoveAll(dir); err != nil {
+		log.Printf("home: remove project dir: %v", err)
+	}
 	idx := m.list.GlobalIndex()
 	m.list.RemoveItem(idx)
 	if idx > 0 && idx >= len(m.list.Items()) {
@@ -113,7 +116,7 @@ func (m Model) updateNaming(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.mode = modeSelect
 		m.nameInput.Blur()
 		dir := filepath.Join(m.projectDir, name)
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
 			return m, nil
 		}
 		initProjectFiles(dir)
@@ -147,14 +150,14 @@ func IsValidProjectName(s string) bool {
 func OpenProject(projectDir, name string) (*Project, error) {
 	if name == "tmp" || name == "temp" || name == "temporary" {
 		dir := tempDir()
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
 			return nil, err
 		}
 		initProjectFiles(dir)
 		return &Project{Name: "temporary", Path: filepath.Join(dir, "data.db")}, nil
 	}
 	dir := filepath.Join(projectDir, name)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return nil, err
 	}
 	initProjectFiles(dir)
@@ -171,9 +174,11 @@ func initProjectFiles(dir string) {
 	for _, name := range []string{"data.db", "logs.log"} {
 		p := filepath.Join(dir, name)
 		if _, err := os.Stat(p); os.IsNotExist(err) {
-			f, err := os.Create(p)
+			f, err := os.Create(p) // #nosec G304 -- p is filepath.Join(dir, hardcoded_name), no traversal possible
 			if err == nil {
-				f.Close()
+				if cerr := f.Close(); cerr != nil {
+					log.Printf("home: close project file: %v", cerr)
+				}
 			}
 		}
 	}

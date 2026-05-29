@@ -17,7 +17,7 @@ var PluginsFS embed.FS
 // InstallDefaultPlugins copies embedded default plugins into dir, skipping
 // files that already exist. Returns the number of files written.
 func InstallDefaultPlugins(dir string) (int, error) {
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	if err := os.MkdirAll(dir, 0o750); err != nil {
 		return 0, fmt.Errorf("create plugins dir: %w", err)
 	}
 
@@ -39,7 +39,7 @@ func InstallDefaultPlugins(dir string) (int, error) {
 		if err != nil {
 			return written, fmt.Errorf("read embedded %s: %w", e.Name(), err)
 		}
-		if err := os.WriteFile(dst, data, 0o644); err != nil {
+		if err := os.WriteFile(dst, data, 0o600); err != nil {
 			return written, fmt.Errorf("write %s: %w", dst, err)
 		}
 		written++

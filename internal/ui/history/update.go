@@ -2,6 +2,7 @@ package history
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"charm.land/bubbles/v2/key"
@@ -234,7 +235,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, h.Flag):
 			if len(m.entries) > 0 && m.database != nil {
-				m.database.ToggleFlag(m.entries[m.cursor].ID)
+				if err := m.database.ToggleFlag(m.entries[m.cursor].ID); err != nil {
+					log.Printf("history: toggle flag: %v", err)
+				}
 				return m, m.RefreshCmd()
 			}
 
@@ -242,7 +245,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if len(m.entries) > 0 {
 				id := m.entries[m.cursor].ID
 				if m.database != nil {
-					m.database.DeleteEntry(id)
+					if err := m.database.DeleteEntry(id); err != nil {
+						log.Printf("history: delete entry: %v", err)
+					}
 				}
 				return m, LoadEntriesCmd(m.database)
 			}
@@ -261,10 +266,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						if hasUnflagged && e.Flagged {
 							continue
 						}
-						m.database.DeleteEntry(e.ID)
+						if err := m.database.DeleteEntry(e.ID); err != nil {
+							log.Printf("history: delete entry: %v", err)
+						}
 					}
 				} else {
-					m.database.DeleteAllExceptFlagged()
+					if err := m.database.DeleteAllExceptFlagged(); err != nil {
+						log.Printf("history: delete all unflagged: %v", err)
+					}
 				}
 			}
 			return m, m.clearSearch()

@@ -121,7 +121,7 @@ func (d *DB) SearchEntries(term string) ([]Entry, error) {
 // Uses the persistent read-only connection (PRAGMA query_only=ON) so that any
 // DML or DDL in the user-supplied expression is rejected by SQLite before it executes.
 func (d *DB) QueryEntries(where string) ([]Entry, error) {
-	q := "SELECT id, timestamp, method, host, path, status_code, request_raw, response_raw, flagged FROM entries WHERE " + strings.TrimSpace(where)
+	q := "SELECT id, timestamp, method, host, path, status_code, request_raw, response_raw, flagged FROM entries WHERE " + strings.TrimSpace(where) // #nosec G202 -- intentional: user-supplied WHERE clause on a PRAGMA query_only=ON connection
 	rows, err := d.roConn.Query(q)
 	if err != nil {
 		return nil, err
