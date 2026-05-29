@@ -52,7 +52,7 @@ func (m *Model) renderList() string {
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			ilovetui.S.Faint.Render(util.CenterLines("(҂◡_◡) ᕤ", "no findings")),
+			ilovetui.S.Faint.Render(util.EmptyState(m.listViewport.Width(), "(҂◡_◡) ᕤ", "no findings")),
 		)
 	}
 

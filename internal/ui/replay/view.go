@@ -81,7 +81,7 @@ func (m *Model) renderList() string {
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			ilovetui.S.Faint.Render(util.CenterLines("(╥﹏╥)", "send a request from History or Intercept")),
+			ilovetui.S.Faint.Render(util.EmptyState(m.listViewport.Width(), "(╥﹏╥)", "send a request from History or Intercept")),
 		)
 	}
 

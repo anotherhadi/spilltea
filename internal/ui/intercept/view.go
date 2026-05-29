@@ -100,7 +100,7 @@ func (m *Model) renderStatusBar() string {
 
 func (m *Model) renderList() string {
 	if len(m.queue) == 0 {
-		return lipgloss.Place(m.listViewport.Width(), m.listViewport.Height(), lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("(｡◕‿‿◕｡)", "waiting for a request")))
+		return lipgloss.Place(m.listViewport.Width(), m.listViewport.Height(), lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.EmptyState(m.listViewport.Width(), "(｡◕‿‿◕｡)", "waiting for a request")))
 	}
 
 	start, end := util.PageBounds(m.pager, len(m.queue))
@@ -149,7 +149,7 @@ func (m *Model) renderList() string {
 
 func (m *Model) renderResponseList() string {
 	if len(m.responseQueue) == 0 {
-		return lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("(҂◡_◡)", "no response yet")))
+		return lipgloss.Place(m.responseViewport.Width(), m.responseViewport.Height(), lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.EmptyState(m.responseViewport.Width(), "(҂◡_◡)", "no response yet")))
 	}
 
 	start, end := util.PageBounds(m.responsePager, len(m.responseQueue))

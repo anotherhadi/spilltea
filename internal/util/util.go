@@ -14,6 +14,14 @@ func Truncate(s string, max int) string {
 	return s[:max-1] + "…"
 }
 
+// EmptyState renders centered placeholder lines, word-wrapping to fit maxW.
+func EmptyState(maxW int, lines ...string) string {
+	return lipgloss.NewStyle().
+		Width(maxW).
+		AlignHorizontal(lipgloss.Center).
+		Render(strings.Join(lines, "\n"))
+}
+
 // CenterLines centers each line horizontally relative to the longest one.
 func CenterLines(lines ...string) string {
 	maxWidth := 0

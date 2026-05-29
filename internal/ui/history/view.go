@@ -82,9 +82,9 @@ func (m *Model) renderList() string {
 		)
 	}
 	if len(m.entries) == 0 {
-		msg := util.CenterLines("(⌐■_■)", "no history yet")
+		msg := util.EmptyState(m.listViewport.Width(), "(⌐■_■)", "no history yet")
 		if m.searchKind != searchKindOff {
-			msg = util.CenterLines("ʕノ•ᴥ•ʔノ ︵ ┻━┻", "no results")
+			msg = util.EmptyState(m.listViewport.Width(), "ʕノ•ᴥ•ʔノ ︵ ┻━┻", "no results")
 		}
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),

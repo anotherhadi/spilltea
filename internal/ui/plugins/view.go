@@ -15,7 +15,7 @@ import (
 
 func (m Model) View() tea.View {
 	if m.width == 0 || m.manager == nil {
-		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.CenterLines("(._.)~*.'", "no plugins loaded"))))
+		return tea.NewView(lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, ilovetui.S.Faint.Render(util.EmptyState(m.width, "(._.)~*.'", "no plugins loaded"))))
 	}
 
 	listH, detailH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.4)
@@ -127,9 +127,9 @@ func (m *Model) renderStatusBar() string {
 
 func (m *Model) renderList() string {
 	if len(m.filtered) == 0 {
-		msg := util.CenterLines("(ง •̀_•́)ง", "no plugins", "", "spilltea --add-default-plugins")
+		msg := util.EmptyState(m.listViewport.Width(), "(ง •̀_•́)ง", "no plugins", "", "spilltea --add-default-plugins")
 		if m.filter != "" {
-			msg = util.CenterLines("= _ =", "no results")
+			msg = util.EmptyState(m.listViewport.Width(), "= _ =", "no results")
 		}
 		return lipgloss.Place(
 			m.listViewport.Width(), m.listViewport.Height(),

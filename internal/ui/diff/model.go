@@ -300,7 +300,7 @@ func (m *Model) refreshViewports() {
 		placeholder := lipgloss.Place(
 			m.leftViewport.Width(), m.leftViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			ilovetui.S.Faint.Render(util.CenterLines("<(^_^)>", "send two entries here to compare")),
+			ilovetui.S.Faint.Render(util.EmptyState(m.leftViewport.Width(), "<(^_^)>", "send two entries here to compare")),
 		)
 		m.leftViewport.SetContent(placeholder)
 		m.rightViewport.SetContent("")
@@ -312,7 +312,7 @@ func (m *Model) refreshViewports() {
 		placeholder := lipgloss.Place(
 			m.rightViewport.Width(), m.rightViewport.Height(),
 			lipgloss.Center, lipgloss.Center,
-			ilovetui.S.Faint.Render(util.CenterLines("(・3・)", "waiting for second entry…")),
+			ilovetui.S.Faint.Render(util.EmptyState(m.rightViewport.Width(), "(・3・)", "waiting for second entry…")),
 		)
 		m.rightViewport.SetContent(placeholder)
 		return
