@@ -45,6 +45,7 @@ func (m Model) View() tea.View {
 	v := tea.NewView(content)
 	v.AltScreen = true
 	v.MouseMode = tea.MouseModeCellMotion
+	v.WindowTitle = "Spilltea"
 	return v
 }
 

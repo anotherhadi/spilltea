@@ -6,25 +6,28 @@ import (
 	ilovetui "github.com/anotherhadi/ilovetui"
 )
 
+func (m Model) newView(content string) tea.View {
+	v := tea.NewView(content)
+	v.AltScreen = true
+	v.WindowTitle = "Spilltea: " + m.projectName
+	return v
+}
+
 func (m Model) View() tea.View {
 	if m.width == 0 {
-		v := tea.NewView("")
-		v.AltScreen = true
-		return v
+		return m.newView("")
 	}
 
 	normal := m.renderNormal()
 
 	if m.copyAs.IsOpen() {
-		v := tea.NewView(m.copyAs.View(normal))
-		v.AltScreen = true
+		v := m.newView(m.copyAs.View(normal))
 		v.MouseMode = tea.MouseModeCellMotion
 		return v
 	}
 
 	if m.copy.IsOpen() {
-		v := tea.NewView(m.copy.View(normal))
-		v.AltScreen = true
+		v := m.newView(m.copy.View(normal))
 		v.MouseMode = tea.MouseModeCellMotion
 		return v
 	}
@@ -34,8 +37,7 @@ func (m Model) View() tea.View {
 		rendered = m.notifications.View(normal)
 	}
 
-	v := tea.NewView(rendered)
-	v.AltScreen = true
+	v := m.newView(rendered)
 	v.MouseMode = tea.MouseModeCellMotion
 	return v
 }
