@@ -38,6 +38,7 @@ func main() {
 		flagPort              int
 		flagUpstreamProxy     string
 		flagProject           string
+		flagSslInsecure       bool
 		flagAddDefaultPlugins bool
 		flagAddDefaultConfig  bool
 	)
@@ -110,6 +111,9 @@ func main() {
 			if flagUpstreamProxy != "" {
 				config.Global.App.UpstreamProxy = flagUpstreamProxy
 			}
+			if cmd.Flags().Changed("ssl-insecure") {
+				config.Global.App.SslInsecure = flagSslInsecure
+			}
 
 			style.Init()
 			icons.Init(config.Global)
@@ -155,6 +159,7 @@ func main() {
 	rootCmd.Flags().StringVar(&flagHost, "host", "", "proxy host (overrides config)")
 	rootCmd.Flags().IntVarP(&flagPort, "port", "p", 0, "proxy port (overrides config)")
 	rootCmd.Flags().StringVar(&flagUpstreamProxy, "upstream-proxy", "", "upstream proxy URL, e.g. http://user:pass@host:8888 (overrides config)")
+	rootCmd.Flags().BoolVar(&flagSslInsecure, "ssl-insecure", false, "skip TLS certificate verification (overrides config)")
 	rootCmd.Flags().StringVarP(&flagProject, "project", "P", "", `project name to open directly, or "tmp" for a temporary session`)
 	rootCmd.Flags().BoolVar(&flagAddDefaultPlugins, "add-default-plugins", false, "copy built-in example plugins into the plugins dir and exit")
 	rootCmd.Flags().BoolVar(&flagAddDefaultConfig, "add-default-config", false, "copy the default config file to the config path and exit")

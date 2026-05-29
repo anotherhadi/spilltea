@@ -135,6 +135,7 @@ Flags:
       --plugins-dir string      path to plugins dir (overrides config)
   -p, --port int                proxy port (overrides config)
   -P, --project string          project name to open directly, or "tmp" for a temporary session
+      --ssl-insecure            skip TLS certificate verification (overrides config)
       --upstream-proxy string   upstream proxy URL, e.g. http://user:pass@host:8888 (overrides config)
   -v, --version                 version for spilltea
 ```
