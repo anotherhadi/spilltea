@@ -53,6 +53,7 @@ in
       [
         go
         gosec
+        govulncheck
         python3
         doctoc
         stylua
