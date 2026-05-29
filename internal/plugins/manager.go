@@ -395,25 +395,25 @@ func (m *Manager) runAsyncForPlugins(hookName string, argsFor func(*Plugin) []lu
 
 func (m *Manager) RunSyncOnRequest(f *goproxy.Flow) intercept.Decision {
 	return m.runSyncDecisionForPlugins("on_request", func(p *Plugin) []lua.LValue {
-		return []lua.LValue{pushRequest(p.L, f)}
+		return []lua.LValue{pushRequest(p.L, p, f)}
 	})
 }
 
 func (m *Manager) RunAsyncOnRequest(f *goproxy.Flow) {
 	m.runAsyncForPlugins("on_request", func(p *Plugin) []lua.LValue {
-		return []lua.LValue{pushRequest(p.L, f)}
+		return []lua.LValue{pushRequest(p.L, p, f)}
 	})
 }
 
 func (m *Manager) RunSyncOnResponse(f *goproxy.Flow) intercept.Decision {
 	return m.runSyncDecisionForPlugins("on_response", func(p *Plugin) []lua.LValue {
-		return []lua.LValue{pushRequest(p.L, f), pushResponse(p.L, f)}
+		return []lua.LValue{pushRequest(p.L, p, f), pushResponse(p.L, f)}
 	})
 }
 
 func (m *Manager) RunAsyncOnResponse(f *goproxy.Flow) {
 	m.runAsyncForPlugins("on_response", func(p *Plugin) []lua.LValue {
-		return []lua.LValue{pushRequest(p.L, f), pushResponse(p.L, f)}
+		return []lua.LValue{pushRequest(p.L, p, f), pushResponse(p.L, f)}
 	})
 }
 

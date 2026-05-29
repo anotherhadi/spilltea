@@ -46,7 +46,7 @@ func newLuaState(mgr *Manager, p *Plugin) *lua.LState {
 func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 	L.SetGlobal("log", L.NewFunction(func(L *lua.LState) int {
 		msg := L.CheckString(1)
-		log.Printf("[plugin:%s] %s", p.Name, msg)
+		log.Printf("plugin %s: %s", p.Name, msg)
 		return 0
 	}))
 
@@ -85,7 +85,7 @@ func registerUtilities(L *lua.LState, mgr *Manager, p *Plugin) {
 			CreatedAt:   time.Now(),
 		})
 		if err != nil {
-			log.Printf("[plugin:%s] create_finding error: %v", p.Name, err)
+			log.Printf("plugin %s: create_finding error: %v", p.Name, err)
 			return 0
 		}
 		_ = inserted
@@ -337,7 +337,7 @@ func luaTableString(t *lua.LTable, key string) string {
 	return ""
 }
 
-func pushRequest(L *lua.LState, f *goproxy.Flow) *lua.LTable {
+func pushRequest(L *lua.LState, p *Plugin, f *goproxy.Flow) *lua.LTable {
 	t := L.NewTable()
 	r := f.Request
 	L.SetField(t, "method", lua.LString(r.Method))
@@ -377,7 +377,7 @@ func pushRequest(L *lua.LState, f *goproxy.Flow) *lua.LTable {
 	L.SetField(t, "set_url", L.NewFunction(func(L *lua.LState) int {
 		parsed, err := url.Parse(L.CheckString(2))
 		if err != nil {
-			log.Printf("[plugin] set_url: %v", err)
+			log.Printf("plugin %s: set_url: %v", p.Name, err)
 			return 0
 		}
 		r.URL = parsed
