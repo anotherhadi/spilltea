@@ -23,6 +23,7 @@
 - [Installation](#installation)
 - [Project Management](#project-management)
 - [Configuration](#configuration)
+  - [Per-project configuration](#per-project-configuration)
 - [CLI Flags](#cli-flags)
 - [Plugin System](#plugin-system)
 - [Vim / Neovim Integration](#vim--neovim-integration)
@@ -117,6 +118,18 @@ Spilltea is fully configured via a YAML file at `~/.config/spilltea/config.yaml`
 Check the default configuration with all the options [here](./internal/config/default_config.yaml)
 
 Colors and styles can be customized using [ilovetui](https://github.com/anotherhadi/ilovetui), which applies theme changes across all compatible TUI applications at once.
+
+### Per-project configuration
+
+You can override any config value on a per-project basis by placing a `config.yaml` file inside the project directory (e.g. `~/.local/share/spilltea/projects/my-project/config.yaml`).
+
+Only the keys present in that file are overridden; everything else falls back to the global config.
+
+The priority order is:
+
+1. Global config (`~/.config/spilltea/config.yaml`)
+2. Project config (`<project-dir>/config.yaml`)
+3. CLI flags (always win)
 
 ## CLI Flags
 

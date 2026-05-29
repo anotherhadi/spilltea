@@ -1,8 +1,14 @@
 package main
 
 import (
+	"log"
+	"path/filepath"
+
 	tea "charm.land/bubbletea/v2"
+	"github.com/anotherhadi/spilltea/internal/config"
+	"github.com/anotherhadi/spilltea/internal/icons"
 	"github.com/anotherhadi/spilltea/internal/intercept"
+	"github.com/anotherhadi/spilltea/internal/keys"
 	appUI "github.com/anotherhadi/spilltea/internal/ui/app"
 	homeUI "github.com/anotherhadi/spilltea/internal/ui/home"
 )
@@ -34,6 +40,11 @@ func (m rootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if m.state == rootStateHome {
 		if sel, ok := msg.(homeUI.ProjectSelectedMsg); ok {
+			if err := config.MergeProjectConfig(filepath.Dir(sel.Project.Path)); err != nil {
+				log.Printf("project config: %v", err)
+			}
+			icons.Init(config.Global)
+			keys.Init(config.Global)
 			broker := intercept.NewBroker()
 			app := appUI.New(broker, sel.Project.Name, sel.Project.Path)
 			m.app = app

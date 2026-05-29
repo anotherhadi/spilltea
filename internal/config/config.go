@@ -65,6 +65,43 @@ type GlobalPlugin struct {
 
 var Global *Config
 
+var projectCLIOverrides func(*Config)
+
+// SetCLIOverrides stores a function that re-applies CLI flag overrides.
+// It is called automatically after MergeProjectConfig so that CLI flags
+// always win over both global and per-project config.
+func SetCLIOverrides(fn func(*Config)) {
+	projectCLIOverrides = fn
+}
+
+// MergeProjectConfig merges <projectDir>/config.yaml on top of the current
+// Global config, then re-applies any registered CLI overrides.
+// If no config.yaml exists in the project directory, this is a no-op.
+func MergeProjectConfig(projectDir string) error {
+	projectConfigPath := filepath.Join(projectDir, "config.yaml")
+	if _, err := os.Stat(projectConfigPath); errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+
+	pv := viper.New()
+	pv.SetConfigFile(projectConfigPath)
+	if err := pv.ReadInConfig(); err != nil {
+		return fmt.Errorf("project config: %w", err)
+	}
+	if err := viper.MergeConfigMap(pv.AllSettings()); err != nil {
+		return fmt.Errorf("merge project config: %w", err)
+	}
+	if err := viper.Unmarshal(Global); err != nil {
+		return err
+	}
+	Global.App.ProxyAuth = expandEnvValue(Global.App.ProxyAuth)
+	Global.App.UpstreamProxy = expandEnvValue(Global.App.UpstreamProxy)
+	if projectCLIOverrides != nil {
+		projectCLIOverrides(Global)
+	}
+	return nil
+}
+
 func Load(path string) error {
 	var defaults map[string]any
 	if err := yaml.Unmarshal(defaultConfig, &defaults); err != nil {

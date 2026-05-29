@@ -99,21 +99,26 @@ func main() {
 			}
 			config.Global.Version = version
 
-			if flagPluginsDir != "" {
-				config.Global.App.PluginsDir = flagPluginsDir
+			sslInsecureChanged := cmd.Flags().Changed("ssl-insecure")
+			applyCLI := func(c *config.Config) {
+				if flagPluginsDir != "" {
+					c.App.PluginsDir = flagPluginsDir
+				}
+				if flagHost != "" {
+					c.App.Host = flagHost
+				}
+				if flagPort != 0 {
+					c.App.Port = flagPort
+				}
+				if flagUpstreamProxy != "" {
+					c.App.UpstreamProxy = flagUpstreamProxy
+				}
+				if sslInsecureChanged {
+					c.App.SslInsecure = flagSslInsecure
+				}
 			}
-			if flagHost != "" {
-				config.Global.App.Host = flagHost
-			}
-			if flagPort != 0 {
-				config.Global.App.Port = flagPort
-			}
-			if flagUpstreamProxy != "" {
-				config.Global.App.UpstreamProxy = flagUpstreamProxy
-			}
-			if cmd.Flags().Changed("ssl-insecure") {
-				config.Global.App.SslInsecure = flagSslInsecure
-			}
+			applyCLI(config.Global)
+			config.SetCLIOverrides(applyCLI)
 
 			style.Init()
 			icons.Init(config.Global)
@@ -126,6 +131,11 @@ func main() {
 				if err != nil {
 					return fmt.Errorf("project: %w", err)
 				}
+				if err := config.MergeProjectConfig(filepath.Dir(project.Path)); err != nil {
+					return fmt.Errorf("project config: %w", err)
+				}
+				icons.Init(config.Global)
+				keys.Init(config.Global)
 				broker := intercept.NewBroker()
 				m := appUI.New(broker, project.Name, project.Path)
 				final, err := tea.NewProgram(m).Run()
