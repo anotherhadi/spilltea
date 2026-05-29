@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 
@@ -76,7 +77,9 @@ func (pf *PluginsFile) register(id string, defaultEnabled bool, configText strin
 			}
 		}
 		pf.data.Plugins[id] = entry
-		_ = pf.save()
+		if err := pf.save(); err != nil {
+			log.Printf("plugin %s: register save: %v", id, err)
+		}
 	}
 }
 

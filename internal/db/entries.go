@@ -81,7 +81,11 @@ func scanEntries(rows *sql.Rows) ([]Entry, error) {
 		if err := rows.Scan(&e.ID, &ts, &e.Method, &e.Host, &e.Path, &e.StatusCode, &e.RequestRaw, &e.ResponseRaw, &flagged); err != nil {
 			return nil, err
 		}
-		e.Timestamp, _ = time.Parse(time.RFC3339, ts)
+		var tsErr error
+		e.Timestamp, tsErr = time.Parse(time.RFC3339, ts)
+		if tsErr != nil {
+			log.Printf("db: parse timestamp %q: %v", ts, tsErr)
+		}
 		e.Flagged = flagged != 0
 		entries = append(entries, e)
 	}

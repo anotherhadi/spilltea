@@ -29,6 +29,7 @@ func resolveEditor() string {
 func openWithEditor(content string, callback func(string, error) tea.Msg) tea.Cmd {
 	f, err := os.CreateTemp("", "spilltea-*.http")
 	if err != nil {
+		log.Printf("editor: create temp file: %v", err)
 		return nil
 	}
 	tmpPath := f.Name()

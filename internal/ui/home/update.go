@@ -74,6 +74,7 @@ func (m Model) handleSelection() (tea.Model, tea.Cmd) {
 	case kindTemp:
 		dir := tempDir()
 		if err := os.MkdirAll(dir, 0o750); err != nil {
+			log.Printf("home: create temp dir: %v", err)
 			return m, nil
 		}
 		initProjectFiles(dir)
@@ -117,6 +118,7 @@ func (m Model) updateNaming(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.nameInput.Blur()
 		dir := filepath.Join(m.projectDir, name)
 		if err := os.MkdirAll(dir, 0o750); err != nil {
+			log.Printf("home: create project dir %q: %v", name, err)
 			return m, nil
 		}
 		initProjectFiles(dir)

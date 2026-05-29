@@ -1,6 +1,7 @@
 package db
 
 import (
+	"log"
 	"time"
 )
 
@@ -59,7 +60,11 @@ func (d *DB) ListReplayEntries() ([]ReplayEntry, error) {
 			&e.OriginalRaw, &e.RequestRaw, &e.ResponseRaw, &e.StatusCode, &e.ErrorMsg); err != nil {
 			return nil, err
 		}
-		e.Timestamp, _ = time.Parse(time.RFC3339, ts)
+		var tsErr error
+		e.Timestamp, tsErr = time.Parse(time.RFC3339, ts)
+		if tsErr != nil {
+			log.Printf("db: parse replay timestamp %q: %v", ts, tsErr)
+		}
 		entries = append(entries, e)
 	}
 	return entries, rows.Err()

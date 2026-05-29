@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -97,8 +96,7 @@ func New(broker *intercept.Broker, name, path string) Model {
 
 	d, err := db.Open(path)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "db: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("db: %v", err)
 	}
 	m.database = d
 	broker.SetDB(d)
