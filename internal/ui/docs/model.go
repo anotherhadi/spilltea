@@ -25,10 +25,10 @@ func readDoc(name string) string {
 
 var contentMarkdown = strings.Join([]string{
 	readDoc("main.md"),
-	readDoc("legal-disclaimer.md"),
-	readDoc("basics.md"),
 	readDoc("proxy.md"),
 	readDoc("certificate.md"),
+	readDoc("legal-disclaimer.md"),
+	readDoc("basics.md"),
 	readDoc("history.md"),
 }, "\n")
 

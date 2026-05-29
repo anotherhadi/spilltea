@@ -155,7 +155,7 @@ If the user **dismisses** a finding it is permanently hidden and will never reap
 
 ## Configuration
 
-Plugin configuration is stored in a `plugins.yaml` file alongside the project database.
+Plugin configuration is stored in a `plugins.yaml` file alongside the project database and can be edited through the "Proxy" TUI page.
 Each plugin is keyed by its filename (without the `.lua` extension) and has an `enable` toggle and an optional `config` block (arbitrary YAML).
 
 ```yaml
