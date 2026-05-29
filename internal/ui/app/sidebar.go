@@ -62,7 +62,7 @@ func (m *Model) renderSidebar() string {
 	var items strings.Builder
 	badgeUnread := lipgloss.NewStyle().Foreground(ilovetui.S.Warning).Bold(true)
 
-	for i, entry := range sidebarEntries {
+	for i, entry := range pageRegistry {
 		selected := entry.id == m.page
 		badgeStyle, textStyle := badgeNormal, textNormal
 		if selected {

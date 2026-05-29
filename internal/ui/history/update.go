@@ -26,7 +26,10 @@ func LoadEntriesCmd(database *db.DB) tea.Cmd {
 		if database == nil {
 			return EntriesLoadedMsg{}
 		}
-		entries, _ := database.ListEntries()
+		entries, err := database.ListEntries()
+		if err != nil {
+			log.Printf("history: load entries: %v", err)
+		}
 		return EntriesLoadedMsg{Entries: entries}
 	}
 }

@@ -318,13 +318,14 @@ func (m Model) renderHelpLine() string {
 	}
 
 	var parts []string
+	escKey := keys.Keys.Global.Escape.Help().Key
 	if fs == list.Filtering {
 		parts = append(parts, item("enter", "apply filter"))
-		parts = append(parts, item("esc", "cancel"))
+		parts = append(parts, item(escKey, "cancel"))
 	} else {
 		parts = append(parts, item("↑/↓", "navigate"))
 		if fs == list.FilterApplied {
-			parts = append(parts, item("esc", "clear filter"))
+			parts = append(parts, item(escKey, "clear filter"))
 		} else {
 			parts = append(parts, binding(k.Filter))
 		}

@@ -16,7 +16,7 @@ type parsedRequest struct {
 	path    string
 	host    string
 	scheme  string
-	headers []header // garder header{key, value} pour compat locale
+	headers []header
 	body    string
 }
 

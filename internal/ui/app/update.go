@@ -2,7 +2,6 @@ package app
 
 import (
 	"log"
-	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -21,6 +20,7 @@ import (
 	historyUI "github.com/anotherhadi/spilltea/internal/ui/history"
 	interceptUI "github.com/anotherhadi/spilltea/internal/ui/intercept"
 	replayUI "github.com/anotherhadi/spilltea/internal/ui/replay"
+	"github.com/anotherhadi/spilltea/internal/util"
 )
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -162,23 +162,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 
 	case tea.KeyPressMsg:
-		// ctrl+c always quits, even when a textarea is focused.
-		if msg.String() == "ctrl+c" {
-			m.pluginManager.RunOnQuit()
-			return m, tea.Quit
-		}
 		if key.Matches(msg, keys.Keys.Global.Quit) && !m.activeIsEditing() {
 			m.pluginManager.RunOnQuit()
 			return m, tea.Quit
 		}
 
 		if key.Matches(msg, keys.Keys.Global.OpenLogs) {
-			editor := os.Getenv("EDITOR")
-			if editor == "" {
-				editor = "vi"
-			}
 			logPath := filepath.Join(filepath.Dir(m.projectPath), "logs.log")
-			return m, tea.ExecProcess(exec.Command(editor, logPath), nil) // #nosec G204 G702 -- editor from trusted $EDITOR env var, logPath is a fixed path
+			return m, tea.ExecProcess(exec.Command(util.ResolveEditor(), logPath), nil) // #nosec G204 G702 -- editor from trusted config/$EDITOR, logPath is a fixed path
 		}
 
 		if !m.activeIsEditing() {

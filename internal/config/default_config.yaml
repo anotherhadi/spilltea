@@ -4,15 +4,16 @@ app:
   cert_dir: ~/.local/share/spilltea
   project_dir: ~/.local/share/spilltea
   plugins_dir: ~/.config/spilltea/plugins
-  upstream_proxy: "" # e.g. http://corporate-proxy:8888 or http://user:pass@host:8888
-  proxy_auth: "" # require basic auth to use the proxy, format: user:pass (empty = disabled). Also run: chmod 600 ~/.config/spilltea/config.yaml
+  upstream_proxy: "" # e.g. http://corporate-proxy:8888 or $ENV_VAR
+  proxy_auth: "" # require basic auth to use the spilltea proxy, format: user:pass or $ENV_VAR (empty = disabled).
   max_body_size_mb: 50 # max response body size read into memory for large streamed responses (MB)
   external_editor: "" # override $EDITOR for external editing (e.g. nvim, code --wait)
+  ssl_insecure: false # bypass TLS certificate verification (enable for self-signed cert targets)
 
 intercept:
   default_intercept_enabled: true
   default_capture_response: false
-  queue_size: 64 # max pending intercepted requests/responses before the proxy blocks
+  queue_size: 128 # max pending intercepted requests/responses before the proxy blocks
   auto_forward_regex:
     - '\.(js|css|png|gif|ico|woff2?|ttf|svg)(\?.*)?$'
 
@@ -31,6 +32,7 @@ tui:
 keybindings:
   global:
     quit: "q,ctrl+c"
+    escape: "esc,ctrl+c"
     help: "?"
     open_logs: "ctrl+g"
     toggle_sidebar: "ctrl+b"

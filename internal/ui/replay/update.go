@@ -5,10 +5,14 @@ import (
 	"compress/gzip"
 	"compress/zlib"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -99,24 +103,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.Button {
 			case tea.MouseWheelUp:
 				if msg.Mod.Contains(tea.ModShift) {
-					m.requestViewport.ScrollLeft(6)
-					m.responseViewport.ScrollLeft(6)
+					m.scrollBothViewports(true)
 				} else {
 					m.scrollFocusedViewportVertical(-1)
 				}
 			case tea.MouseWheelDown:
 				if msg.Mod.Contains(tea.ModShift) {
-					m.requestViewport.ScrollRight(6)
-					m.responseViewport.ScrollRight(6)
+					m.scrollBothViewports(false)
 				} else {
 					m.scrollFocusedViewportVertical(1)
 				}
 			case tea.MouseWheelLeft:
-				m.requestViewport.ScrollLeft(6)
-				m.responseViewport.ScrollLeft(6)
+				m.scrollBothViewports(true)
 			case tea.MouseWheelRight:
-				m.requestViewport.ScrollRight(6)
-				m.responseViewport.ScrollRight(6)
+				m.scrollBothViewports(false)
 			}
 		}
 
@@ -327,6 +327,16 @@ func (m *Model) setFocusedViewport(vp viewport.Model) {
 	}
 }
 
+func (m *Model) scrollBothViewports(left bool) {
+	if left {
+		m.requestViewport.ScrollLeft(6)
+		m.responseViewport.ScrollLeft(6)
+	} else {
+		m.requestViewport.ScrollRight(6)
+		m.responseViewport.ScrollRight(6)
+	}
+}
+
 func (m *Model) scrollFocusedViewportVertical(delta int) {
 	vp := m.focusedViewport()
 	vp.SetYOffset(vp.YOffset() + delta)
@@ -403,11 +413,27 @@ func doSend(entry Entry) (responseRaw string, statusCode int, err error) {
 	}
 	req.Header = headers
 
+	tlsCfg := &tls.Config{InsecureSkipVerify: config.Global.App.SslInsecure} // #nosec G402 -- controlled by ssl_insecure config
+	if !config.Global.App.SslInsecure {
+		if certPool, err := x509.SystemCertPool(); err == nil {
+			caPath := filepath.Join(config.ExpandPath(config.Global.App.CertDir), "mitmproxy-ca-cert.pem")
+			if pem, err := os.ReadFile(caPath); err == nil {
+				certPool.AppendCertsFromPEM(pem)
+			}
+			tlsCfg.RootCAs = certPool
+		}
+	}
+	transport := &http.Transport{
+		TLSClientConfig: tlsCfg,
+	}
+	if up := config.Global.App.UpstreamProxy; up != "" {
+		if proxyURL, err := url.Parse(up); err == nil {
+			transport.Proxy = http.ProxyURL(proxyURL)
+		}
+	}
 	client := &http.Client{
-		Timeout: 30 * time.Second,
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // #nosec G402 -- intentional for replay feature
-		},
+		Timeout:   30 * time.Second,
+		Transport: transport,
 		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
 			return http.ErrUseLastResponse
 		},

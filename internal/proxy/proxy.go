@@ -120,6 +120,7 @@ func Start(broker *intercept.Broker, mgr *plugins.Manager) error {
 		StreamLargeBodies: int64(cfg.MaxBodySizeMB) * 1024 * 1024,
 		CaRootPath:        caPath,
 		Upstream:          cfg.UpstreamProxy,
+		SslInsecure:       cfg.SslInsecure,
 	}
 
 	p, err := goproxy.NewProxy(opts)

@@ -41,7 +41,7 @@ func newGlobalKeyMap(cfg config.GlobalKeys) GlobalKeyMap {
 		CycleFocus:    binding(cfg.CycleFocus, "cycle focus"),
 		CopyAs:        binding(cfg.CopyAs, "copy as..."),
 		Copy:          binding(cfg.Copy, "copy..."),
-		Escape:        key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "cancel")),
+		Escape:        binding(cfg.Escape, "cancel"),
 		SendToReplay:  binding(cfg.SendToReplay, "send to replay"),
 		ScrollUp:      binding(cfg.ScrollUp, "scroll up"),
 		ScrollDown:    binding(cfg.ScrollDown, "scroll down"),

@@ -6,6 +6,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	ilovetui "github.com/anotherhadi/ilovetui"
+	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/ui/components/teapot"
 )
 
@@ -70,7 +71,8 @@ func (m Model) renderNamingPanel() string {
 		Width(panelW).
 		Render(label + "\n" + inputLine)
 
-	hint := ilovetui.S.Faint.Render("[enter] confirm  [esc] cancel")
+	escKey := keys.Keys.Global.Escape.Help().Key
+	hint := ilovetui.S.Faint.Render("[enter] confirm  [" + escKey + "] cancel")
 
 	var sb strings.Builder
 	sb.WriteString(center(iw, panel))

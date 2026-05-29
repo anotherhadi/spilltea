@@ -28,6 +28,7 @@ type Config struct {
 		ProxyAuth      string `mapstructure:"proxy_auth"`
 		MaxBodySizeMB  int    `mapstructure:"max_body_size_mb"`
 		ExternalEditor string `mapstructure:"external_editor"`
+		SslInsecure    bool   `mapstructure:"ssl_insecure"`
 	} `mapstructure:"app"`
 
 	TUI struct {
@@ -82,7 +83,12 @@ func Load(path string) error {
 	}
 
 	Global = &Config{}
-	return viper.Unmarshal(Global)
+	if err := viper.Unmarshal(Global); err != nil {
+		return err
+	}
+	Global.App.ProxyAuth = expandEnvValue(Global.App.ProxyAuth)
+	Global.App.UpstreamProxy = expandEnvValue(Global.App.UpstreamProxy)
+	return nil
 }
 
 func WriteDefaultConfig(path string) error {
@@ -104,6 +110,17 @@ func ExpandPath(p string) string {
 		return filepath.Join(home, p[2:])
 	}
 	return p
+}
+
+// expandEnvValue replaces a value starting with "$" with the corresponding
+// environment variable, enabling secrets to be kept out of config files.
+func expandEnvValue(s string) string {
+	if len(s) > 1 && s[0] == '$' {
+		if val := os.Getenv(s[1:]); val != "" {
+			return val
+		}
+	}
+	return s
 }
 
 func flatten(prefix string, m map[string]any) map[string]any {

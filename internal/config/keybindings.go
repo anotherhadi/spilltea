@@ -2,6 +2,7 @@ package config
 
 type GlobalKeys struct {
 	Quit          string `mapstructure:"quit"`
+	Escape        string `mapstructure:"escape"`
 	OpenLogs      string `mapstructure:"open_logs"`
 	ToggleSidebar string `mapstructure:"toggle_sidebar"`
 	Help          string `mapstructure:"help"`

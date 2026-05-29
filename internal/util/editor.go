@@ -15,7 +15,7 @@ type EditorFinishedMsg struct {
 	Err     error
 }
 
-func resolveEditor() string {
+func ResolveEditor() string {
 	editor := config.Global.App.ExternalEditor
 	if editor == "" {
 		editor = os.Getenv("EDITOR")
@@ -39,7 +39,7 @@ func openWithEditor(content string, callback func(string, error) tea.Msg) tea.Cm
 	if err := f.Close(); err != nil {
 		log.Printf("editor: closing temp file: %v", err)
 	}
-	return tea.ExecProcess(exec.Command(resolveEditor(), tmpPath), func(err error) tea.Msg { // #nosec G204 -- editor from trusted config/$EDITOR, tmpPath from os.CreateTemp
+	return tea.ExecProcess(exec.Command(ResolveEditor(), tmpPath), func(err error) tea.Msg { // #nosec G204 -- editor from trusted config/$EDITOR, tmpPath from os.CreateTemp
 		defer os.Remove(tmpPath)
 		return callback(tmpPath, err)
 	})

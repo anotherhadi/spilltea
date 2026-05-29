@@ -36,11 +36,9 @@ func tickCmd() tea.Cmd {
 	})
 }
 
-var sidebarEntries = pageRegistry
-
 var pageShortcuts = func() map[string]page {
-	m := make(map[string]page, len(sidebarEntries))
-	for i, e := range sidebarEntries {
+	m := make(map[string]page, len(pageRegistry))
+	for i, e := range pageRegistry {
 		m[strconv.Itoa(i+1)] = e.id
 	}
 	return m
@@ -55,6 +53,7 @@ type Model struct {
 	logFile       *os.File
 	pluginManager *plugins.Manager
 	fatalErr      error
+	logFileErr    error
 
 	width         int
 	height        int
@@ -96,7 +95,8 @@ func New(broker *intercept.Broker, name, path string) Model {
 
 	d, err := db.Open(path)
 	if err != nil {
-		log.Fatalf("db: %v", err)
+		m.fatalErr = err
+		return m
 	}
 	m.database = d
 	broker.SetDB(d)
@@ -129,6 +129,8 @@ func New(broker *intercept.Broker, name, path string) Model {
 		m.logFile = lf
 		log.SetOutput(lf)
 		logrus.SetOutput(lf)
+	} else {
+		m.logFileErr = err
 	}
 
 	return m
@@ -138,7 +140,7 @@ func (m Model) FatalErr() error { return m.fatalErr }
 
 func (m Model) Init() tea.Cmd {
 	mgr := m.pluginManager
-	return tea.Batch(
+	cmds := []tea.Cmd{
 		intercept.WaitForRequest(m.broker),
 		intercept.WaitForResponse(m.broker),
 		tickCmd(),
@@ -147,5 +149,16 @@ func (m Model) Init() tea.Cmd {
 		plugins.WaitForQuit(mgr),
 		findingsUI.RefreshCmd(m.database),
 		func() tea.Msg { mgr.RunOnStart(); return nil },
-	)
+	}
+	if m.logFileErr != nil {
+		err := m.logFileErr
+		cmds = append(cmds, func() tea.Msg {
+			return notificationsUI.NotificationMsg{
+				Title: "Warning",
+				Body:  "Could not open log file: " + err.Error(),
+				Kind:  notificationsUI.KindWarning,
+			}
+		})
+	}
+	return tea.Batch(cmds...)
 }
