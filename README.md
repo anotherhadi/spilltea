@@ -108,9 +108,9 @@ Spilltea organizes work into **projects**. Each project maps to a SQLite databas
 
 On startup, you choose:
 
-- **New project**: enter a name, stored in `~/.local/share/spilltea/projects/` by default
+- **New project**: enter a name, stored in `~/.local/share/spilltea/<name>/` by default
 - **Existing project**: pick from a list of previous projects
-- **Temporary**: no name needed, stored in `/tmp/spilltea/projects/` and will be deleted on your next reboot!
+- **Temporary**: no name needed, stored in `/tmp/spilltea/<random-id>/` and will be deleted on your next reboot!
 
 ## Configuration
 
