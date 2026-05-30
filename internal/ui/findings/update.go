@@ -72,10 +72,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.refreshListViewport()
 				m.refreshBody()
 			}
+		case key.Matches(msg, f.Flag):
+			if len(m.findings) > 0 && m.database != nil {
+				if err := m.database.ToggleFindingFlag(m.findings[m.cursor].ID); err != nil {
+					log.Printf("findings: toggle flag: %v", err)
+					return m, nil
+				}
+				return m, RefreshCmd(m.database)
+			}
 		case key.Matches(msg, f.Dismiss):
 			if len(m.findings) > 0 && m.database != nil {
 				if err := m.database.DismissFinding(m.findings[m.cursor].ID); err != nil {
 					log.Printf("dismiss finding: %v", err)
+					return m, nil
+				}
+				return m, RefreshCmd(m.database)
+			}
+		case key.Matches(msg, f.DismissAll):
+			if m.database != nil {
+				if err := m.database.DismissAllFindings(); err != nil {
+					log.Printf("findings: dismiss all: %v", err)
 					return m, nil
 				}
 				return m, RefreshCmd(m.database)

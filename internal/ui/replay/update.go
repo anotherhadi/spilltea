@@ -241,6 +241,18 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.requestViewport.ScrollRight(6)
 		m.responseViewport.ScrollRight(6)
 
+	case key.Matches(msg, r.Flag):
+		if len(m.entries) > 0 {
+			allIdx := m.currentAllIdx()
+			if m.database != nil && m.allEntries[allIdx].DBID != 0 {
+				if err := m.database.ToggleReplayFlag(m.allEntries[allIdx].DBID); err != nil {
+					log.Printf("replay: toggle flag: %v", err)
+				}
+			}
+			m.allEntries[allIdx].Flagged = !m.allEntries[allIdx].Flagged
+			m.applyFilter(allIdx)
+		}
+
 	case key.Matches(msg, r.Delete):
 		if len(m.entries) > 0 {
 			allIdx := m.currentAllIdx()
@@ -260,11 +272,29 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, r.DeleteAll):
 		if m.database != nil {
-			if err := m.database.DeleteAllReplayEntries(); err != nil {
+			if err := m.database.DeleteAllReplayEntriesExceptFlagged(); err != nil {
 				log.Printf("replay: delete all entries: %v", err)
 			}
 		}
-		m.allEntries = nil
+		// Mirror the DB logic in memory: delete unflagged first; if none, delete all.
+		hasUnflagged := false
+		for _, e := range m.allEntries {
+			if !e.Flagged {
+				hasUnflagged = true
+				break
+			}
+		}
+		if hasUnflagged {
+			filtered := m.allEntries[:0]
+			for _, e := range m.allEntries {
+				if e.Flagged {
+					filtered = append(filtered, e)
+				}
+			}
+			m.allEntries = filtered
+		} else {
+			m.allEntries = nil
+		}
 		m.cursor = 0
 		m.filterActive = false
 		m.filterAccepted = false
@@ -551,6 +581,7 @@ func entryToDB(e Entry) db.ReplayEntry {
 		ResponseRaw: e.ResponseRaw,
 		StatusCode:  e.StatusCode,
 		ErrorMsg:    errMsg,
+		Flagged:     e.Flagged,
 	}
 }
 

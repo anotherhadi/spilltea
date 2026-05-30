@@ -11,6 +11,7 @@ type Finding struct {
 	Title       string
 	Description string
 	Severity    string
+	Flagged     bool
 	CreatedAt   time.Time
 }
 
@@ -34,7 +35,7 @@ func (d *DB) UpsertFinding(f Finding) (bool, error) {
 
 func (d *DB) LoadFindings() ([]Finding, error) {
 	rows, err := d.conn.Query(
-		`SELECT id, plugin_name, dedup_key, title, description, severity, created_at
+		`SELECT id, plugin_name, dedup_key, title, description, severity, flagged, created_at
 		 FROM findings WHERE dismissed = 0 ORDER BY id ASC`,
 	)
 	if err != nil {
@@ -45,9 +46,11 @@ func (d *DB) LoadFindings() ([]Finding, error) {
 	for rows.Next() {
 		var f Finding
 		var ts string
-		if err := rows.Scan(&f.ID, &f.PluginName, &f.DedupKey, &f.Title, &f.Description, &f.Severity, &ts); err != nil {
+		var flagged int
+		if err := rows.Scan(&f.ID, &f.PluginName, &f.DedupKey, &f.Title, &f.Description, &f.Severity, &flagged, &ts); err != nil {
 			return nil, err
 		}
+		f.Flagged = flagged != 0
 		for _, layout := range findingTimeFormats {
 			if t, err := time.Parse(layout, ts); err == nil {
 				f.CreatedAt = t.Local()
@@ -61,5 +64,25 @@ func (d *DB) LoadFindings() ([]Finding, error) {
 
 func (d *DB) DismissFinding(id int64) error {
 	_, err := d.conn.Exec(`UPDATE findings SET dismissed = 1 WHERE id = ?`, id)
+	return err
+}
+
+func (d *DB) ToggleFindingFlag(id int64) error {
+	_, err := d.conn.Exec(`UPDATE findings SET flagged = NOT flagged WHERE id = ?`, id)
+	return err
+}
+
+// DismissAllFindings dismisses unflagged findings first. If none are unflagged
+// (only flagged ones remain), it dismisses everything.
+func (d *DB) DismissAllFindings() error {
+	var count int
+	if err := d.conn.QueryRow(`SELECT COUNT(*) FROM findings WHERE dismissed = 0 AND flagged = 0`).Scan(&count); err != nil {
+		return err
+	}
+	if count > 0 {
+		_, err := d.conn.Exec(`UPDATE findings SET dismissed = 1 WHERE flagged = 0`)
+		return err
+	}
+	_, err := d.conn.Exec(`UPDATE findings SET dismissed = 1`)
 	return err
 }

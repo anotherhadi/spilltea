@@ -186,7 +186,7 @@ type findingsKeyMap struct{ width int }
 func (findingsKeyMap) ShortHelp() []key.Binding {
 	g := keys.Keys.Global
 	f := keys.Keys.Findings
-	return []key.Binding{g.Up, g.Down, f.Dismiss, g.Copy, g.Help}
+	return []key.Binding{g.Up, g.Down, f.Flag, f.Dismiss, f.DismissAll, g.Copy, g.Help}
 }
 
 func (m findingsKeyMap) FullHelp() [][]key.Binding {

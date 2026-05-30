@@ -66,9 +66,10 @@ func (m *Model) renderList() string {
 		sevStyle := style.SeverityStyle(f.Severity)
 		sevLabel := sevStyle.Width(8).Render(f.Severity)
 		ts := f.CreatedAt.Format("15:04:05")
+		flagSt := lipgloss.NewStyle().Foreground(ilovetui.S.Primary)
 
 		w := m.listViewport.Width()
-		const fixedW = 2 + 8 + 1 + 8 + 1 + 10 + 1
+		const fixedW = 2 + 2 + 8 + 1 + 8 + 1 + 10 + 1
 		titleW := w - fixedW
 		if titleW < 0 {
 			titleW = 0
@@ -79,8 +80,13 @@ func (m *Model) renderList() string {
 		var line string
 		if selected {
 			bg := lipgloss.NewStyle().Background(ilovetui.S.Selection)
+			flagStr := "  "
+			if f.Flagged {
+				flagStr = icons.I.Flag + " "
+			}
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				bg.Bold(true).Foreground(ilovetui.S.Primary).Width(2).Render(">"),
+				bg.Foreground(ilovetui.S.Primary).Width(2).Render(flagStr),
 				sevStyle.Background(ilovetui.S.Selection).Width(8).Render(f.Severity),
 				bg.Width(1).Render(""),
 				bg.Foreground(ilovetui.S.Subtle).Width(8).Render(util.Truncate(f.PluginName, 8)),
@@ -90,8 +96,13 @@ func (m *Model) renderList() string {
 				bg.Bold(true).Width(titleW).Render(f.Title),
 			)
 		} else {
+			flagStr := "  "
+			if f.Flagged {
+				flagStr = icons.I.Flag + " "
+			}
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				"  ",
+				flagSt.Width(2).Render(flagStr),
 				sevLabel,
 				" ",
 				pluginStr,

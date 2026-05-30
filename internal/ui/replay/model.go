@@ -33,6 +33,7 @@ type Entry struct {
 	ResponseRaw string // filled after send
 	StatusCode  int    // 0 = not sent yet
 	Sending     bool
+	Flagged     bool
 	Err         error
 }
 
@@ -148,6 +149,7 @@ func entryFromDB(dbe db.ReplayEntry) Entry {
 		RequestRaw:  dbe.RequestRaw,
 		ResponseRaw: dbe.ResponseRaw,
 		StatusCode:  dbe.StatusCode,
+		Flagged:     dbe.Flagged,
 		Err:         err,
 	}
 }
@@ -277,7 +279,7 @@ type replayKeyMap struct{ width int }
 func (replayKeyMap) ShortHelp() []key.Binding {
 	g := keys.Keys.Global
 	r := keys.Keys.Replay
-	return []key.Binding{g.Up, g.Down, g.CycleFocus, r.Send, r.Edit, r.Filter, g.Help}
+	return []key.Binding{g.Up, g.Down, g.CycleFocus, r.Send, r.Edit, r.Flag, r.Filter, g.Help}
 }
 
 func (m replayKeyMap) FullHelp() [][]key.Binding {

@@ -48,6 +48,8 @@ func Init(cfg *config.Config) {
 			Flag:      "󰈻 ",
 		}
 	} else {
-		I = &Icons{}
+		I = &Icons{
+			Flag: "*",
+		}
 	}
 }

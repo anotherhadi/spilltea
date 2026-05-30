@@ -106,19 +106,25 @@ func (m *Model) renderList() string {
 		selBg := ilovetui.S.Selection
 
 		w := m.listViewport.Width()
-		const fixedW = 2 + 7 + 1 + 3 + 1
+		const fixedW = 2 + 2 + 7 + 1 + 3 + 1
 		hostPathW := w - fixedW
 		if hostPathW < 0 {
 			hostPathW = 0
 		}
 
 		statusStr, statusSt := entryStatus(e)
+		flagSt := lipgloss.NewStyle().Foreground(ilovetui.S.Primary)
 
 		var line string
 		if selected {
 			bg := lipgloss.NewStyle().Background(selBg)
+			flagStr := "  "
+			if e.Flagged {
+				flagStr = icons.I.Flag + " "
+			}
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				bg.Bold(true).Foreground(ilovetui.S.Primary).Width(2).Render(">"),
+				bg.Foreground(ilovetui.S.Primary).Width(2).Render(flagStr),
 				style.S.Method(e.Method).Background(selBg).Render(e.Method),
 				bg.Width(1).Render(""),
 				statusSt.Background(selBg).Render(statusStr),
@@ -126,8 +132,13 @@ func (m *Model) renderList() string {
 				bg.Bold(true).Width(hostPathW).Render(e.Host+e.Path),
 			)
 		} else {
+			flagStr := "  "
+			if e.Flagged {
+				flagStr = icons.I.Flag + " "
+			}
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				"  ",
+				flagSt.Width(2).Render(flagStr),
 				style.S.Method(e.Method).Render(e.Method),
 				" ",
 				statusSt.Render(statusStr),

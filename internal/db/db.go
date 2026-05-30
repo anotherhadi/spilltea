@@ -79,7 +79,8 @@ CREATE TABLE IF NOT EXISTS replay_entries (
 			request_raw  TEXT NOT NULL,
 			response_raw TEXT NOT NULL,
 			status_code  INTEGER NOT NULL,
-			error_msg    TEXT NOT NULL
+			error_msg    TEXT NOT NULL,
+			flagged      INTEGER NOT NULL DEFAULT 0
 		);
 CREATE TABLE IF NOT EXISTS findings (
 			id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -89,6 +90,7 @@ CREATE TABLE IF NOT EXISTS findings (
 			description TEXT NOT NULL DEFAULT '',
 			severity    TEXT NOT NULL DEFAULT 'info',
 			dismissed   INTEGER NOT NULL DEFAULT 0,
+			flagged     INTEGER NOT NULL DEFAULT 0,
 			created_at  DATETIME NOT NULL,
 			UNIQUE(plugin_name, dedup_key)
 		);

@@ -120,9 +120,6 @@ func (m *Model) renderList() string {
 			flagStr := "  "
 			if e.Flagged {
 				flagStr = icons.I.Flag + " "
-				if icons.I.Flag == "" {
-					flagStr = "★ "
-				}
 			}
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				bg.Bold(true).Foreground(ilovetui.S.Primary).Width(2).Render(">"),
@@ -139,9 +136,6 @@ func (m *Model) renderList() string {
 			flagStr := "  "
 			if e.Flagged {
 				flagStr = icons.I.Flag + " "
-				if icons.I.Flag == "" {
-					flagStr = "★ "
-				}
 			}
 			line = lipgloss.JoinHorizontal(lipgloss.Top,
 				"  ",

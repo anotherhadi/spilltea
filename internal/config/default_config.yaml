@@ -83,12 +83,15 @@ keybindings:
     delete_entry: "x"
     delete_all: "X"
     filter: "/"
+    flag: "m"
 
   diff:
     clear: "x"
 
   findings:
     dismiss: "x"
+    dismiss_all: "X"
+    flag: "m"
 
   plugins:
     toggle: "space"

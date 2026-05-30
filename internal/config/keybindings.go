@@ -57,6 +57,7 @@ type ReplayKeys struct {
 	Delete    string `mapstructure:"delete_entry"`
 	DeleteAll string `mapstructure:"delete_all"`
 	Filter    string `mapstructure:"filter"`
+	Flag      string `mapstructure:"flag"`
 }
 
 type DiffKeys struct {
@@ -64,7 +65,9 @@ type DiffKeys struct {
 }
 
 type FindingsKeys struct {
-	Dismiss string `mapstructure:"dismiss"`
+	Dismiss    string `mapstructure:"dismiss"`
+	DismissAll string `mapstructure:"dismiss_all"`
+	Flag       string `mapstructure:"flag"`
 }
 
 type PluginsKeys struct {
