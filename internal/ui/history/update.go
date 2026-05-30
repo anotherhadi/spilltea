@@ -76,14 +76,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case SearchResultMsg:
+		var selectedID int64
+		if m.cursor >= 0 && m.cursor < len(m.entries) {
+			selectedID = m.entries[m.cursor].ID
+		}
 		m.entries = msg.Entries
 		m.cursor = 0
+		if selectedID != 0 {
+			for i, e := range m.entries {
+				if e.ID == selectedID {
+					m.cursor = i
+					break
+				}
+			}
+		}
 		m.searchErr = ""
 		m.pager.SetTotalPages(len(m.entries))
 		m.refreshListViewport()
 		m.refreshBody()
-		m.bodyViewport.SetYOffset(0)
-		m.bodyViewport.SetXOffset(0)
+		if selectedID == 0 {
+			m.bodyViewport.SetYOffset(0)
+			m.bodyViewport.SetXOffset(0)
+		}
 		if m.searchKind == searchKindSQL {
 			m.acceptSearch()
 		}
