@@ -38,7 +38,7 @@ keybindings:
     toggle_sidebar: "ctrl+b"
     cycle_focus: "tab"
     send_to_replay: "ctrl+r"
-    send_to_diff: "ctrl+d"
+    send_to_diff: "ctrl+x"
     copy_as: "ctrl+y"
     copy: "y"
     up: "up,k"
@@ -47,10 +47,10 @@ keybindings:
     right: "right,l"
     goto_top: "g"
     goto_bottom: "G,end"
-    scroll_up: "pgup"
-    scroll_down: "pgdown"
-    prev_page: "["
-    next_page: "]"
+    scroll_up: "pgup,ctrl+u"
+    scroll_down: "pgdown,ctrl+d"
+    prev_page: "[,ctrl+i"
+    next_page: "],ctrl+o"
 
   intercept:
     toggle_intercept: "i"
@@ -61,7 +61,7 @@ keybindings:
     drop_all: "D"
     edit: "e,enter"
     edit_external: "E"
-    undo_edits: "ctrl+z"
+    undo_edits: "u,ctrl+z"
 
   history:
     delete_entry: "x"
@@ -79,7 +79,7 @@ keybindings:
     send: "s, enter"
     edit: "e"
     edit_external: "E"
-    undo_edits: "ctrl+z"
+    undo_edits: "u,ctrl+z"
     delete_entry: "x"
     delete_all: "X"
 
