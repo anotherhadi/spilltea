@@ -105,7 +105,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		g := keys.Keys.Global
 
 		if m.searchKind != searchKindOff && !m.searchAccepted {
-			// Actively typing: only search navigation + accept/cancel.
 			switch {
 			case key.Matches(msg, g.Escape):
 				return m, m.clearSearch()
@@ -115,24 +114,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, SQLCmd(m.database, m.searchInput.Value())
 				}
 				m.acceptSearch()
-
-			case key.Matches(msg, g.Up):
-				if m.cursor > 0 {
-					m.cursor--
-					m.refreshListViewport()
-					m.refreshBody()
-					m.bodyViewport.SetYOffset(0)
-					m.bodyViewport.SetXOffset(0)
-				}
-
-			case key.Matches(msg, g.Down):
-				if m.cursor < len(m.entries)-1 {
-					m.cursor++
-					m.refreshListViewport()
-					m.refreshBody()
-					m.bodyViewport.SetYOffset(0)
-					m.bodyViewport.SetXOffset(0)
-				}
 
 			default:
 				var cmd tea.Cmd

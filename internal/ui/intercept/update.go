@@ -287,27 +287,12 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model
 }
 
 func (m Model) updateEditMode(msg tea.KeyPressMsg, cmds *[]tea.Cmd) (tea.Model, tea.Cmd) {
-	onResponses := m.captureResponse && m.focusedPanel == panelResponses
-
 	switch {
 	case key.Matches(msg, keys.Keys.Global.Escape):
 		m.saveCurrentEdit()
 		m.editing = false
 		m.textarea.Blur()
 		m.refreshBodyViewport()
-
-	case key.Matches(msg, keys.Keys.Intercept.UndoEdits):
-		if onResponses {
-			if len(m.responseQueue) > 0 {
-				delete(m.pendingResponseEdits, m.responseQueue[m.responseCursor])
-				m.textarea.SetValue(intercept.FormatRawResponse(m.responseQueue[m.responseCursor].Flow))
-			}
-		} else {
-			if len(m.queue) > 0 {
-				delete(m.pendingEdits, m.queue[m.cursor])
-				m.textarea.SetValue(intercept.FormatRawRequest(m.queue[m.cursor].Flow))
-			}
-		}
 
 	default:
 		var cmd tea.Cmd

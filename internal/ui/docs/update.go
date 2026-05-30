@@ -18,12 +18,9 @@ func (e Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		if e.searching {
 			switch {
-			case key.Matches(msg, d.SearchReset):
+			case key.Matches(msg, g.Escape):
 				e.searching = false
 				e.searchInput.Blur()
-				e.searchInput.SetValue("")
-				e.matches = nil
-				e.matchIndex = 0
 				e.SetSize(e.width, e.height)
 			case msg.String() == "enter":
 				e.searching = false
