@@ -4,7 +4,7 @@
 }: let
   browser = import ./browser.nix {inherit pkgs;};
   pname = "spilltea";
-  version = "0.0.7";
+  version = "0.0.8";
   ldflags = ["-s" "-w" "-X main.version=${version}"];
   pkg = buildGoApplication {
     inherit pname version ldflags;
