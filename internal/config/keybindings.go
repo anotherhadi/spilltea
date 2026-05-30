@@ -56,6 +56,7 @@ type ReplayKeys struct {
 	UndoEdits string `mapstructure:"undo_edits"`
 	Delete    string `mapstructure:"delete_entry"`
 	DeleteAll string `mapstructure:"delete_all"`
+	Filter    string `mapstructure:"filter"`
 }
 
 type DiffKeys struct {

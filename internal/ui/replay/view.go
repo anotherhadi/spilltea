@@ -8,6 +8,7 @@ import (
 	"charm.land/lipgloss/v2"
 	ilovetui "github.com/anotherhadi/ilovetui"
 	"github.com/anotherhadi/spilltea/internal/icons"
+	"github.com/anotherhadi/spilltea/internal/keys"
 	"github.com/anotherhadi/spilltea/internal/style"
 	"github.com/anotherhadi/spilltea/internal/util"
 )
@@ -73,7 +74,18 @@ func (m *Model) renderResponsePanel(w, h int) string {
 }
 
 func (m *Model) renderStatusBar() string {
-	return lipgloss.NewStyle().Padding(0, 1).Render(m.help.View(replayKeyMap{width: m.width}))
+	pad := lipgloss.NewStyle().Padding(0, 1)
+	if m.filterActive {
+		filterKey := keys.Keys.Replay.Filter.Help().Key
+		escKey := keys.Keys.Global.Escape.Help().Key
+		if m.filterAccepted {
+			accent := lipgloss.NewStyle().Foreground(ilovetui.S.Primary)
+			filterLine := pad.Render(accent.Render(filterKey) + " " + ilovetui.S.Bold.Render(m.filterInput.Value()) + ilovetui.S.Faint.Render("  "+escKey+" to clear"))
+			return lipgloss.JoinVertical(lipgloss.Left, filterLine, pad.Render(m.help.View(replayKeyMap{width: m.width})))
+		}
+		return pad.Render(ilovetui.S.Faint.Render(filterKey) + " " + m.filterInput.View())
+	}
+	return pad.Render(m.help.View(replayKeyMap{width: m.width}))
 }
 
 func (m *Model) renderList() string {

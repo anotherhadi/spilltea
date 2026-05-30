@@ -67,15 +67,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				entry.DBID = id
 			}
 		}
-		m.entries = append(m.entries, entry)
-		m.cursor = len(m.entries) - 1
-		m.pager.SetTotalPages(len(m.entries))
-		m.refreshListViewport()
-		m.refreshBody()
+		m.allEntries = append(m.allEntries, entry)
+		m.applyFilter(len(m.allEntries) - 1)
 
 	case sentMsg:
-		if msg.index >= 0 && msg.index < len(m.entries) {
-			e := &m.entries[msg.index]
+		allIdx := msg.index
+		if allIdx >= 0 && allIdx < len(m.allEntries) {
+			e := m.allEntries[allIdx]
 			e.Sending = false
 			e.StatusCode = msg.statusCode
 			e.ResponseRaw = msg.responseRaw
@@ -84,13 +82,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				e.ResponseRaw = "Error: " + msg.err.Error()
 			}
 			if m.database != nil && e.DBID != 0 {
-				if err := m.database.UpdateReplayEntry(entryToDB(*e)); err != nil {
+				if err := m.database.UpdateReplayEntry(entryToDB(e)); err != nil {
 					log.Printf("replay: update entry: %v", err)
 				}
 			}
+			m.allEntries[allIdx] = e
 		}
-		m.refreshListViewport()
-		m.refreshBody()
+		prevAllIdx := m.currentAllIdx()
+		m.applyFilter(prevAllIdx)
 
 	case util.EditorFinishedMsg:
 		if msg.Err == nil && msg.Content != "" && len(m.entries) > 0 {
@@ -133,6 +132,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	g := keys.Keys.Global
 	r := keys.Keys.Replay
+
+	if m.filterActive && !m.filterAccepted {
+		switch {
+		case key.Matches(msg, g.Escape):
+			m.clearFilter()
+		case msg.String() == "enter":
+			m.filterAccepted = true
+			m.filterInput.Blur()
+			m.recalcSizes()
+		default:
+			var cmd tea.Cmd
+			m.filterInput, cmd = m.filterInput.Update(msg)
+			prevAllIdx := m.currentAllIdx()
+			m.applyFilter(prevAllIdx)
+			return m, cmd
+		}
+		return m, nil
+	}
+
+	if m.filterActive && m.filterAccepted {
+		if key.Matches(msg, g.Escape) {
+			m.clearFilter()
+			return m, nil
+		}
+	}
+
 	switch {
 	case key.Matches(msg, g.Up):
 		if m.focusedPanel == panelList {
@@ -168,12 +193,13 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, r.Send):
 		if len(m.entries) > 0 && !m.entries[m.cursor].Sending {
-			m.entries[m.cursor].Sending = true
-			m.entries[m.cursor].ResponseRaw = ""
-			m.entries[m.cursor].Err = nil
-			m.refreshListViewport()
-			m.refreshBody()
-			return m, sendCmd(m.entries[m.cursor], m.cursor)
+			allIdx := m.currentAllIdx()
+			m.allEntries[allIdx].Sending = true
+			m.allEntries[allIdx].ResponseRaw = ""
+			m.allEntries[allIdx].Err = nil
+			entry := m.allEntries[allIdx]
+			m.applyFilter(allIdx)
+			return m, sendCmd(entry, allIdx)
 		}
 
 	case key.Matches(msg, r.Edit):
@@ -217,19 +243,19 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 
 	case key.Matches(msg, r.Delete):
 		if len(m.entries) > 0 {
-			e := m.entries[m.cursor]
+			allIdx := m.currentAllIdx()
+			e := m.allEntries[allIdx]
 			if m.database != nil && e.DBID != 0 {
 				if err := m.database.DeleteReplayEntry(e.DBID); err != nil {
 					log.Printf("replay: delete entry: %v", err)
 				}
 			}
-			m.entries = append(m.entries[:m.cursor], m.entries[m.cursor+1:]...)
-			if m.cursor >= len(m.entries) && m.cursor > 0 {
-				m.cursor--
+			m.allEntries = append(m.allEntries[:allIdx], m.allEntries[allIdx+1:]...)
+			preferAllIdx := allIdx
+			if preferAllIdx >= len(m.allEntries) {
+				preferAllIdx = len(m.allEntries) - 1
 			}
-			m.pager.SetTotalPages(len(m.entries))
-			m.refreshListViewport()
-			m.refreshBody()
+			m.applyFilter(preferAllIdx)
 		}
 
 	case key.Matches(msg, r.DeleteAll):
@@ -238,11 +264,14 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 				log.Printf("replay: delete all entries: %v", err)
 			}
 		}
-		m.entries = nil
+		m.allEntries = nil
 		m.cursor = 0
-		m.pager.SetTotalPages(0)
-		m.refreshListViewport()
-		m.refreshBody()
+		m.filterActive = false
+		m.filterAccepted = false
+		m.filterInput.SetValue("")
+		m.filterInput.Blur()
+		m.recalcSizes()
+		m.applyFilter(-1)
 
 	case key.Matches(msg, keys.Keys.Global.GotoTop):
 		m.cursor = 0
@@ -281,6 +310,15 @@ func (m Model) updateNormalMode(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 					return diffUI.SendToDiffMsg{Label: label, Raw: raw}
 				}
 			}
+		}
+
+	case key.Matches(msg, r.Filter):
+		if m.focusedPanel == panelList {
+			m.filterActive = true
+			m.filterAccepted = false
+			m.filterInput.Placeholder = "filter requests..."
+			m.filterInput.Focus()
+			m.recalcSizes()
 		}
 
 	case key.Matches(msg, g.Help):

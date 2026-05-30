@@ -82,6 +82,7 @@ keybindings:
     undo_edits: "u,ctrl+z"
     delete_entry: "x"
     delete_all: "X"
+    filter: "/"
 
   diff:
     clear: "x"

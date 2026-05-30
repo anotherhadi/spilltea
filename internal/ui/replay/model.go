@@ -2,11 +2,13 @@ package replay
 
 import (
 	"fmt"
+	"strings"
 
 	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	"charm.land/bubbles/v2/paginator"
 	"charm.land/bubbles/v2/textarea"
+	"charm.land/bubbles/v2/textinput"
 	"charm.land/bubbles/v2/viewport"
 	tea "charm.land/bubbletea/v2"
 	ilovetui "github.com/anotherhadi/ilovetui"
@@ -43,11 +45,17 @@ const (
 )
 
 type Model struct {
-	entries      []Entry
+	allEntries   []Entry
+	entries      []Entry // filtered view; equals allEntries when no filter
+	entryIndices []int   // maps entries[i] -> allEntries[i]; nil when no filter
 	cursor       int
 	editing      bool
 	focusedPanel panel
 	database     *db.DB
+
+	filterInput    textinput.Model
+	filterActive   bool
+	filterAccepted bool
 
 	listViewport     viewport.Model
 	requestViewport  viewport.Model
@@ -63,11 +71,14 @@ type Model struct {
 func New() Model {
 	ta := ilovetui.NewTextarea(false)
 	ta.Blur()
+	ti := textinput.New()
+	ti.Prompt = ""
 	return Model{
 		listViewport:     ilovetui.NewViewport(),
 		requestViewport:  ilovetui.NewViewport(),
 		responseViewport: ilovetui.NewViewport(),
 		textarea:         ta,
+		filterInput:      ti,
 		pager:            ilovetui.NewPaginator(),
 		help:             ilovetui.NewHelp(),
 	}
@@ -75,7 +86,7 @@ func New() Model {
 
 func (m Model) Init() tea.Cmd { return nil }
 
-func (m Model) IsEditing() bool { return m.editing }
+func (m Model) IsEditing() bool { return m.editing || (m.filterActive && !m.filterAccepted) }
 
 func (m Model) IsResponseFocused() bool {
 	return m.focusedPanel == panelResponse
@@ -111,8 +122,9 @@ func (m *Model) SetDB(d *db.DB) {
 		return
 	}
 	for _, dbe := range entries {
-		m.entries = append(m.entries, entryFromDB(dbe))
+		m.allEntries = append(m.allEntries, entryFromDB(dbe))
 	}
+	m.entries = m.allEntries
 	m.pager.SetTotalPages(len(m.entries))
 	if len(m.entries) > 0 {
 		m.cursor = len(m.entries) - 1
@@ -148,6 +160,7 @@ func (m *Model) SetSize(w, h int) {
 
 func (m *Model) recalcSizes() {
 	m.help.SetWidth(m.width - 2)
+	m.filterInput.SetWidth(m.width - 4)
 
 	listH, bodyH := ilovetui.SplitH(m.height, m.renderStatusBar(), 0.35)
 
@@ -194,12 +207,77 @@ func (m *Model) bodyHalfWidths() (left, right int) {
 	return
 }
 
+func (m *Model) currentAllIdx() int {
+	if m.entryIndices != nil && m.cursor < len(m.entryIndices) {
+		return m.entryIndices[m.cursor]
+	}
+	if m.cursor < len(m.allEntries) {
+		return m.cursor
+	}
+	return -1
+}
+
+func matchesFilter(e Entry, term string) bool {
+	return strings.Contains(strings.ToLower(e.Host), term) ||
+		strings.Contains(strings.ToLower(e.Path), term) ||
+		strings.Contains(strings.ToLower(strings.TrimSpace(e.Method)), term)
+}
+
+func (m *Model) applyFilter(preferAllIdx int) {
+	term := strings.ToLower(m.filterInput.Value())
+	if !m.filterActive || term == "" {
+		m.entries = m.allEntries
+		m.entryIndices = nil
+		if preferAllIdx >= 0 && preferAllIdx < len(m.allEntries) {
+			m.cursor = preferAllIdx
+		}
+	} else {
+		m.entries = nil
+		m.entryIndices = nil
+		newCursor := 0
+		found := false
+		for i, e := range m.allEntries {
+			if matchesFilter(e, term) {
+				if i == preferAllIdx && !found {
+					newCursor = len(m.entries)
+					found = true
+				}
+				m.entries = append(m.entries, e)
+				m.entryIndices = append(m.entryIndices, i)
+			}
+		}
+		if found {
+			m.cursor = newCursor
+		} else {
+			m.cursor = 0
+		}
+	}
+	if len(m.entries) == 0 {
+		m.cursor = 0
+	} else if m.cursor >= len(m.entries) {
+		m.cursor = len(m.entries) - 1
+	}
+	m.pager.SetTotalPages(len(m.entries))
+	m.refreshListViewport()
+	m.refreshBody()
+}
+
+func (m *Model) clearFilter() {
+	prevAllIdx := m.currentAllIdx()
+	m.filterActive = false
+	m.filterAccepted = false
+	m.filterInput.SetValue("")
+	m.filterInput.Blur()
+	m.recalcSizes()
+	m.applyFilter(prevAllIdx)
+}
+
 type replayKeyMap struct{ width int }
 
 func (replayKeyMap) ShortHelp() []key.Binding {
 	g := keys.Keys.Global
 	r := keys.Keys.Replay
-	return []key.Binding{g.Up, g.Down, g.CycleFocus, r.Send, r.Edit, g.Help}
+	return []key.Binding{g.Up, g.Down, g.CycleFocus, r.Send, r.Edit, r.Filter, g.Help}
 }
 
 func (m replayKeyMap) FullHelp() [][]key.Binding {

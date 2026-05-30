@@ -12,6 +12,7 @@ type ReplayKeyMap struct {
 	UndoEdits key.Binding
 	Delete    key.Binding
 	DeleteAll key.Binding
+	Filter    key.Binding
 }
 
 func newReplayKeyMap(cfg config.ReplayKeys) ReplayKeyMap {
@@ -22,9 +23,10 @@ func newReplayKeyMap(cfg config.ReplayKeys) ReplayKeyMap {
 		UndoEdits: binding(cfg.UndoEdits, "undo edits"),
 		Delete:    binding(cfg.Delete, "delete"),
 		DeleteAll: binding(cfg.DeleteAll, "delete all"),
+		Filter:    binding(cfg.Filter, "filter"),
 	}
 }
 
 func (r ReplayKeyMap) Bindings() []key.Binding {
-	return []key.Binding{r.Send, r.Edit, r.EditExt, r.UndoEdits, r.Delete, r.DeleteAll}
+	return []key.Binding{r.Send, r.Edit, r.EditExt, r.UndoEdits, r.Delete, r.DeleteAll, r.Filter}
 }
