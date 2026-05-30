@@ -28,8 +28,14 @@ func parseRawRequest(content string, req *intercept.PendingRequest) {
 	if parsed.Proto != "" {
 		r.Proto = parsed.Proto
 	}
+	if parsed.Host != "" {
+		r.URL.Host = parsed.Host
+	}
 	r.Header = make(http.Header)
 	for _, h := range parsed.Headers {
+		if strings.EqualFold(h.Key, "host") {
+			continue
+		}
 		r.Header.Set(h.Key, h.Value)
 	}
 	if parsed.Body != "" {

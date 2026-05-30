@@ -14,6 +14,9 @@ func FormatRawRequest(f *proxy.Flow) string {
 	r := f.Request
 	var sb strings.Builder
 	fmt.Fprintf(&sb, "%s %s %s\n", r.Method, r.URL.RequestURI(), r.Proto)
+	if r.URL.Host != "" {
+		fmt.Fprintf(&sb, "Host: %s\n", r.URL.Host)
+	}
 	for _, line := range util.SortedHeaderLines(r.Header) {
 		sb.WriteString(line)
 	}
