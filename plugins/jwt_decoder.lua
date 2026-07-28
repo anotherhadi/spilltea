@@ -29,7 +29,7 @@ for i = 1, #B64_ALPHABET do
 	B64_DEC[B64_ALPHABET:sub(i, i)] = i - 1
 end
 
--- Decode an unpadded base64url string. Returns the decoded string, or nil if
+-- Decode an unpadded base64url string. Returns the decoded string, or nil on invalid input.
 local function b64url_decode(s)
 	if #s % 4 == 1 then
 		return nil
