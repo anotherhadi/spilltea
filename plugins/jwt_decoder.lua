@@ -54,7 +54,7 @@ end
 local function decode_jwt_payload(value)
 	-- Three dot-separated base64url segments; the signature may be empty (alg:none).
 	local payload = value:match("^[A-Za-z0-9_-]+%.([A-Za-z0-9_-]+)%.[A-Za-z0-9_-]*$")
-	if not payload then
+	if not payload or #payload > 8192 then
 		return nil
 	end
 	local decoded = b64url_decode(payload)
@@ -65,7 +65,7 @@ local function decode_jwt_payload(value)
 	if decoded:match("^%s*{") == nil then
 		return nil
 	end
-	decoded = decoded:gsub("[\r\n]+", " ")
+	decoded = decoded:gsub("[%c]+", " ")
 	return decoded
 end
 
