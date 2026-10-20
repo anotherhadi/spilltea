@@ -10,10 +10,10 @@ require (
 	github.com/andybalholm/brotli v1.0.4
 	github.com/anotherhadi/ilovetui v0.1.6
 	github.com/charmbracelet/x/ansi v0.11.7
-	github.com/klauspost/compress v1.17.8
+	github.com/klauspost/compress v1.18.7
 	github.com/lqqyt2423/go-mitmproxy v1.8.11
 	github.com/sirupsen/logrus v1.9.4
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	github.com/yuin/gopher-lua v1.1.2
 	golang.org/x/net v0.55.0
@@ -56,7 +56,7 @@ require (
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/spf13/cobra v1.10.2 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	github.com/yuin/goldmark v1.8.2 // indirect
