@@ -22,14 +22,14 @@ With go:
 go install github.com/anotherhadi/spilltea/cmd/spilltea@latest
 ```
 
-With Nix, from the [anotherhadi NUR](https://github.com/anotherhadi/nur):
+With Nix, from the [anotherhadi NUR](https://github.com/anotherhadi/nur-packages):
 
 ```sh
-nix run github:anotherhadi/nur#spilltea
+nix run github:anotherhadi/nur-packages#spilltea
 ```
 
 ```nix
-# flake: inputs.nur-anotherhadi.url = "github:anotherhadi/nur";
+# flake: inputs.nur-anotherhadi.url = "github:anotherhadi/nur-packages";
 environment.systemPackages = [ nur-anotherhadi.packages.${system}.spilltea ];
 
 # or through NUR
