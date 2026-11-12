@@ -1,41 +1,23 @@
 {
-  description = "Spilltea: A minimal, terminal-based HTTP(S) proxy for pentesters and CTF players.";
+  description = "spilltea: an intercepting HTTP proxy in the terminal";
 
-  inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    gomod2nix = {
-      url = "github:nix-community/gomod2nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    git-hooks = {
-      url = "github:cachix/git-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-  };
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-  outputs = {
-    self,
-    nixpkgs,
-    gomod2nix,
-    git-hooks,
-  }: let
-    supportedSystems = ["x86_64-linux" "aarch64-linux"];
-
-    forAllSystems = f:
-      nixpkgs.lib.genAttrs supportedSystems
-      (system: f system (import nixpkgs {inherit system;}));
+  outputs = {nixpkgs, ...}: let
+    systems = [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
+    ];
+    forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f nixpkgs.legacyPackages.${system});
   in {
-    packages = forAllSystems (system: pkgs:
-      import ./nix/package.nix {
-        inherit pkgs;
-        buildGoApplication = gomod2nix.legacyPackages.${system}.buildGoApplication;
-      });
-
-    devShells = forAllSystems (system: pkgs: {
-      default = import ./nix/shell.nix {
-        inherit pkgs;
-        gitHooksLib = git-hooks.lib.${system};
-        gomod2nixPkgs = gomod2nix.legacyPackages.${system};
+    devShells = forAllSystems (pkgs: {
+      default = pkgs.mkShell {
+        packages = [
+          pkgs.go
+          pkgs.gopls
+        ];
       };
     });
   };

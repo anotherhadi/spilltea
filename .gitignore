@@ -1,4 +1,4 @@
-.claude/
-CLAUDE.md
-result/
-.pre-commit-config.yaml
+/spilltea
+/tmp/
+*.test
+dist/

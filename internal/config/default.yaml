@@ -1,0 +1,159 @@
+project: "" # empty means ~/.local/share/spilltea/project
+createProject: true
+page: history # intercept, history, sitemap, diff or findings
+filters: # ctrl+r, or preset:"name" in a query; your list replaces this one
+  - name: errors
+    query: resp.code.gte:500
+  - name: denied
+    query: resp.code.eq:401 OR resp.code.eq:403
+  - name: marked
+    query: row.marked.eq:true
+  - name: noted
+    query: row.note.ne:""
+  - name: findings
+    query: row.finding.ne:""
+  - name: websockets
+    query: resp.mime.eq:websocket
+pipes: # your list replaces this one
+  - name: Headers
+    command: awk '/^\r?$/{exit} 1'
+  - name: Body
+    command: awk 'b; /^\r?$/{b=1}'
+  - name: JWT payloads
+    command: rg -o 'eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*' | awk '!s[$0]++' | while read -r t; do ops jwt-decode "$t" | jq .payload; done
+
+proxy:
+  listen: 127.0.0.1:8080
+  upstream: "" # e.g. http://127.0.0.1:8081
+  insecure: false # accept invalid server certificates
+  ca: "" # empty means ~/.local/share/spilltea/ca
+
+scope: # out of scope: not decrypted, intercepted or stored
+  include: [] # host[:port][/path], * as wildcard, path as prefix; empty means everything
+  exclude: []
+
+intercept:
+  requests: false
+  responses: false
+  filter: "" # HTTPQL, e.g. req.method.ne:"GET"
+
+assets: # never intercepted, only their status is stored, hidden in the history
+  extensions: [png, jpg, jpeg, gif, webp, avif, ico, bmp, svg, css, js, mjs, map, woff, woff2, ttf, otf, eot, mp4, webm, mp3]
+  types: [image/, font/, video/, audio/, text/css, javascript] # Content-Type prefixes (ending in /) or substrings
+
+history:
+  responses: full # full, headers, status or none
+  maxBodySize: 2097152 # bytes; larger bodies are dropped, their headers kept
+  jsEndpoints: false # add the paths found in scripts, nothing is sent; row.source.eq:"js"
+
+findings: # assets included
+  secrets: true # gitleaks rules
+  cookies: false # no Secure, no HttpOnly, SameSite=None
+  cors: false # credentials allowed for a specific origin
+  disclosure: false # stack traces, SQL errors, source maps, versions in headers
+  reflection: false # parameters found as is in an HTML response, with where
+
+rules: [] # e.g. {on: request, part: head, match: "(?m)^Accept-Encoding:.*$", replace: "Accept-Encoding: identity"}; an empty match adds replace as a header
+
+http:
+  headers: [] # e.g. ["X-Bug-Bounty: me"]
+  userAgentSuffix: "" # Added the the User-Agent, usefull for bugbounty programs
+  stripPwnFox: true # remove X-PwnFox-Color before sending
+
+steep:
+  collection: "" # used when no steep is open, or when one is open on it; empty means steep's default
+  folder: spilltea
+
+view:
+  prettyPrint: true
+  wrap: true
+
+keys: # a key, a list, or [] for palette only; printable keys go to the intercept's vim editor first
+  app:
+    quit: [q, ctrl+c]
+    help: "?"
+    palette: ctrl+p
+  page:
+    intercept: alt+1
+    history: alt+2
+    sitemap: alt+3
+    diff: alt+4
+    findings: alt+5
+    next: "]"
+    prev: "["
+  pane:
+    left: [ctrl+h, alt+h]
+    down: [ctrl+j, alt+j]
+    up: [ctrl+k, alt+k]
+    right: [ctrl+l, alt+l]
+    zoom: alt+z
+  intercept:
+    requests: alt+i
+    responses: alt+o
+    forward: [f, ctrl+f]
+    drop: [x, ctrl+x]
+    forward-all: F
+    drop-all: X
+    response: r # also hold the response of this request
+    steep: [s, ctrl+s]
+    copy: [y]
+    open: enter
+  entries:
+    open: enter
+    filter: /
+    filters: ctrl+r
+    clear-filter: ctrl+g
+    mark: m
+    note: n
+    diff-a: a
+    diff-b: b
+    steep: s
+    copy: y
+    forget: []
+    forget-all: [] # the entries shown by the current filter
+    assets: A
+  message:
+    search: /
+    next: n
+    prev: N
+    pipe: "|"
+    pipes: P
+    clear: ctrl+g
+    copy: c
+    editor: o
+    wrap: w
+    format: p
+  diff:
+    swap: s
+    mode: t # requests or responses
+    next: n
+    prev: N
+  findings:
+    open: enter
+    relevant: r
+    noise: x
+    untriage: u
+    note: n
+    triaged: t
+    rescan: R
+    copy: y
+  copy:
+    close: [esc, ctrl+c]
+    pick: enter
+    up: [up, ctrl+p, ctrl+k]
+    down: [down, ctrl+n, ctrl+j]
+  filters:
+    close: [esc, ctrl+c]
+    pick: enter
+    up: [up, ctrl+p, ctrl+k]
+    down: [down, ctrl+n, ctrl+j]
+  pipes:
+    close: [esc, ctrl+c]
+    pick: enter
+    up: [up, ctrl+p, ctrl+k]
+    down: [down, ctrl+n, ctrl+j]
+  steep:
+    close: [esc, ctrl+c]
+    pick: enter
+    up: [up, ctrl+p, ctrl+k]
+    down: [down, ctrl+n, ctrl+j]

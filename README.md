@@ -1,200 +1,182 @@
-<div align="center">
-    <img alt="logo" src="./.github/assets/logo.png" width="120px" />
-</div>
-
-<br>
+```
+█▀▀ █▀▀ █▀▀ ▀█▀ █ █ █   ▄▀ █▀▀ █▀█ █ █   █   ▀█▀ █▀▀ ▄▀█
+▄▄█ ██▄ █▄▄  █  █▄█ █ ▄▀   ▄▄█ █▀▀ █ █▄▄ █▄▄  █  ██▄ █▀█
+```
 
 # Spilltea
 
-> A minimal, terminal-based HTTP(S) proxy for pentesters and CTF players.  
-> Think Burp Suite or Caido, but entirely in your terminal.
+An intercepting HTTP proxy for the terminal. Hold, edit and drop requests and
+responses, keep the history as plain files, search it with
+[HTTPQL](https://docs.caido.io/reference/httpql.html), and hand requests over to
+[steep](https://github.com/anotherhadi/steep) to replay and fuzz them.
 
-![GitHub Stars](https://www.shieldcn.dev/github/stars/anotherhadi/spilltea.svg?variant=outline&theme=violet)
-![Release](https://www.shieldcn.dev/github/release/anotherhadi/spilltea.svg?variant=outline&theme=violet)
-![CI](https://www.shieldcn.dev/github/ci/anotherhadi/spilltea.svg?variant=outline&theme=violet)
-[![Ko-fi](https://www.shieldcn.dev/badge/Ko--fi-sponsor-FF5E5B.svg?logo=kofi&variant=secondary&theme=violet)](https://ko-fi.com/anotherhadi)
-
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-
-- [What is Spilltea?](#what-is-spilltea)
-- [Legal Disclaimer](#legal-disclaimer)
-- [Features](#features)
-- [Installation](#installation)
-- [Project Management](#project-management)
-- [Configuration](#configuration)
-  - [Per-project configuration](#per-project-configuration)
-- [CLI Flags](#cli-flags)
-- [Plugin System](#plugin-system)
-- [Vim / Neovim Integration](#vim--neovim-integration)
-- [Deployment](#deployment)
-- [Tech Stack](#tech-stack)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-## What is Spilltea?
-
-Spilltea is a **terminal-native HTTP(S) interception proxy**. It sits between your browser and the internet, letting you inspect, modify, and replay traffic without ever leaving your terminal.
-
-It is intentionally minimal. No Electron, no browser, no bloat. Just a fast, keyboard-driven tool that gets out of your way.
-
-<img alt="demo" src="./.github/assets/demo.gif" width="700" />
-
- <!-- exec: cat ./docs/legal-disclaimer.md -->
-## Legal Disclaimer
-
-**This tool is provided for educational purposes and authorized security testing only.**
-
-Use Spilltea only on systems and networks you own or have explicit written permission to test. Intercepting network traffic without authorization may violate local laws (such as the Computer Fraud and Abuse Act, GDPR, or equivalent legislation in your jurisdiction).
-
-The author(s) and contributors are not responsible for any misuse, damage, or legal consequences resulting from the use of this software. By using Spilltea, you agree that you are solely responsible for ensuring your usage is lawful and authorized.
-<!-- endexec -->
-
-## Features
-
-- **Intercept**: Pause requests and responses in-flight. Inspect and modify them (even with your favorite editor) before forwarding.
-- **HTTP History**: Every request that passes through the proxy is stored. Browse, search and filter your full session history.
-- **Replay**: Pick any request from the history, modify it if needed, and send it again. Useful for manual testing and quick iteration
-- **HTTPS Support** (using go-mitmproxy under the hood)
-- **Vim-like Navigation**: The entire interface is keyboard-driven with Vim-inspired shortcuts. Use `h/j/k/l` to move, `gg`/`G` to jump to the top/bottom, `/` to search, `q` to close panels, and more. All keybindings are fully customizable via the config file.
-- Built-in Integrations:
-  - **FFuf Export**: Generate a ffuf command or configuration directly from a request to start fuzzing instantly.
-  - **cURL / HTTPie**: Copy any request as a curl or httpie command to your clipboard.
-  - **Markdown Export**: Export any request and its response as a clean Markdown snippet, ready to drop into a report.
+If you know Burp Suite or Caido: spilltea covers the proxy, history and sitemap,
+steep covers the repeater and intruder. It is built for pentesters, bug bounty
+hunters and CTF players.
 
 ## Installation
 
-<details>
-<summary>Go install</summary>
+With go:
 
 ```sh
 go install github.com/anotherhadi/spilltea/cmd/spilltea@latest
 ```
 
-Requires Go 1.22+. The binary will be placed in `$GOPATH/bin` (or `~/go/bin`).
-
-</details>
-
-<details>
-<summary>Nix (temporary run, no install)</summary>
+With Nix, from the [anotherhadi NUR](https://github.com/anotherhadi/nur):
 
 ```sh
-nix run github:anotherhadi/spilltea
+nix run github:anotherhadi/nur#spilltea
 ```
-
-</details>
-
-<details>
-<summary>NixOS (flake)</summary>
-
-Add spilltea to your flake inputs:
 
 ```nix
-inputs.spilltea.url = "github:anotherhadi/spilltea";
+# flake: inputs.nur-anotherhadi.url = "github:anotherhadi/nur";
+environment.systemPackages = [ nur-anotherhadi.packages.${system}.spilltea ];
+
+# or through NUR
+environment.systemPackages = [ pkgs.nur.repos.anotherhadi.spilltea ];
 ```
 
-Then add the package to your system or home-manager packages:
+Each [GitHub release](https://github.com/anotherhadi/spilltea/releases) has an
+archive per platform (Linux, macOS and FreeBSD, amd64 and arm64) with the
+`spilltea` binary:
 
-```nix
-environment.systemPackages = [ inputs.spilltea.packages.${pkgs.system}.default ];
+```sh
+tar xzf spilltea_1.2.3_linux_amd64.tar.gz
+sudo install spilltea /usr/local/bin/
+spilltea --version   # 1.2.3
 ```
 
-</details>
+## Quick start
 
- <!-- exec: cat ./docs/basics.md -->
-## Project Management
+```sh
+spilltea ca > spilltea-ca.pem   # export the CA certificate (created on first run)
+spilltea                        # start the proxy on 127.0.0.1:8080
+```
 
-Spilltea organizes work into **projects**. Each project maps to a SQLite database file that stores all intercepted traffic for that session & a log files.
+Set your browser's proxy to `127.0.0.1:8080`
+([PwnFox](https://github.com/yeswehack/PwnFox) can do it per container) and
+import `spilltea-ca.pem` as a trusted authority for websites. The CA lives in
+`~/.local/share/spilltea/ca`.
 
-On startup, you choose:
+> [!WARNING]
+> Anyone holding the CA's private key (`mitmproxy-ca.pem`) can intercept the TLS
+> traffic of a browser that trusts it. Keep it private, and prefer a dedicated
+> browser profile for testing.
 
-- **New project**: enter a name, stored in `~/.local/share/spilltea/<name>/` by default
-- **Existing project**: pick from a list of previous projects
-- **Temporary**: no name needed, stored in `/tmp/spilltea/<random-id>/` and will be deleted on your next reboot!
+## Pages
+
+- **Intercept**: hold requests and responses, edit them in a vim-like editor,
+  forward or drop them.
+- **History**: everything in scope, filtered with HTTPQL, with marks and notes.
+  Search a message, or pipe it through a shell command.
+- **Sitemap**: the history as a tree of hosts and paths.
+- **Diff**: two entries side by side, requests or responses.
+- **Findings**: what the detectors found in the traffic, to triage one by one.
+
+Press `?` to see the keys of the current pane, or `ctrl+p` for the command
+palette.
+
+## Scope
+
+Out-of-scope traffic goes through untouched: it is not decrypted, intercepted or
+stored. Put a program's scope in the project's own config:
+
+```yaml
+# <project>/config.yaml
+scope:
+    include: ["*.example.com", "api.example.org:8443", "example.net/api"]
+    exclude: ["logout.example.com"]
+```
+
+Or from the environment, as comma-separated lists:
+
+```sh
+SPILLTEA_SCOPE__INCLUDE='*.example.com,api.example.org:8443' \
+SPILLTEA_SCOPE__EXCLUDE='logout.example.com' \
+spilltea
+```
+
+A pattern is `host[:port][/path]`, where `*` matches any run of characters and
+the path is a prefix. An empty `include` list means everything.
+
+`intercept.filter` limits what gets held, using HTTPQL. For example
+`req.method.ne:"GET"` only holds GET requests.
+
+## PwnFox
+
+The `X-PwnFox-Color` header sent by
+[PwnFox](https://github.com/yeswehack/PwnFox) containers colors the entries and
+is stripped before the request leaves (`http.stripPwnFox`). Filter one container
+with `row.color.eq:"red"`. Requests sent to steep keep the header, so steep
+shows the color too.
+
+## Findings
+
+Detectors look at the traffic as it goes through, scripts and other assets
+included, even when their body is not stored:
+
+```yaml
+findings:
+    secrets: true # API keys, tokens...
+    cookies: true # no Secure, no HttpOnly, SameSite=None
+    cors: true # credentials allowed for a specific origin
+    disclosure: true # stack traces, SQL errors, source maps, versions
+    reflection: true # parameters found as is in an HTML response
+```
+
+In the history, `row.finding.eq:"secrets"` or `row.finding.cont:"aws"` filter
+the requests with findings, and `preset:"findings"` all of them.
+
+## Steep
+
+`s` writes the request into a steep collection under `spilltea/<host>/<path>`
+(`steep.folder`), and tells every steep open on that collection to open it.
+
+## Import
+
+Feed URLs found by recon tools into the history and the sitemap, without sending
+any request:
+
+```sh
+urlfinder -d example.com -j | spilltea import
+katana -u https://example.com -jsonl -o katana.jsonl && spilltea import katana.jsonl
+httpx -l hosts.txt -json -irr | spilltea import --project ~/bb/example
+```
+
+Each line is either a URL (`url [200]` works too) or a JSON line from httpx
+(`-json`, plus `-irr` for the full messages), katana (`-jsonl`) or urlfinder
+(`-j`).
+
+Filter by tool with `row.source.eq:"katana"` (`--source` sets the name).
+
+With `history.jsEndpoints: true`, the paths found in the scripts going through
+the proxy are added the same way, as `row.source.eq:"js"`.
+
+## The project
+
+The history lives in a project folder (`project` setting, `--project` or
+`SPILLTEA_PROJECT`; `~/.local/share/spilltea/project` by default), as plain
+files:
+
+```
+<project>/
+├── config.yaml     # optional, written by you: scope, rules
+├── index.jsonl     # one line per entry, appended as traffic comes in
+├── meta.json       # marks and notes
+├── findings.jsonl  # one line per finding seen in a request
+├── findings.json   # their triage and notes
+├── requests/<id>   # raw request, as sent
+└── responses/<id>  # raw response, as stored
+```
+
+`history.responses` controls how much of a response is kept: `full`, `headers`,
+`status` or `none`. Bodies larger than `history.maxBodySize` are dropped but
+their headers are kept. Bodies are stored decompressed.
 
 ## Configuration
 
-Spilltea is fully configured via a YAML file at `~/.config/spilltea/config.yaml`.
-Check the default configuration with all the options [here](./internal/config/default_config.yaml)
-
-Colors and styles can be customized using [ilovetui](https://github.com/anotherhadi/ilovetui), which applies theme changes across all compatible TUI applications at once.
-
-### Per-project configuration
-
-You can override any config value on a per-project basis by placing a `config.yaml` file inside the project directory (e.g. `~/.local/share/spilltea/projects/my-project/config.yaml`).
-
-Only the keys present in that file are overridden; everything else falls back to the global config.
-
-The priority order is:
-
-1. Global config (`~/.config/spilltea/config.yaml`)
-2. Project config (`<project-dir>/config.yaml`)
-3. CLI flags (always win)
-
-## CLI Flags
-
-```
-A minimal, terminal-based HTTP(S) proxy for pentesters and CTF players.
-
-Usage:
-  spilltea [flags]
-
-Flags:
-      --add-default-config      copy the default config file to the config path and exit
-      --add-default-plugins     copy built-in example plugins into the plugins dir and exit
-  -c, --config string           path to config file
-  -h, --help                    help for spilltea
-      --host string             proxy host (overrides config)
-      --plugins-dir string      path to plugins dir (overrides config)
-  -p, --port int                proxy port (overrides config)
-  -P, --project string          project name to open directly, or "tmp" for a temporary session
-      --ssl-insecure            skip TLS certificate verification (overrides config)
-      --upstream-proxy string   upstream proxy URL, e.g. http://user:pass@host:8888 (overrides config)
-  -v, --version                 version for spilltea
-```
-<!-- endexec -->
-
-## Plugin System
-
-Spilltea supports plugins written in **Lua**. Plugins are loaded from `~/.config/spilltea/plugins/` by default and do not require recompilation or access to the source code.
-For a full reference and examples, see the [plugin documentation](./docs/plugins.md) or [plugin examples](./plugins/).
-
-## Vim / Neovim Integration
-
-Spilltea pairs naturally with Neovim. If you live in your editor, these plugins let you inspect and transform captured traffic without switching context:
-
-- **[sttr.nvim](https://github.com/anotherhadi/sttr.nvim)**: Run string transformations (base64, URL encode/decode, hex, hashing, and more) on any selected text directly from Neovim. Handy for decoding values spotted in the proxy history.
-- **[jwt-tui.nvim](https://github.com/anotherhadi/jwt-tui.nvim)**: Decode and inspect JWT tokens in a floating TUI window. Great for quickly reading tokens intercepted through the proxy.
-
-Both plugins are built to feel native in a terminal workflow, just like Spilltea.
-
-## Deployment
-
-spilltea runs **locally** on the machine used for pentesting or CTF. There is no separate server component.
-
-If you need to run spilltea on a remote machine (e.g., a VPS or pivot host), use SSH port forwarding:
-
-```sh
-ssh -L 8080:127.0.0.1:8080 user@remote-host
-```
-
-Then point your browser at `127.0.0.1:8080` as usual.
-
-## Tech Stack
-
-| Component          | Library                                                   |
-| ------------------ | --------------------------------------------------------- |
-| TUI                | [bubbletea](https://github.com/charmbracelet/bubbletea)   |
-| Styles             | [lipgloss](https://github.com/charmbracelet/lipgloss)     |
-| Proxy / MITM / TLS | [go-mitmproxy](https://github.com/lqqyt2423/go-mitmproxy) |
-| Storage            | [modernc.org/sqlite](https://gitlab.com/cznic/sqlite)     |
-| Config             | [viper](https://github.com/spf13/viper)                   |
-| Plugins            | [gopher-lua](https://github.com/yuin/gopher-lua)          |
-
----
-
-<div align="center">
-  <a href="https://github.com/anotherhadi/spilltea">github</a> |
-  <a href="https://gitlab.com/anotherhadi_mirror/spilltea">gitlab (mirror)</a> |
-  <a href="https://git.hadi.icu/anotherhadi/spilltea">gitea (mirror)</a>
-</div
+`spilltea --print-config` prints every setting, and
+[`internal/config/default.yaml`](internal/config/default.yaml) lists the
+defaults. Spilltea reads, in order: `~/.config/foam/config.yaml`,
+`~/.config/spilltea/config.yaml`, the project's `config.yaml`, `SPILLTEA_*`
+environment variables, then command-line flags.
