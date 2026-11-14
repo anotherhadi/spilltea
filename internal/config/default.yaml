@@ -20,6 +20,12 @@ filters: # ctrl+r, or preset:"name" in a query; your list replaces this one
     query: 'req.query.regex:"(?i)(^|&)(destination_url|next|url|redirect|redirect_url|redirect_uri|return|return_url|returnurl|continue|dest|destination|redir|goto|out|target|to|forward|go|rurl|r|u|cb|callback|callbackurl)="'
   - name: redirect params to url
     query: 'req.query.regex:"(?i)(^|&)(destination_url|next|url|redirect|redirect_url|redirect_uri|return|return_url|returnurl|continue|dest|destination|redir|goto|out|target|to|forward|go|rurl|r|u|cb|callback|callbackurl)=http"'
+  - name: api
+    query: 'req.path.regex:"(?i)/(api|v[0-9]+|graphql|rest|rpc)(/|$)"'
+  - name: admin and debug
+    query: 'req.path.regex:"(?i)/(admin|administrator|debug|actuator|console|swagger|swagger-ui|openapi|api-docs|phpinfo|server-status|metrics|\.well-known)(/|$|\.)"'
+  - name: jwt
+    query: 'req.raw.regex:"eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\."'
 pipes: # your list replaces this one
   - name: Headers
     command: awk '/^\r?$/{exit} 1'
