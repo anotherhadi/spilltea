@@ -14,6 +14,12 @@ filters: # ctrl+r, or preset:"name" in a query; your list replaces this one
     query: row.finding.ne:""
   - name: websockets
     query: resp.mime.eq:websocket
+  - name: interesting extensions
+    query: 'req.path.regex:"(?i)\.(xls|xlsx|xml|json|pdf|sql|docx?|pptx|txt|zip|tar\.gz|tgz|tar|bak|backup|7z|rar|log|cache|secret|db|yml|yaml|gz|git|config|csv|md5|md|exe|dll|bin|ini|bat|sh|deb|rpm|iso|img|apk|msi|env|dmg|tmp|crt|pem|key|pub|asc)(/|$)"'
+  - name: redirect params
+    query: 'req.query.regex:"(?i)(^|&)(destination_url|next|url|redirect|redirect_url|redirect_uri|return|return_url|returnurl|continue|dest|destination|redir|goto|out|target|to|forward|go|rurl|r|u|cb|callback|callbackurl)="'
+  - name: redirect params to url
+    query: 'req.query.regex:"(?i)(^|&)(destination_url|next|url|redirect|redirect_url|redirect_uri|return|return_url|returnurl|continue|dest|destination|redir|goto|out|target|to|forward|go|rurl|r|u|cb|callback|callbackurl)=http"'
 pipes: # your list replaces this one
   - name: Headers
     command: awk '/^\r?$/{exit} 1'
