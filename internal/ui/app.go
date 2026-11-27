@@ -634,7 +634,7 @@ func (m *Model) askNote(e project.Entry) tea.Cmd {
 		if err := m.hist.SetMeta(e.ID, meta); err != nil {
 			return notify.Err(err)
 		}
-		m.histShown, m.siteShown = 0, 0 // redraw: the note is shown above the request
+		m.histShown, m.siteShown = redraw, redraw // the note is shown above the request
 		return tea.Batch(m.hist.Refresh(), m.site.Refresh())
 	})
 	p.Hint = "Leave empty to remove it"
@@ -742,6 +742,9 @@ func (m *Model) toSteep(raw []byte, rawURL string) tea.Cmd {
 	}))
 }
 
+// redraw forces syncReaders to reload, unlike 0 which means nothing shown.
+const redraw = -1
+
 type forgetMsg struct{ ids []int }
 
 func (m *Model) askForget(msg entries.ForgetMsg) tea.Cmd {
@@ -767,7 +770,7 @@ func (m *Model) forget(ids []int) tea.Cmd {
 		err = ferr
 	}
 	m.siteDirty = true
-	m.histShown, m.siteShown = 0, 0
+	m.histShown, m.siteShown = redraw, redraw
 	for _, s := range []*side{&m.diffA, &m.diffB} {
 		if s.ok && slices.Contains(ids, s.entry.ID) {
 			*s = side{}
@@ -819,7 +822,7 @@ func (m *Model) treeEntries() []project.Entry {
 func (m *Model) toggleAssets() tea.Cmd {
 	m.assets = !m.assets
 	m.siteDirty = true
-	m.histShown, m.siteShown = 0, 0
+	m.histShown, m.siteShown = redraw, redraw
 	return tea.Batch(m.hist.SetAssets(m.assets), m.site.SetAssets(m.assets))
 }
 
