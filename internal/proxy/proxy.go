@@ -12,6 +12,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"slices"
 	"strconv"
 	"strings"
@@ -214,6 +215,15 @@ func (x *Proxy) Start() error {
 	if err != nil {
 		return err
 	}
+	// Without this go-mitmproxy falls back to HTTP(S)_PROXY, which often
+	// points at spilltea itself and makes every request loop.
+	var upstream *url.URL
+	if x.cfg.Proxy.Upstream != "" {
+		if upstream, err = url.Parse(x.cfg.Proxy.Upstream); err != nil {
+			return fmt.Errorf("proxy.upstream: %w", err)
+		}
+	}
+	p.SetUpstreamProxy(func(*http.Request) (*url.URL, error) { return upstream, nil })
 	p.SetShouldInterceptRule(func(req *http.Request) bool {
 		host, port := splitHost(req.Host)
 		return x.scope.Host(host, port)
